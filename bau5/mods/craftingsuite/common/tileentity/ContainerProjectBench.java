@@ -72,7 +72,7 @@ public class ContainerProjectBench extends Container{
 	public ItemStack slotClick(int par1, int par2, int par3,
 			EntityPlayer par4EntityPlayer) {
 		if(par1 == 0 && par3 == 6)
-			par3 =0;
+			par3 = 0;
 		return super.slotClick(par1, par2, par3, par4EntityPlayer);
 	}
 	

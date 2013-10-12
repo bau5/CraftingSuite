@@ -129,7 +129,7 @@ public class TileEntityCraftingTable extends TileEntity implements IInventory, I
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer entityplayer) {
 		return worldObj.getBlockTileEntity(xCoord, yCoord, zCoord) == this &&
-				entityplayer.getDistanceSq(xCoord +0.5, yCoord +0.5, zCoord +0.5) < 10;
+				entityplayer.getDistanceSq(xCoord +0.5, yCoord +0.5, zCoord +0.5) < 64;
 	}
 
 	@Override

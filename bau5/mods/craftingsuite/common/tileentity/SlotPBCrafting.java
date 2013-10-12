@@ -28,6 +28,7 @@ public class SlotPBCrafting extends SlotCrafting {
 	@Override
 	public void onPickupFromSlot(EntityPlayer player,
 			ItemStack stack) {
+		tileEntity.containerWorking = true;
 		boolean found = false;
 		boolean metaSens = false;
         GameRegistry.onItemCrafted(thePlayer, stack, craftingMatrix);
@@ -49,68 +50,63 @@ public class SlotPBCrafting extends SlotCrafting {
 				{
 					metaSens = true;
 				}
-
-        		if(craftComponentStack.isItemStackDamageable()){
-        			found = false;
-        		}
         		//Checking the supply inventory for matching item
-        		if(!craftComponentStack.isItemStackDamageable()){
-	    			for(int supplyInv = 9; supplyInv < 27; supplyInv++)
-					{
-		    			//Grabs the item in the supply Matrix
-		    			ItemStack supplyMatrixStack = tileEntity.getStackInSlot(supplyInv);
-		    			if(supplyMatrixStack != null)
-		    			{
-		    				if(supplyMatrixStack.getItem().equals(craftComponentStack.getItem()))
-		    				{
-		    					if(metaSens)
-		    					{
-		    						if(craftComponentStack.getItemDamage() != supplyMatrixStack.getItemDamage())
-		    						{
-		    							continue;
-		    						} else 
-		    						{
-		    							tileEntity.decrStackSize(supplyInv, 1);
-		            					found = true;
-		    						}
-		    					}
-		    					else
-		    					{
-		        					tileEntity.decrStackSize(supplyInv, 1);
-		        					found = true;
-		    					}
-		    					//Found item!
-		    					if (supplyMatrixStack.getItem().hasContainerItem())
-				                {
-				                    ItemStack contStack = supplyMatrixStack.getItem().getContainerItemStack(supplyMatrixStack);
-				                    
-				                    if (contStack.isItemStackDamageable() && contStack.getItemDamage() > contStack.getMaxDamage())
-				                    {
-				                        MinecraftForge.EVENT_BUS.post(new PlayerDestroyItemEvent(thePlayer, contStack));
-				                        contStack = null;
-				                    }
-		
-				                    if (contStack != null && (!supplyMatrixStack.getItem().doesContainerItemLeaveCraftingGrid(supplyMatrixStack) || !this.thePlayer.inventory.addItemStackToInventory(contStack)))
-				                    {
-				                        if (this.craftingMatrix.getStackInSlot(supplyInv) == null)
-				                        {
-				                            this.craftingMatrix.setInventorySlotContents(supplyInv, contStack);
-				                        }
-				                        else
-				                        {
-				                            this.thePlayer.dropPlayerItem(contStack);
-				                        }
-				                    }
-				                }
-		    					break;
-		    				}
-		    			}
-		    		}
-        		}
+    			for(int supplyInv = 9; supplyInv < 27; supplyInv++)
+				{
+	    			//Grabs the item in the supply Matrix
+	    			ItemStack supplyMatrixStack = tileEntity.getStackInSlot(supplyInv);
+	    			if(supplyMatrixStack != null)
+	    			{
+	    				if(supplyMatrixStack.getItem().equals(craftComponentStack.getItem()))
+	    				{
+	    					if(metaSens)
+	    					{
+	    						if(craftComponentStack.getItemDamage() != supplyMatrixStack.getItemDamage())
+	    						{
+	    							continue;
+	    						} else 
+	    						{
+	    							tileEntity.decrStackSize(supplyInv, 1);
+	            					found = true;
+	    						}
+	    					}
+	    					else
+	    					{
+	        					tileEntity.decrStackSize(supplyInv, 1);
+	        					found = true;
+	    					}
+	    					//Found item!
+	    					if (supplyMatrixStack.getItem().hasContainerItem())
+			                {
+			                    ItemStack contStack = supplyMatrixStack.getItem().getContainerItemStack(supplyMatrixStack);
+			                    
+			                    if (contStack.isItemStackDamageable() && contStack.getItemDamage() > contStack.getMaxDamage())
+			                    {
+			                        MinecraftForge.EVENT_BUS.post(new PlayerDestroyItemEvent(thePlayer, contStack));
+			                        contStack = null;
+			                    }
+	
+			                    if (contStack != null && (!supplyMatrixStack.getItem().doesContainerItemLeaveCraftingGrid(supplyMatrixStack) || !this.thePlayer.inventory.addItemStackToInventory(contStack)))
+			                    {
+			                        if (this.craftingMatrix.getStackInSlot(supplyInv) == null)
+			                        {
+			                            this.craftingMatrix.setInventorySlotContents(supplyInv, contStack);
+			                        }
+			                        else
+			                        {
+			                            this.thePlayer.dropPlayerItem(contStack);
+			                        }
+			                    }
+			                }
+	    					break;
+	    				}
+	    			}
+	    		}
         		//Didn't find it in the supply inventory, remove from crafting matrix
     			if(!found)
         		{
         			tileEntity.decrStackSize(invIndex, 1);
+        			craftingMatrix.decrStackSize(invIndex, 1);
         			if (craftComponentStack.getItem().hasContainerItem())
                     {
                         ItemStack conStack = craftComponentStack.getItem().getContainerItemStack(craftComponentStack);
@@ -136,5 +132,6 @@ public class SlotPBCrafting extends SlotCrafting {
         		}
         	}
         }
+		tileEntity.containerWorking = false;
 	}
 }

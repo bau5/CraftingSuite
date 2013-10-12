@@ -37,6 +37,8 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 	public IInventory craftingResult = new InventoryCraftResult();
 	public LocalInventoryCrafting craftingMatrix = new LocalInventoryCrafting(this);
 	public boolean containerInit = false;
+	public boolean containerWorking = false;
+	private boolean shouldUpdateOutput;
 
 	public TileEntityProjectBench() {
 		
@@ -75,9 +77,22 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 
 	@Override
 	public void onInventoryChanged() {
-		if(!containerInit)
-			findRecipe(false);
+		if(!containerInit && !containerWorking)
+			markForUpdate();
 		super.onInventoryChanged();
+	}
+	
+	private void markForUpdate() {
+		shouldUpdateOutput = true;
+	}
+
+	@Override
+	public void updateEntity() {
+		if(shouldUpdateOutput && !containerInit && !containerWorking){
+			findRecipe(false);
+			shouldUpdateOutput = false;
+		}
+		super.updateEntity();
 	}
 
 	@Override
@@ -144,7 +159,6 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		{
 			stack.stackSize = getInventoryStackLimit();
 		}
-		onInventoryChanged();
 	}
 
 	public void readFromNBT(NBTTagCompound tagCompound)
@@ -201,7 +215,7 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer player) {
 		return worldObj.getBlockTileEntity(xCoord, yCoord, zCoord) == this &&
-				player.getDistanceSq(xCoord +0.5, yCoord +0.5, zCoord +0.5) < 10;
+				player.getDistanceSq(xCoord +0.5, yCoord +0.5, zCoord +0.5) < 64;
 	}
 
 	@Override

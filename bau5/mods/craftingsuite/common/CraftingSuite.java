@@ -4,6 +4,7 @@ import java.util.logging.Level;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.item.Item;
 import net.minecraftforge.common.Configuration;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityCraftingTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
@@ -17,6 +18,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.network.NetworkRegistry;
+import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 
@@ -32,9 +34,11 @@ public class CraftingSuite {
 	public static CommonProxy proxy;
 	
 	public Block craftingBlock;
+	public Item  craftingFrame;
 	
 	private int blockID;
 	private int[] itemIDs;
+	private int entityID;
 	
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent ev){
@@ -43,7 +47,7 @@ public class CraftingSuite {
 		try{
 			config.load();
 			blockID = config.getBlock("Crafting Block", 700).getInt(700);
-			
+			itemIDs[1] = config.getItem("Crafting Frame", 18975).getInt(18975);
 		}catch(Exception ex){
 			FMLLog.log(Level.SEVERE, ex, "Crafting Suite: Failed loading configuration file.");
 		}finally{
@@ -57,6 +61,9 @@ public class CraftingSuite {
 		GameRegistry.registerBlock(craftingBlock, CraftingItemBlock.class, "craftingblock");
 		GameRegistry.registerTileEntity(TileEntityCraftingTable.class, "bau5csCT");
 		GameRegistry.registerTileEntity(TileEntityProjectBench.class,  "bau5csPB");
+		craftingFrame = new ItemCraftingFrame(itemIDs[1], EntityCraftingFrame.class);
+		entityID = EntityRegistry.findGlobalUniqueEntityId();
+		EntityRegistry.registerModEntity(EntityCraftingFrame.class, "craftingframe", entityID++, this, 15, Integer.MAX_VALUE, false);
 		NetworkRegistry.instance().registerGuiHandler(this, proxy);
 	}
 	

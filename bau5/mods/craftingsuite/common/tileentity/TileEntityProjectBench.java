@@ -20,13 +20,16 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 	
 	public class LocalInventoryCrafting extends InventoryCrafting{
 		private TileEntity theTile;
-		public LocalInventoryCrafting(TileEntity tileEntity) {
+		public LocalInventoryCrafting() {
 			super(new Container(){
 				@Override
 				public boolean canInteractWith(EntityPlayer var1) {
 					return false;
 				}
 			}, 3, 3);
+		}
+		public LocalInventoryCrafting(TileEntity tileEntity){
+			this();
 			theTile = tileEntity;
 		}
 	}
@@ -39,6 +42,12 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 	public boolean containerInit = false;
 	public boolean containerWorking = false;
 	private boolean shouldUpdateOutput;
+	
+	/**
+	 * Unlinked crafting matrix, used to test the difference between inventory changes,
+	 * avoid spam of searching the recipe list.
+	 */
+	private LocalInventoryCrafting lastCraftMatrix = new LocalInventoryCrafting();
 
 	public TileEntityProjectBench() {
 		
@@ -77,12 +86,30 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 
 	@Override
 	public void onInventoryChanged() {
-		if(!containerInit && !containerWorking)
-			markForUpdate();
+		if(!containerInit && !containerWorking){
+			if(checkDifferences()){
+				markForUpdate();
+				makeNewMatrix();
+			}
+		}
 		super.onInventoryChanged();
 	}
 	
-	private void markForUpdate() {
+	private void makeNewMatrix() {
+		for(int i = 0; i < 9; i++){
+			lastCraftMatrix.setInventorySlotContents(i, inv[i]);
+		}
+	}
+
+	private boolean checkDifferences() {
+		for(int i = 0; i < 9; i++){
+			if(!ItemStack.areItemStacksEqual(lastCraftMatrix.getStackInSlot(i), inv[i]))
+				return true;
+		}
+		return false;
+	}
+
+	public void markForUpdate() {
 		shouldUpdateOutput = true;
 	}
 

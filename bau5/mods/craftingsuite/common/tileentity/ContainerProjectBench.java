@@ -69,11 +69,13 @@ public class ContainerProjectBench extends Container{
 	}
 
 	@Override
-	public ItemStack slotClick(int par1, int par2, int par3,
-			EntityPlayer par4EntityPlayer) {
-		if(par1 == 0 && par3 == 6)
-			par3 = 0;
-		return super.slotClick(par1, par2, par3, par4EntityPlayer);
+	public ItemStack slotClick(int slot, int clickType, int clickMeta,
+			EntityPlayer player) {
+		if(slot == 0 && clickMeta == 6)
+			clickMeta = 0;
+		if(slot == 0)
+			tileEntity.markForUpdate();
+		return super.slotClick(slot, clickType, clickMeta, player);
 	}
 	
 	@Override

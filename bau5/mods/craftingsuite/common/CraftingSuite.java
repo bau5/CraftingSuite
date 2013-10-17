@@ -7,6 +7,8 @@ import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.Configuration;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityCraftingTable;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
@@ -33,8 +35,9 @@ public class CraftingSuite {
 				serverSide = "bau5.mods.craftingsuite.common.CommonProxy")
 	public static CommonProxy proxy;
 	
-	public Block craftingBlock;
-	public Item  craftingFrame;
+	public static Block craftingBlock;
+	public static Item  craftingFrame;
+	public static Item  modItems;
 	
 	private int blockID;
 	private int[] itemIDs;
@@ -47,6 +50,7 @@ public class CraftingSuite {
 		try{
 			config.load();
 			blockID = config.getBlock("Crafting Block", 700).getInt(700);
+			itemIDs[0] = config.getItem("Modifications",  18976).getInt(18976);
 			itemIDs[1] = config.getItem("Crafting Frame", 18975).getInt(18975);
 		}catch(Exception ex){
 			FMLLog.log(Level.SEVERE, ex, "Crafting Suite: Failed loading configuration file.");
@@ -59,12 +63,16 @@ public class CraftingSuite {
 	private void initParts() {
 		craftingBlock = new CraftingBlock(blockID, Material.wood);
 		GameRegistry.registerBlock(craftingBlock, CraftingItemBlock.class, "craftingblock");
+		GameRegistry.registerTileEntity(TileEntityModificationTable.class, "bau5csMT");
+		GameRegistry.registerTileEntity(TileEntityModdedTable.class, "bau5csMCT");
 		GameRegistry.registerTileEntity(TileEntityCraftingTable.class, "bau5csCT");
 		GameRegistry.registerTileEntity(TileEntityProjectBench.class,  "bau5csPB");
+		modItems = new ItemModifications(itemIDs[0]);
 		craftingFrame = new ItemCraftingFrame(itemIDs[1], EntityCraftingFrame.class);
 		entityID = EntityRegistry.findGlobalUniqueEntityId();
 		EntityRegistry.registerModEntity(EntityCraftingFrame.class, "craftingframe", entityID++, this, 15, Integer.MAX_VALUE, false);
 		NetworkRegistry.instance().registerGuiHandler(this, proxy);
+		proxy.registerRenderingInformation();
 	}
 	
 	@EventHandler
@@ -74,7 +82,6 @@ public class CraftingSuite {
 	
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent ev){
-		//TODO Check NEI
 	}
 
 	

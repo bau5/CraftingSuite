@@ -1,74 +1,39 @@
 package bau5.mods.craftingsuite.common.tileentity;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
-import bau5.mods.craftingsuite.common.inventory.BasicInventoryCrafting;
+import bau5.mods.craftingsuite.common.ModificationCrafter;
 
-public class TileEntityCraftingTable extends TileEntity implements IInventory, ISidedInventory{
-	public class LocalInventoryCrafting extends BasicInventoryCrafting{
-		private TileEntity theTile;
-		public LocalInventoryCrafting(TileEntity tileEntity) {
-			super(new Container(){
-				@Override
-				public boolean canInteractWith(EntityPlayer var1) {
-					return false;
-				}
-				@Override
-				public void onCraftMatrixChanged(IInventory par1iInventory) {
-					
-				}
-			});
-			theTile = tileEntity;
-		}
-		
-//		@Override
-//		public ItemStack decrStackSize(int par1, int par2) {
-//			return ((IInventory)theTile).decrStackSize(par1, par2);
-//		}
-		@Override
-		public void onInventoryChanged() {
-			super.onInventoryChanged();
-			theTile.onInventoryChanged();
-		}
-	}
+public class TileEntityModificationTable extends TileEntity implements IInventory{
 	
 	public ItemStack[] inv;
-	public ItemStack result;
-	public IInventory craftResult = new InventoryCraftResult();
-	public LocalInventoryCrafting craftingMatrix = new LocalInventoryCrafting(this);
 	
-	public TileEntityCraftingTable(){
-		inv = new ItemStack[9];
+	public ItemStack result = null;
+	
+	public TileEntityModificationTable(){
+		inv = new ItemStack[3];
 	}
 	
-	public ItemStack findRecipe(){
-		if(worldObj == null)
-			return null;
-		for(int i = 0; i < craftingMatrix.getSizeInventory(); i++){
-			craftingMatrix.setInventorySlotContents(i, getStackInSlot(i));
-		}
-		ItemStack recipe = CraftingManager.getInstance().findMatchingRecipe(craftingMatrix, worldObj);
-		setResult(recipe);
-		return recipe;		
-	}
-	
-	public void setResult(ItemStack stack) {
-		result = stack;
-		craftResult.setInventorySlotContents(0, result);
-	}
-
 	@Override
 	public void onInventoryChanged() {
-		findRecipe();
 		super.onInventoryChanged();
+		updateResult();
+	}
+	
+	public ItemStack updateResult(){
+		ItemStack[] stacks = new ItemStack[inv.length];
+		for(int i = 0; i < stacks.length; i++)
+			stacks[i] = inv[i];
+		result = ModificationCrafter.instance().findRecipe(stacks);
+		return result;
+	}
+	
+	public ItemStack getResult(){
+		return result;
 	}
 	
 	@Override
@@ -114,16 +79,11 @@ public class TileEntityCraftingTable extends TileEntity implements IInventory, I
 		if(stack != null && stack.stackSize > getInventoryStackLimit()){
 			stack.stackSize = getInventoryStackLimit();
 		}
-		setBoundInventories(slot);
-	}
-
-	private void setBoundInventories(int slot) {
-		craftingMatrix.setInventorySlotContents(slot, inv[slot]);
 	}
 
 	@Override
 	public String getInvName() {
-		return "Crafting Table Mk. II";
+		return "Modification Table";
 	}
 
 	@Override
@@ -133,7 +93,7 @@ public class TileEntityCraftingTable extends TileEntity implements IInventory, I
 
 	@Override
 	public int getInventoryStackLimit() {
-		return 64;
+		return 1;
 	}
 
 	@Override
@@ -151,21 +111,6 @@ public class TileEntityCraftingTable extends TileEntity implements IInventory, I
 	@Override
 	public boolean isItemValidForSlot(int i, ItemStack itemstack) {
 		return true;
-	}
-	@Override
-	public int[] getAccessibleSlotsFromSide(int side) {
-		int[] slots = new int[9];
-		for(int i = 0; i < slots.length; i++)
-			slots[i] = i;
-		return slots;
-	}
-	@Override
-	public boolean canInsertItem(int i, ItemStack itemstack, int j) {
-		return false;
-	}
-	@Override
-	public boolean canExtractItem(int i, ItemStack itemstack, int j) {
-		return false;
 	}
 	
 	@Override

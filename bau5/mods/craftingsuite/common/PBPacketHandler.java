@@ -6,7 +6,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Slot;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet250CustomPayload;
-import bau5.mods.craftingsuite.common.tileentity.ContainerProjectBench;
+import bau5.mods.craftingsuite.common.inventory.ContainerProjectBench;
 import cpw.mods.fml.common.network.IPacketHandler;
 import cpw.mods.fml.common.network.Player;
 

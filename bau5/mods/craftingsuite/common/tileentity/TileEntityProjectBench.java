@@ -1,6 +1,5 @@
 package bau5.mods.craftingsuite.common.tileentity;
 
-import cpw.mods.fml.common.network.PacketDispatcher;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
@@ -15,6 +14,7 @@ import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
+import cpw.mods.fml.common.network.PacketDispatcher;
 
 public class TileEntityProjectBench extends TileEntity implements IInventory, ISidedInventory{
 	

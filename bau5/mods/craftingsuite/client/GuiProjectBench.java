@@ -12,7 +12,7 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
 import bau5.mods.craftingsuite.common.Reference;
-import bau5.mods.craftingsuite.common.tileentity.ContainerProjectBench;
+import bau5.mods.craftingsuite.common.inventory.ContainerProjectBench;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.relauncher.Side;

@@ -8,15 +8,19 @@ import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
+import bau5.mods.craftingsuite.common.ModificationNBTHelper;
 import cpw.mods.fml.common.network.PacketDispatcher;
 
 public class TileEntityProjectBench extends TileEntity implements IInventory, ISidedInventory{
+	
+	public byte[] upgrades;
 	
 	public class LocalInventoryCrafting extends InventoryCrafting{
 		private TileEntity theTile;
@@ -122,6 +126,10 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		super.updateEntity();
 	}
 
+	public void initializeFromNBT(NBTTagList modInfoList) {
+		upgrades = ModificationNBTHelper.getUpgradeByteArray(modInfoList).byteArray;
+	}
+
 	@Override
 	public Packet getDescriptionPacket() {
 		NBTTagCompound tag = new NBTTagCompound();
@@ -192,6 +200,12 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 	{
 		super.readFromNBT(tagCompound);
 		
+		NBTTagList modInfoList = ModificationNBTHelper.getModInfoList(tagCompound);
+		for(int i = 0; i < modInfoList.tagCount(); i++){
+			if(i == 0)
+				upgrades = ModificationNBTHelper.getUpgradeByteArray(modInfoList).byteArray;
+		}
+		
 		NBTTagList tagList = tagCompound.getTagList("Inventory");
 		for(int i = 0; i < tagList.tagCount(); i++)
 		{
@@ -222,6 +236,20 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 			}
 		}
 		tagCompound.setTag("Inventory", itemList);
+		
+		NBTTagList modInfoList = new NBTTagList();
+		for(int i = 0; i < 1; i++){
+			if(i == 0){
+				NBTTagByteArray bytes =  new NBTTagByteArray(ModificationNBTHelper.upgradeArrayName);
+				if(upgrades != null){
+					bytes.byteArray = upgrades;
+				}else
+					bytes.byteArray = new byte[ModificationNBTHelper.ARRAY_LENGTH];
+				modInfoList.appendTag(bytes);
+			}
+		}
+		tagCompound.setTag(ModificationNBTHelper.tagListName, modInfoList);
+		
 	}
 	
 	@Override
@@ -282,6 +310,4 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 	public boolean canExtractItem(int i, ItemStack itemstack, int j) {
 		return true;
 	}
-
-	
 }

@@ -166,6 +166,6 @@ public class ModelModificationTable extends ModelBase{
 	}
 	
 	public void rotatePiece(float f){
-		Spin.rotateAngleZ = 0.5f;
+		Spin.rotateAngleY = f;
 	}
 }

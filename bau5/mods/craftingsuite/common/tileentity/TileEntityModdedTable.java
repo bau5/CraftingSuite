@@ -74,7 +74,12 @@ public class TileEntityModdedTable extends TileEntity{
 		if(!initialized){
 			upgrades = ModificationNBTHelper.getUpgradeByteArray(tag).byteArray;
 			init();
+			this.loadAdditionalNBT(tag);
 		}
+	}
+	
+	public void loadAdditionalNBT(NBTTagList tag) {
+		
 	}
 	
 	public void init(){

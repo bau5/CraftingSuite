@@ -1,9 +1,9 @@
 package bau5.mods.craftingsuite.common.inventory;
 
-import net.minecraft.block.Block;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.oredict.OreDictionary;
 import bau5.mods.craftingsuite.common.CraftingSuite;
 
 public class SlotModification extends Slot {
@@ -18,9 +18,9 @@ public class SlotModification extends Slot {
 	@Override
 	public boolean isItemValid(ItemStack stack) {
 		switch(type){
-		case 0: return (stack.itemID == Block.workbench.blockID);
-		case 1: return (stack.itemID == CraftingSuite.instance.modItems.itemID)
-					&& (stack.getItemDamage() == 0);
+		case 0: return (stack.itemID == CraftingSuite.modItems.itemID) ||
+					   (stack.itemID == CraftingSuite.craftingTableBlock.blockID && stack.getItemDamage() == 1);
+		case 1: return (OreDictionary.getOreID(stack) == 1);
 		default: return super.isItemValid(stack);
 		}
 	}

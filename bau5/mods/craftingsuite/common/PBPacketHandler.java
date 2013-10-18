@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Slot;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet250CustomPayload;
+import bau5.mods.craftingsuite.common.inventory.ContainerModificationTable;
 import bau5.mods.craftingsuite.common.inventory.ContainerProjectBench;
 import cpw.mods.fml.common.network.IPacketHandler;
 import cpw.mods.fml.common.network.Player;
@@ -25,6 +26,8 @@ public class PBPacketHandler implements IPacketHandler {
 		switch(packet.data[0]){
 		case 0: if(player instanceof EntityPlayerMP)completeEmptyOfMatrix((EntityPlayerMP)player);
 				else System.out.println("Failed emptying matrix, wrong player type.");
+			break;
+		case 1: ((ContainerModificationTable)((EntityPlayerMP)player).openContainer).tileEntity.craftRecipe();
 			break;
 		}
 	}

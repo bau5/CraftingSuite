@@ -2,20 +2,29 @@ package bau5.mods.craftingsuite.common.tileentity;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.common.ModificationCrafter;
+import bau5.mods.craftingsuite.common.ModificationCrafter.ModificationRecipe;
 
 public class TileEntityModificationTable extends TileEntity implements IInventory{
 	
 	public ItemStack[] inv;
-	
+	public IInventory craftResult = new InventoryCraftResult();
 	public ItemStack result = null;
+	public ItemStack[] inputForResult = null;
+	
+	public int finishTime;
+	public int timeCrafting;
+	public boolean crafting;
+	public float rotation = 0.0F;
+	private int increment;
 	
 	public TileEntityModificationTable(){
-		inv = new ItemStack[3];
+		inv = new ItemStack[5];
 	}
 	
 	@Override
@@ -23,17 +32,78 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 		super.onInventoryChanged();
 		updateResult();
 	}
+
+	public void craftRecipe() {
+		if(!worldObj.isRemote)
+			updateResult();
+		if(result != null){
+			ItemStack[] stacks = new ItemStack[inv.length];
+			for(int i = 0; i < stacks.length; i++)
+				stacks[i] = inv[i];
+			ModificationRecipe rec = ModificationCrafter.instance().findRecipe(this, stacks);
+			ItemStack output = rec.getExactOutput(ModificationCrafter.instance().filterNulls(stacks));
+			if(ItemStack.areItemStacksEqual(result, output) && ItemStack.areItemStackTagsEqual(result, output)){
+				crafting = true;
+				rec.consumeItems(this);
+				initiateCrafting();
+			}else{
+				result = null;
+				updateResult();
+			}
+		}
+	}
 	
+	private void initiateCrafting() {
+		if(isCrafting())
+			return;
+		finishTime = 2000;
+		timeCrafting = 0;
+		increment = 10;
+		craftResult.setInventorySlotContents(0, null);
+	}
+	
+	private void finishCrafting(){
+		craftResult.setInventorySlotContents(0, result);
+		crafting = false;
+		updateResult();
+	}
+
 	public ItemStack updateResult(){
+		if(isCrafting() || crafting)
+			return null;
 		ItemStack[] stacks = new ItemStack[inv.length];
 		for(int i = 0; i < stacks.length; i++)
 			stacks[i] = inv[i];
-		result = ModificationCrafter.instance().findRecipe(stacks);
+		ModificationRecipe recipe = ModificationCrafter.instance().findRecipe(this, stacks);
+		result = recipe != null ? recipe.getExactOutput(ModificationCrafter.instance().filterNulls(stacks)) : null;
 		return result;
 	}
 	
 	public ItemStack getResult(){
 		return result;
+	}
+	
+	@Override
+	public void updateEntity() {
+		super.updateEntity();
+		timeCrafting += increment;
+		if(!isCrafting() && timeCrafting > 0){
+			finishTime = 0;
+			timeCrafting = 0;
+			increment = 0;
+			rotation = 0.0F;
+			finishCrafting();
+		}
+		if(isCrafting()){
+			if(timeCrafting <= finishTime/2) 
+				rotation += 0.1F;
+			else
+				rotation -= 0.1F;
+		}
+	}
+	
+	public boolean isCrafting(){
+		return finishTime > timeCrafting;
 	}
 	
 	@Override
@@ -93,7 +163,7 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 
 	@Override
 	public int getInventoryStackLimit() {
-		return 1;
+		return 64;
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 
 public class ModificationCrafter {
 	
@@ -15,16 +16,18 @@ public class ModificationCrafter {
 		initRecipes();
 	}
 	
-	public ItemStack findRecipe(ItemStack[] input){
+	public ModificationRecipe findRecipe(TileEntityModificationTable table, ItemStack[] input){
 		input = filterNulls(input);
 		ModificationRecipe recipe = null;
 		for(ModificationRecipe rec : recipeList){
-			if(rec.doesRecipeMatch(input)){
+			ItemStack[] usedInput = rec.doesRecipeMatch(input);
+			table.inputForResult = usedInput;
+			if(usedInput != null){
 				recipe = rec;
 				break;
 			}
 		}
-		return recipe != null ? recipe.getExactOutput(input) : null;
+		return recipe;
 	}
 	
 	public ItemStack[] filterNulls(ItemStack[] input){
@@ -40,20 +43,41 @@ public class ModificationCrafter {
 	}
 	
 	public void initRecipes(){
-		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingBlock.blockID, 1, 1), new ItemStack[]{
-			new ItemStack(Block.workbench), new ItemStack(CraftingSuite.modItems, 1, 0)
+		//Crafting Table - holding, no overlay
+		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 1), new ItemStack[]{
+			new ItemStack(CraftingSuite.modItems, 1, 1), new ItemStack(Block.planks.blockID, 4, OreDictionary.WILDCARD_VALUE)
 		}));
-		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingBlock.blockID, 1, 1), new ItemStack[]{
-			new ItemStack(Block.workbench), new ItemStack(CraftingSuite.modItems, 1, 0)
+		//Crafting Table - holding, overlay
+		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 1), new ItemStack[]{
+			new ItemStack(CraftingSuite.modItems, 1, 1), 
+			new ItemStack(Block.planks.blockID, 4, OreDictionary.WILDCARD_VALUE),
+			new ItemStack(Block.carpet.blockID, 1, OreDictionary.WILDCARD_VALUE)
 		}));
-		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingBlock.blockID, 1, 1), new ItemStack[]{
-			new ItemStack(Block.workbench), new ItemStack(CraftingSuite.modItems, 1, 0), new ItemStack(Block.carpet, 1, OreDictionary.WILDCARD_VALUE)
+		//Project Bench - no render, no overlay
+		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 2), new ItemStack[]{
+			new ItemStack(CraftingSuite.modItems, 1, 2), 
+			new ItemStack(Block.planks.blockID, 4,  OreDictionary.WILDCARD_VALUE)
 		}));
-		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingBlock.blockID, 1, 2), new ItemStack[]{
-			new ItemStack(Block.workbench), new ItemStack(CraftingSuite.modItems, 1, 0), new ItemStack(Block.chest)
+		//ProjectBench - render, no overlay
+		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 2), new ItemStack[]{
+			new ItemStack(CraftingSuite.modItems, 1, 2), 
+			new ItemStack(Block.planks.blockID, 4,  OreDictionary.WILDCARD_VALUE),
+			new ItemStack(Block.carpet.blockID, 1, OreDictionary.WILDCARD_VALUE)
+		}));
+		//ProjectBench - no render, overlay
+		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 2), new ItemStack[]{
+			new ItemStack(CraftingSuite.modItems, 1, 2), 
+			new ItemStack(Block.planks.blockID, 4,  OreDictionary.WILDCARD_VALUE),
+			new ItemStack(Block.carpet.blockID, 1, OreDictionary.WILDCARD_VALUE)
+		}));
+		//ProjectBench -  render, overlay
+		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 2), new ItemStack[]{
+			new ItemStack(CraftingSuite.modItems, 1, 2), 
+			new ItemStack(Block.planks.blockID, 4,  OreDictionary.WILDCARD_VALUE),
+			new ItemStack(Block.carpet.blockID, 1, OreDictionary.WILDCARD_VALUE),
+			new ItemStack(Block.blockClay.blockID, 1, 0)
 		}));
 	}
-	
 	
 	public void addRecipe(ModificationRecipe rec){
 		recipeList.add(rec);
@@ -84,9 +108,10 @@ public class ModificationCrafter {
 			return stack;
 		}
 		
-		public boolean doesRecipeMatch(ItemStack[] provided){
+		public ItemStack[] doesRecipeMatch(ItemStack[] provided){
 			if(provided.length != recipeStacks.length)
-				return false;
+				return null;
+			ItemStack[] used = new ItemStack[recipeStacks.length];
 			boolean results[] = new boolean[recipeStacks.length];
 			int i = 0;
 			for(ItemStack component : recipeStacks){
@@ -94,8 +119,14 @@ public class ModificationCrafter {
 					if(input == null)
 						continue inner;
 					if(OreDictionary.itemMatches(component, input, false)){
-						results[i++] = true; 
-						break;
+						if(component.stackSize <= input.stackSize){
+							ItemStack theStack = input.copy();
+							theStack.stackSize = component.stackSize;
+							used[i] = theStack;
+							results[i++] = true; 
+							break;
+						}else
+							results[i] = false;
 					}else{
 						results[i] = false;
 					}
@@ -105,7 +136,21 @@ public class ModificationCrafter {
 			for(boolean result : results){
 				flag = result;
 				if(!flag)
-					break;
+					return null;
+			}
+			return used;
+		}
+		
+		public boolean consumeItems(TileEntityModificationTable tile){
+			boolean flag = true;
+			for(ItemStack component : recipeStacks){
+				for(int i = 0; i < tile.getSizeInventory(); i++){
+					if(OreDictionary.itemMatches(component, tile.getStackInSlot(i), false)){
+						tile.decrStackSize(i, component.stackSize);
+						break;
+					}else
+						flag = false;
+				}
 			}
 			return flag;
 		}

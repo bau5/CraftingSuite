@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.oredict.OreDictionary;
 
 public class ModificationStackHelper {
@@ -27,6 +28,14 @@ public class ModificationStackHelper {
 		bytes[3] = 14;
 		stack.stackTagCompound = baseTag;
 		return stack;
+	}
+	
+	public static ItemStack makeStackFromInfo(ItemStack vanillaStack, TileEntity tile) {
+		NBTTagCompound newTag = ModificationNBTHelper.makeBaseTag();
+		byte[] bytes = ModificationNBTHelper.convertTileEntityToTag(tile);
+		ModificationNBTHelper.setTagUpgradeBytes(newTag, bytes);
+		vanillaStack.stackTagCompound = newTag;
+		return vanillaStack;
 	}
 
 	public static ItemStack makeItemStack(ItemStack result, ItemStack[] input) {

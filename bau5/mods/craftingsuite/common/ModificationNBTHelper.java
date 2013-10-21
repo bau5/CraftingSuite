@@ -1,8 +1,13 @@
 package bau5.mods.craftingsuite.common;
 
+import java.util.logging.Level;
+
+import cpw.mods.fml.common.FMLLog;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
 
 public class ModificationNBTHelper {
 	
@@ -24,18 +29,51 @@ public class ModificationNBTHelper {
 	public static NBTTagCompound makeBaseTag(){
 		NBTTagCompound baseTag = new NBTTagCompound();
 		NBTTagList list = new NBTTagList();
-		byte[] array = newBytes();
-		list.appendTag(new NBTTagByteArray(upgradeArrayName, array));
+		list.appendTag(makeByteArrayTag());
 		baseTag.setTag(tagListName, list);
 		return baseTag;
 	}
 	
+	public static NBTTagByteArray makeByteArrayTag(){
+		return new NBTTagByteArray(upgradeArrayName, newBytes());
+	}
+	
+	public static byte[] convertTileEntityToTag(TileEntity tile) {
+		if(tile instanceof TileEntityProjectBench){
+			return ((TileEntityProjectBench) tile).upgrades;
+		}
+		return newBytes();
+	}
+	
+	public static void setTagUpgradeBytes(NBTTagCompound baseTag, byte[] bytes) {
+		NBTTagByteArray byts = getUpgradeByteArray(baseTag);
+		byts.byteArray = bytes;
+	}
+	
 	public static NBTTagList getModInfoList(NBTTagCompound tag){
-		return tag.getTagList(tagListName);
+		if(tag == null){
+			tag = makeBaseTag();
+		}
+		if(tag.hasKey(tagListName)){
+			return tag.getTagList(tagListName);
+		}else{
+			NBTTagList list = new NBTTagList();
+			list.appendTag(makeByteArrayTag());
+			tag.setTag(tagListName, list);
+			return tag.getTagList(tagListName);
+		}
 	}
 	
 	public static NBTTagByteArray getUpgradeByteArray(NBTTagCompound tag){
-		return (NBTTagByteArray)getModInfoList(tag).tagAt(0);
+		NBTTagByteArray array = null;
+		try{
+			array = (NBTTagByteArray)getModInfoList(tag).tagAt(0);
+		}catch(Exception ex){
+			FMLLog.log(Level.SEVERE, ex, "%s", "Crafting Suite encountered an error. A broken stack was encountered, resetting stack.");
+			array = makeByteArrayTag();
+			getModInfoList(tag).appendTag(array);
+		}
+		return array;
 	}
 	public static NBTTagByteArray getUpgradeByteArray(NBTTagList tagList){
 		return (NBTTagByteArray)tagList.tagAt(0);

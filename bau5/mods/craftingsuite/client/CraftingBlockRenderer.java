@@ -145,7 +145,7 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 	            GL11.glPushMatrix();
 	            GL11.glEnable(32826 /* rescale */);
 	            GL11.glTranslatef((float) x0, (float) y0, (float) z0);
-	
+	            int l = tile.worldObj.getLightBrightnessForSkyBlocks(tile.xCoord, tile.yCoord, tile.zCoord, 0);
 	            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 170F, 170F);
 	            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 	            
@@ -190,6 +190,13 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 	
 	public void renderModdedTable(TileEntityModdedTable tile, double d0, double d1, double d2, float f){}
 	
+	/**
+	 * Renders the item in inventories.
+	 * 
+	 * @param theStack
+	 * @param i
+	 * @param f
+	 */
 	public void renderModdedCraftingTable(ItemStack theStack, int i, float f){
         Tessellator tessellator = Tessellator.instance;
         if(tessellator.isDrawing)
@@ -255,14 +262,15 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
             tessellator.startDrawingQuads();
             tessellator.setNormal(0.0F, 0.0F, -1.0F);
             GL11.glPushMatrix();
+//            renderBlocks.setOverrideBlockTexture(ic);
             renderBlocks.renderMaxY = 0.24997111D;
             renderBlocks.renderMaxX = 0.755D;
-            renderBlocks.renderFaceZNeg(theBlock, 0.121D, 0.7502999D, 0.001D, Block.cloth.getIcon(0, bytes[3]));
-            renderBlocks.renderFaceZPos(theBlock, 0.121D, 0.7502999, -0.001D, Block.cloth.getIcon(0, bytes[3]));
+            renderBlocks.renderFaceZNeg(theBlock, 0.121D, 0.7502999D, 0.001D, ic/*Block.cloth.getIcon(0, bytes[3])*/);
+            renderBlocks.renderFaceZPos(theBlock, 0.121D, 0.7502999D, -0.001D, ic/*Block.cloth.getIcon(0, bytes[3])*/);
             renderBlocks.renderMaxX = 1.0D;
             renderBlocks.renderMaxZ = 0.755D;
-            renderBlocks.renderFaceXNeg(theBlock, 0.001D, 0.750D, 0.121D, Block.cloth.getIcon(0, bytes[3]));
-            renderBlocks.renderFaceXPos(theBlock, -0.001D, 0.750D, 0.121D, Block.cloth.getIcon(0, bytes[3]));
+            renderBlocks.renderFaceXNeg(theBlock, 0.001D, 0.750D, 0.121D, ic/*Block.cloth.getIcon(0, bytes[3])*/);
+            renderBlocks.renderFaceXPos(theBlock, -0.001D, 0.750D, 0.121D, ic/*Block.cloth.getIcon(0, bytes[3])*/);
             renderBlocks.renderMaxY = 1.0D;
             renderBlocks.renderMaxZ = 1.0D;
             renderBlocks.clearOverrideBlockTexture();
@@ -356,13 +364,19 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 		// TODO Auto-generated method stub
 		
 	}
+	
 
+	/**
+	 *  Render block in the world.
+	 */
 	@Override
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z,
 			Block block, int modelId, RenderBlocks renderer) {
 		if(world == null || renderer.blockAccess == null)
 			return false;
 		if(block instanceof BlockModificationTable)
+			return false;
+		if(world.getBlockTileEntity(x, y, z) == null)
 			return false;
 		renderer.renderStandardBlockWithAmbientOcclusion(block, x, y, z, 1.0F, 1.0F, 1.0F);
 		Tessellator tessellator = Tessellator.instance;
@@ -383,7 +397,6 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         float f16 = f3;
         float f17 = f5;
         float f18 = f6;
-
         byte[] bytes = ((TileEntityProjectBench)world.getBlockTileEntity(x, y, z)).upgrades;
         byte plankMeta = bytes[2];
         boolean overlay = bytes[3] != -1;
@@ -394,23 +407,23 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         Icon plankIcon = Block.planks.getIcon(0, plankMeta);
         tessellator.setBrightness(renderBlocks.renderMaxX < 1.0D ? l : block.getMixedBrightnessForBlock(world, x + 1, y, z));
         tessellator.setColorOpaque_F(f12, f15, f18);
-    	renderBlocks.renderFaceXPos(block, (double)x -0.005, (double)y, (double)z, plankIcon);
-    	if(overlay) renderBlocks.renderFaceXPos(block, (double)x -0.003, (double)y, (double)z, icons[3]);
+    	renderBlocks.renderFaceXPos(block, (double)x -0.0009, (double)y, (double)z, plankIcon);
+    	if(overlay) renderBlocks.renderFaceXPos(block, (double)x -0.0001, (double)y, (double)z, icons[3]);
     	
         tessellator.setBrightness(renderBlocks.renderMinX > 0.0D ? l : block.getMixedBrightnessForBlock(world, x - 1, y, z));
         tessellator.setColorOpaque_F(f12, f15, f18);
-    	renderBlocks.renderFaceXNeg(block, (double)x +0.005, (double)y, (double)z, plankIcon);
-    	if(overlay) renderBlocks.renderFaceXNeg(block, (double)x +0.003, (double)y, (double)z, icons[3]);
+    	renderBlocks.renderFaceXNeg(block, (double)x +0.0009, (double)y, (double)z, plankIcon);
+    	if(overlay) renderBlocks.renderFaceXNeg(block, (double)x +0.0001, (double)y, (double)z, icons[3]);
     	
         tessellator.setBrightness(renderBlocks.renderMaxZ < 1.0D ? l : block.getMixedBrightnessForBlock(world, x, y, z + 1));
         tessellator.setColorOpaque_F(f11, f14, f17);
-    	renderBlocks.renderFaceZPos(block, (double)x, (double)y, (double)z -0.005, plankIcon);
-    	if(overlay) renderBlocks.renderFaceZPos(block, (double)x, (double)y, (double)z -0.003, icons[3]);
+    	renderBlocks.renderFaceZPos(block, (double)x, (double)y, (double)z -0.0009, plankIcon);
+    	if(overlay) renderBlocks.renderFaceZPos(block, (double)x, (double)y, (double)z -0.0001, icons[3]);
     	
         tessellator.setBrightness(renderBlocks.renderMinZ > 0.0D ? l : block.getMixedBrightnessForBlock(world, x, y, z - 1));
         tessellator.setColorOpaque_F(f11, f14, f17);
-    	renderBlocks.renderFaceZNeg(block, (double)x, (double)y, (double)z +0.005, plankIcon);
-    	if(overlay) renderBlocks.renderFaceZNeg(block, (double)x, (double)y, (double)z +0.003, icons[3]);
+    	renderBlocks.renderFaceZNeg(block, (double)x, (double)y, (double)z +0.0009, plankIcon);
+    	if(overlay) renderBlocks.renderFaceZNeg(block, (double)x, (double)y, (double)z +0.0001, icons[3]);
     	
         if(icons != null && overlay){
         	
@@ -419,23 +432,23 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
             tessellator.setColorOpaque_F(f7, f8, f9);
             renderBlocks.renderFaceYPos(block, (double)x, (double)y -0.001D, (double)z, wool);
         	
-            renderBlocks.renderMaxY = 0.24997111D;
-            renderBlocks.renderMaxX = 0.755D;
+            renderBlocks.renderMaxY = 0.2491D;
+            renderBlocks.renderMaxX = 0.7509D;
             tessellator.setBrightness(renderBlocks.renderMaxZ < 1.0D ? l : block.getMixedBrightnessForBlock(world, x, y, z + 1));
             tessellator.setColorOpaque_F(f11, f14, f17);
-            renderBlocks.renderFaceZPos(block, (double)x +0.121D, (double)y +0.7502999, (double)z -0.004D, wool);
+            renderBlocks.renderFaceZPos(block, (double)x +0.1247D, (double)y +0.7505D, (double)z -0.0005D, wool);
             tessellator.setBrightness(renderBlocks.renderMinZ > 0.0D ? l : block.getMixedBrightnessForBlock(world, x, y, z - 1));
             tessellator.setColorOpaque_F(f11, f14, f17);
-            renderBlocks.renderFaceZNeg(block, (double)x +0.121D, (double)y +0.7502999D,(double)z +0.004D, wool);
+            renderBlocks.renderFaceZNeg(block, (double)x +0.1247D, (double)y +0.7505D,(double)z +0.0005D, wool);
             
             renderBlocks.renderMaxX = 1.0D;
-            renderBlocks.renderMaxZ = 0.755D;
+            renderBlocks.renderMaxZ = 0.7509D;
             tessellator.setBrightness(renderBlocks.renderMaxX < 1.0D ? l : block.getMixedBrightnessForBlock(world, x + 1, y, z));
             tessellator.setColorOpaque_F(f12, f15, f18);
-            renderBlocks.renderFaceXPos(block, (double)x -0.004D, (double)y +0.750D, (double)z +0.121D, wool);
+            renderBlocks.renderFaceXPos(block, (double)x -0.0005D, (double)y +0.7505D, (double)z +0.1247D, wool);
             tessellator.setBrightness(renderBlocks.renderMinX > 0.0D ? l : block.getMixedBrightnessForBlock(world, x - 1, y, z));
             tessellator.setColorOpaque_F(f12, f15, f18);
-            renderBlocks.renderFaceXNeg(block, (double)x +0.004D, (double)y +0.750D, (double)z +0.121D, wool);
+            renderBlocks.renderFaceXNeg(block, (double)x +0.0005D, (double)y +0.7505D, (double)z +0.1247D, wool);
             renderBlocks.renderMaxY = 1.0D;
             renderBlocks.renderMaxZ = 1.0D;
         }else{

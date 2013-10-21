@@ -1,5 +1,6 @@
 package bau5.mods.craftingsuite.common;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -15,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import bau5.mods.craftingsuite.client.ClientProxy;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
@@ -31,6 +33,21 @@ public class BlockCrafting extends BlockContainer {
 		setResistance(1.5f);
 		setUnlocalizedName("bau5_craftingblock");
 		setCreativeTab(CreativeTabs.tabDecorations);
+	}
+	
+	@Override
+	public ItemStack getPickBlock(MovingObjectPosition target, World world,
+			int x, int y, int z) {
+		ItemStack vanillaStack = super.getPickBlock(target, world, x, y, z);
+		vanillaStack = ModificationStackHelper.makeStackFromInfo(vanillaStack, world.getBlockTileEntity(x, y, z));
+		return vanillaStack;
+	}
+	
+	@Override
+	public ArrayList<ItemStack> getBlockDropped(World world, int x, int y,
+			int z, int metadata, int fortune) {
+		ArrayList<ItemStack> list = super.getBlockDropped(world, x, y, z, metadata, fortune);
+		return list;
 	}
 	
 	@Override

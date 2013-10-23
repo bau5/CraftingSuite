@@ -2,17 +2,18 @@ package bau5.mods.craftingsuite.common;
 
 import java.util.logging.Level;
 
-import cpw.mods.fml.common.FMLLog;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.tileentity.TileEntity;
+import cpw.mods.fml.common.FMLLog;
 
 public class ModificationNBTHelper {
 	
 	public static final String tagListName = "ModificationInfo";
 	public static final String upgradeArrayName = "UpgradeArray";
+	public static final String planksName = "PlanksUsed";
+	public static final String modifierTag = "Modifiers";
 	
 	public static final int ARRAY_LENGTH = 5;
 	
@@ -21,63 +22,62 @@ public class ModificationNBTHelper {
 	 *  saving. 
 	 *  byte[0] is the meta of the table
 	 *  byte[1] is unused atm, intended for functional upgrades
-	 *  byte[2] stores the meta of the plank used
+	 *  byte[2] unused
 	 *  byte[3] stores the meta of the carpet used
 	 *  byte[4] stores if the block has clay upgrade (render)
 	 */
 	
 	public static NBTTagCompound makeBaseTag(){
-		NBTTagCompound baseTag = new NBTTagCompound();
-		NBTTagList list = new NBTTagList();
-		list.appendTag(makeByteArrayTag());
-		baseTag.setTag(tagListName, list);
+		NBTTagCompound baseTag = new NBTTagCompound("tag");
+		NBTTagCompound modifiers = new NBTTagCompound();
+		modifiers.setByteArray(upgradeArrayName, newBytes());
+		baseTag.setTag(modifierTag, modifiers);
 		return baseTag;
 	}
 	
-	public static NBTTagByteArray makeByteArrayTag(){
-		return new NBTTagByteArray(upgradeArrayName, newBytes());
-	}
-	
-	public static byte[] convertTileEntityToTag(TileEntity tile) {
-		if(tile instanceof TileEntityProjectBench){
-			return ((TileEntityProjectBench) tile).upgrades;
-		}
-		return newBytes();
-	}
-	
 	public static void setTagUpgradeBytes(NBTTagCompound baseTag, byte[] bytes) {
-		NBTTagByteArray byts = getUpgradeByteArray(baseTag);
-		byts.byteArray = bytes;
+		NBTTagCompound modifier = getModifierTag(baseTag);
+		modifier.setByteArray(upgradeArrayName, bytes);
 	}
 	
-	public static NBTTagList getModInfoList(NBTTagCompound tag){
-		if(tag == null){
-			tag = makeBaseTag();
-		}
-		if(tag.hasKey(tagListName)){
-			return tag.getTagList(tagListName);
-		}else{
-			NBTTagList list = new NBTTagList();
-			list.appendTag(makeByteArrayTag());
-			tag.setTag(tagListName, list);
-			return tag.getTagList(tagListName);
-		}
+	public static void setTagPlanksUsed(NBTTagCompound newTag, ItemStack planks) {
+		NBTTagCompound tag = getModifierTag(newTag);
+		tag.setCompoundTag(planksName, planks.writeToNBT(new NBTTagCompound()));
 	}
 	
-	public static NBTTagByteArray getUpgradeByteArray(NBTTagCompound tag){
-		NBTTagByteArray array = null;
+	public static NBTTagCompound getModifierTag(NBTTagCompound baseTag){
+		if(baseTag == null)
+			baseTag = makeBaseTag();
+		if(baseTag.getName() == modifierTag)
+			return baseTag;
+		if(baseTag.hasKey(modifierTag))
+			return baseTag.getCompoundTag(modifierTag);
+		else{
+			NBTTagCompound tag = new NBTTagCompound();
+			baseTag.setTag(modifierTag, tag);
+			return tag.getCompoundTag(modifierTag);
+		}
+	}
+
+	public static byte[] getUpgradeByteArray(NBTTagCompound tag){
+		byte[] array = null;
 		try{
-			array = (NBTTagByteArray)getModInfoList(tag).tagAt(0);
+			if(tag.hasKey(modifierTag))
+				array = tag.getCompoundTag(modifierTag).getByteArray(upgradeArrayName);
+			else if(tag.hasKey(upgradeArrayName))
+				array = tag.getByteArray(upgradeArrayName);
 		}catch(Exception ex){
 			FMLLog.log(Level.SEVERE, ex, "%s", "Crafting Suite encountered an error. A broken stack was encountered, resetting stack.");
-			array = makeByteArrayTag();
-			getModInfoList(tag).appendTag(array);
+			array = newBytes();
+			getModifierTag(tag).setByteArray(upgradeArrayName, array);
 		}
 		return array;
 	}
+	
 	public static NBTTagByteArray getUpgradeByteArray(NBTTagList tagList){
 		return (NBTTagByteArray)tagList.tagAt(0);
-	}
+	} 
+	
 	public static byte[] ensureSize(byte[] array){
 		if(array.length != ARRAY_LENGTH){
 			byte[] bytes = new byte[ARRAY_LENGTH];
@@ -97,5 +97,19 @@ public class ModificationNBTHelper {
 		for(byte b : bytes)
 			bytes[i++] = -1;
 		return bytes;
+	}
+	
+	public static NBTTagCompound convertOldNBT(NBTTagCompound oldTag){
+		NBTTagCompound tag = oldTag.getCompoundTag(modifierTag);
+		
+		return oldTag;
+	}
+	
+	public static NBTTagCompound getPlanksUsed_Base(NBTTagCompound stackTagCompound){
+		return getPlanksUsed(stackTagCompound.getCompoundTag(modifierTag));
+	}
+	
+	public static NBTTagCompound getPlanksUsed(NBTTagCompound stackTagCompound) {
+		return stackTagCompound.getCompoundTag(planksName);
 	}
 }

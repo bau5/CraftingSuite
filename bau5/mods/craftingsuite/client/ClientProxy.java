@@ -27,7 +27,8 @@ public class ClientProxy extends CommonProxy{
 		return FMLClientHandler.instance().getClient().theWorld;
 	}
 	
-	public static int getRenderID(){
+	@Override
+	public int getRenderID(){
 		return renderid;
 	}
 }

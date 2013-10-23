@@ -47,7 +47,6 @@ public class ItemModifications extends Item {
 	@Override
 	public void getSubItems(int par1, CreativeTabs par2CreativeTabs,
 			List list) {
-		super.getSubItems(par1, par2CreativeTabs, list);
 		list.add(new ItemStack(this, 1, 0));
 		list.add(new ItemStack(this, 1, 1));
 		list.add(new ItemStack(this, 1, 2));

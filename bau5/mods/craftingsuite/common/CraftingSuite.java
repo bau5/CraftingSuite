@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -26,6 +27,7 @@ import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.LanguageRegistry;
 
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION)
@@ -43,6 +45,7 @@ public class CraftingSuite {
 	public static Block craftingTableBlock;
 	public static Item  craftingFrame;
 	public static Item  modItems;
+	public static boolean VERBOSE;
 	
 	private int[] blockIDs;
 	private int[] itemIDs;
@@ -58,7 +61,7 @@ public class CraftingSuite {
 			blockIDs[0] = config.getBlock("Modification Block", 700).getInt(700);
 			blockIDs[1] = config.getBlock("Crafting Block", 701).getInt(701);
 			itemIDs[0] = config.getItem("Modifications",  18976).getInt(18976) -256;
-			itemIDs[1] = config.getItem("Crafting Frame", 18975).getInt(18975) -256;
+			VERBOSE = config.get(Configuration.CATEGORY_GENERAL, "Verbose Logging", false).getBoolean(false);
 		}catch(Exception ex){
 			FMLLog.log(Level.SEVERE, ex, "Crafting Suite: Failed loading configuration file.");
 		}finally{
@@ -92,8 +95,15 @@ public class CraftingSuite {
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent ev){
 		registerRecipes();
+		loadLanguages();
 	}
 	
+	private void loadLanguages() {
+		for(String lang : Reference.LANGUAGES){
+			LanguageRegistry.instance().loadLocalization(new ResourceLocation("/bau5/mods/craftingsuite/langs/" +lang +".xml").getResourcePath(), lang, true);
+		}
+	}
+
 	public void registerRecipes(){
 		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 1, 0), new Object[]{
 			"SSS", "SCS", "SSS", 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties version="1.0">
+        <!--Blocks-->
+    <entry key="tile.bau5_moddingblock.name">Modification Table</entry>
+        <!--Benches-->
+    <entry key="tile.bau5_craftingblock.pb.name">Project Bench</entry>
+        <!--Items-->
+    <entry key="item.modification.crafter.name">Crafting Modifier</entry>
+    <entry key="item.modification.hoildng.name">Holding Modifier</entry>
+    <entry key="item.modification.storing.name">Storing Modifier</entry>
+        <!--Guis-->
+    <entry key="gui.modificationtable.name">Modification Table</entry>
+    <entry key="gui.projectbench.name">Project Bench</entry>
+</properties>

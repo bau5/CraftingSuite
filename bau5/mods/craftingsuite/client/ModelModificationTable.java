@@ -3,7 +3,6 @@ package bau5.mods.craftingsuite.client;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 
 public class ModelModificationTable extends ModelBase{
     ModelRenderer Base1;
@@ -147,7 +146,7 @@ public class ModelModificationTable extends ModelBase{
   		super.setRotationAngles(par1, par2, par3, par4, par5, par6, par7Entity);
   	}
 
-	public void renderAll(TileEntityModificationTable tile) {
+	public void renderAll() {
 		float f = 0.0625f;
 	    Base1.render(f);
 	    Base2.render(f);
@@ -165,7 +164,7 @@ public class ModelModificationTable extends ModelBase{
 	    TopBase2.render(f);
 	}
 	
-	public void rotatePiece(float f){
+	public void rotateSpinner(float f){
 		Spin.rotateAngleY = f;
 	}
 }

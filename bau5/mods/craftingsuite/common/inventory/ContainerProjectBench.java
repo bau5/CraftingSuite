@@ -126,7 +126,7 @@ public class ContainerProjectBench extends Container{
 	            {
 	            	if(!this.mergeItemStack(stack2, 10, 28, false))
 	            	{
-	            		if(!this.mergeItemStack(stack2, 28, 64, false))
+	            		if(!this.mergeItemStack(stack2, 28, 63, false))
 	            		{
 	                		return null;
 	            		}
@@ -136,7 +136,7 @@ public class ContainerProjectBench extends Container{
 	            //Merge Supply matrix item with player inventory
 	            else if (numSlot >= 10 && numSlot <= 27)
 	            {
-	                if (!this.mergeItemStack(stack2, 29, 65, false))
+	                if (!this.mergeItemStack(stack2, 28, 63, false))
 	                {
 	                    return null;
 	                }

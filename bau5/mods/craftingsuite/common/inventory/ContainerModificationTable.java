@@ -5,6 +5,8 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.oredict.OreDictionary;
+import bau5.mods.craftingsuite.common.CraftingSuite;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -15,7 +17,6 @@ public class ContainerModificationTable extends ContainerBase {
 	
 	private IInventory forRender = new InventoryBasic("dummy", false, 10);
 	
-	@SideOnly(Side.CLIENT)
 	private SlotDummy[] dummySlots = new SlotDummy[forRender.getSizeInventory()];
 	
 	public ContainerModificationTable(TileEntityModificationTable table, EntityPlayer player) {
@@ -30,10 +31,11 @@ public class ContainerModificationTable extends ContainerBase {
 		this.addSlotToContainer(new SlotModification(2, table, i++, 11, 92));
 		this.addSlotToContainer(new SlotModification(3, table, i++, 33, 92));
 		this.addSlotToContainer(new SlotModification(4, table, i++, 55, 92));
-		this.addSlotToContainer(new Slot(table.craftResult,    i++, 193, 140));
+		this.addSlotToContainer(new Slot			(   table, i++, 193, 140));
 		
 		super.bindPlayerInventory(player.inventory, 40, 89);
 		i = 0;
+		
 		if(tileEntity.worldObj.isRemote){
 			for(i = 0; i < dummySlots.length; i++){
 				dummySlots[i] = new SlotDummy(forRender, i);
@@ -44,6 +46,8 @@ public class ContainerModificationTable extends ContainerBase {
 	
 	@Override
 	public ItemStack slotClick(int slot, int clickType, int clickMeta, EntityPlayer player) {
+		if(slot >= inventorySlots.size())
+			return null;
 		return super.slotClick(slot, clickType, clickMeta, player);
 	}
 
@@ -54,42 +58,38 @@ public class ContainerModificationTable extends ContainerBase {
 		};
 	}
 	
-	public ItemStack transferStackInSlot(EntityPlayer par1EntityPlayer, int par2)
+	public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
         ItemStack itemstack = null;
-        Slot slot = (Slot)this.inventorySlots.get(par2);
+        Slot slot = (Slot)this.inventorySlots.get(index);
 
         if (slot != null && slot.getHasStack())
         {
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
 
-            if (par2 == 0)
+            if (index >= 0 && index <= 5)
             {
-                if (!this.mergeItemStack(itemstack1, 10, 40, true))
-                {
-                    return null;
-                }
-
-                slot.onSlotChange(itemstack1, itemstack);
-            }
-            else if (par2 >= 1 && par2 < 7)
-            {
-                if (!this.mergeItemStack(itemstack1, 7, 40, false))
+                if (!this.mergeItemStack(itemstack1, 6, 41, false))
                 {
                     return null;
                 }
             }
-            else if (par2 >= 31 && par2 < 40)
+            else if (index > 5 && index <= 41)
             {
-                if (!this.mergeItemStack(itemstack1, 7, 31, false))
-                {
-                    return null;
-                }
-            }
-            else if (!this.mergeItemStack(itemstack1, 7, 31, false))
-            {
-                return null;
+            	if(itemstack1.itemID == CraftingSuite.modItems.itemID){
+            		if(!this.mergeItemStack(itemstack1, 0, 1, false)){
+            			return null;
+            		}
+            	}else if(OreDictionary.getOreID(itemstack1) == 1){
+        			if(!this.mergeItemStack(itemstack1, 1, 2, false)){
+        				return null;
+        			}
+            	}else{
+            		if(!this.mergeItemStack(itemstack1, 2, 5, false)){
+            			return null;
+            		}
+            	}
             }
 
             if (itemstack1.stackSize == 0)
@@ -106,7 +106,7 @@ public class ContainerModificationTable extends ContainerBase {
                 return null;
             }
 
-            slot.onPickupFromSlot(par1EntityPlayer, itemstack1);
+            slot.onPickupFromSlot(player, itemstack1);
         }
 
         return itemstack;

@@ -9,5 +9,4 @@ public class GuiModdedCraftingTable extends GuiCraftingSuiteBase{
 	public GuiModdedCraftingTable(TileEntityModdedTable te, EntityPlayer player) {
 		super(new ContainerModdedCraftingTable(te, player));
 	}
-
 }

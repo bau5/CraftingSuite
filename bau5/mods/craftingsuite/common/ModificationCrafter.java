@@ -43,16 +43,16 @@ public class ModificationCrafter {
 	}
 	
 	public void initRecipes(){
-		//Crafting Table - holding, no overlay
-		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 1), new ItemStack[]{
-			new ItemStack(CraftingSuite.modItems, 1, 1), new ItemStack(Block.planks.blockID, 4, OreDictionary.WILDCARD_VALUE)
-		}));
-		//Crafting Table - holding, overlay
-		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 1), new ItemStack[]{
-			new ItemStack(CraftingSuite.modItems, 1, 1), 
-			new ItemStack(Block.planks.blockID, 4, OreDictionary.WILDCARD_VALUE),
-			new ItemStack(Block.carpet.blockID, 1, OreDictionary.WILDCARD_VALUE)
-		}));
+//		//Crafting Table - holding, no overlay
+//		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 1), new ItemStack[]{
+//			new ItemStack(CraftingSuite.modItems, 1, 1), new ItemStack(Block.planks.blockID, 4, OreDictionary.WILDCARD_VALUE)
+//		}));
+//		//Crafting Table - holding, overlay
+//		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 1), new ItemStack[]{
+//			new ItemStack(CraftingSuite.modItems, 1, 1), 
+//			new ItemStack(Block.planks.blockID, 4, OreDictionary.WILDCARD_VALUE),
+//			new ItemStack(Block.carpet.blockID, 1, OreDictionary.WILDCARD_VALUE)
+//		}));
 		//Project Bench - no render, no overlay
 		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 2), new ItemStack[]{
 			new ItemStack(CraftingSuite.modItems, 1, 2), 

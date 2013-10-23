@@ -26,6 +26,18 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockCrafting extends BlockContainer {
 	public Icon[] icons;
+	
+	public static ArrayList<CachedUpgrade> cache = new ArrayList<CachedUpgrade>();
+	public class CachedUpgrade{
+		public final int x, y, z;
+		public final NBTTagCompound modList;
+		public CachedUpgrade(TileEntityProjectBench tile, int x1, int y1, int z1){
+			modList = tile.getModifiers();
+			x = x1;
+			y = y1;
+			z = z1;
+		}
+	}
 
 	protected BlockCrafting(int id, Material material) {
 		super(id, material);
@@ -46,7 +58,29 @@ public class BlockCrafting extends BlockContainer {
 	@Override
 	public ArrayList<ItemStack> getBlockDropped(World world, int x, int y,
 			int z, int metadata, int fortune) {
+		TileEntity tile = world.getBlockTileEntity(x, y, z);
 		ArrayList<ItemStack> list = super.getBlockDropped(world, x, y, z, metadata, fortune);
+		for(ItemStack stack : list){
+			if(stack.itemID == this.blockID){
+				if(tile != null){
+					stack = ModificationStackHelper.makeStackFromInfo(stack, tile);
+				}else{
+					if(cache.size() > 0){
+						int index = -1;
+						for(int i = 0; i < cache.size(); i++){
+							CachedUpgrade item = cache.get(i);
+							if(item.x == x && item.y == y && item.z == z){
+								stack = ModificationStackHelper.makeStackFromInfo(stack, item.modList);
+								index = i;
+								break;
+							}
+						}
+						if(index != -1)
+							cache.remove(index);
+					}
+				}
+			}
+		}
 		return list;
 	}
 	
@@ -107,7 +141,6 @@ public class BlockCrafting extends BlockContainer {
 	@Override
 	public void getSubBlocks(int par1, CreativeTabs par2CreativeTabs,
 			List list) {
-		list.add(ModificationStackHelper.makeBasicMkICrafter());
 		list.add(ModificationStackHelper.makeBasicProjectBench());
 	}
 	
@@ -128,15 +161,18 @@ public class BlockCrafting extends BlockContainer {
 	
 	@Override
 	public int getRenderType() {
-		return ClientProxy.getRenderID();
+		return CraftingSuite.proxy.getRenderID();
 	}
 	
 	@Override
 	public void breakBlock(World world, int x, int y, int z,
 			int par5, int par6) {
-		Random rand = new Random();
-		
+		Random rand = new Random();	
 		TileEntity te = world.getBlockTileEntity(x, y, z);
+
+		if(te instanceof TileEntityProjectBench)
+			cache.add(new CachedUpgrade((TileEntityProjectBench)te, x, y, z));
+		
 		if(!(te instanceof IInventory))
 			return;
 		IInventory inv = (IInventory)te;

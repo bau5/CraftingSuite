@@ -86,7 +86,7 @@ public class BlockModificationTable extends BlockContainer {
 	
 	@Override
 	public int getRenderType() {
-		return ClientProxy.getRenderID();
+		return CraftingSuite.proxy.getRenderID();
 	}
 	
 	@Override

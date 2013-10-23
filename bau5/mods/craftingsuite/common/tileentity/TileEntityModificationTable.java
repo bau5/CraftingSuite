@@ -2,18 +2,24 @@ package bau5.mods.craftingsuite.common.tileentity;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.INetworkManager;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
+import bau5.mods.craftingsuite.client.ModelModificationTable;
+import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.ModificationCrafter;
 import bau5.mods.craftingsuite.common.ModificationCrafter.ModificationRecipe;
+import cpw.mods.fml.common.network.PacketDispatcher;
 
 public class TileEntityModificationTable extends TileEntity implements IInventory{
 	
+	public ModelModificationTable model = new ModelModificationTable();
+	
 	public ItemStack[] inv;
-	public IInventory craftResult = new InventoryCraftResult();
 	public ItemStack result = null;
 	public ItemStack[] inputForResult = null;
 	
@@ -24,31 +30,31 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 	private int increment;
 	
 	public TileEntityModificationTable(){
-		inv = new ItemStack[5];
+		inv = new ItemStack[6];
 	}
 	
 	@Override
 	public void onInventoryChanged() {
 		super.onInventoryChanged();
-		updateResult();
+		updateResult(false);
 	}
 
 	public void craftRecipe() {
 		if(!worldObj.isRemote)
-			updateResult();
+			updateResult(false);
 		if(result != null){
-			ItemStack[] stacks = new ItemStack[inv.length];
+			ItemStack[] stacks = new ItemStack[inv.length-1];
 			for(int i = 0; i < stacks.length; i++)
 				stacks[i] = inv[i];
 			ModificationRecipe rec = ModificationCrafter.instance().findRecipe(this, stacks);
 			ItemStack output = rec.getExactOutput(ModificationCrafter.instance().filterNulls(stacks));
 			if(ItemStack.areItemStacksEqual(result, output) && ItemStack.areItemStackTagsEqual(result, output)){
-				crafting = true;
+//				crafting = true;
 				rec.consumeItems(this);
 				initiateCrafting();
 			}else{
 				result = null;
-				updateResult();
+				updateResult(false);
 			}
 		}
 	}
@@ -59,19 +65,33 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 		finishTime = 2000;
 		timeCrafting = 0;
 		increment = 10;
-		craftResult.setInventorySlotContents(0, null);
+		if(!worldObj.isRemote)
+			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64D, worldObj.provider.dimensionId, getDescriptionPacket());
 	}
 	
 	private void finishCrafting(){
-		craftResult.setInventorySlotContents(0, result);
-		crafting = false;
-		updateResult();
+		if(inv[5] == null)
+			inv[5] = result.copy();
+		else
+			inv[5].stackSize++;
+		finishTime = 0;
+		timeCrafting = 0;
+		increment = 0;
+		rotation = 0.0F;
+//		crafting = false;
+		updateResult(false);
+		if(!worldObj.isRemote)
+			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64D, worldObj.provider.dimensionId, getDescriptionPacket());
 	}
 
-	public ItemStack updateResult(){
-		if(isCrafting() || crafting)
-			return null;
-		ItemStack[] stacks = new ItemStack[inv.length];
+	public ItemStack updateResult(boolean fromPacket){
+//		if(!fromPacket)
+			if((isCrafting() /*|| crafting*/))
+				return null;
+		if(fromPacket == true){
+			System.out.println("asdf");
+		}
+		ItemStack[] stacks = new ItemStack[inv.length-1];
 		for(int i = 0; i < stacks.length; i++)
 			stacks[i] = inv[i];
 		ModificationRecipe recipe = ModificationCrafter.instance().findRecipe(this, stacks);
@@ -88,10 +108,6 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 		super.updateEntity();
 		timeCrafting += increment;
 		if(!isCrafting() && timeCrafting > 0){
-			finishTime = 0;
-			timeCrafting = 0;
-			increment = 0;
-			rotation = 0.0F;
 			finishCrafting();
 		}
 		if(isCrafting()){
@@ -104,6 +120,21 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 	
 	public boolean isCrafting(){
 		return finishTime > timeCrafting;
+	}
+	
+	@Override
+	public Packet getDescriptionPacket() {
+		NBTTagCompound tag = new NBTTagCompound();
+		writeToNBT(tag);
+		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tag);
+	}
+	
+	@Override
+	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
+		super.onDataPacket(net, pkt);
+		readFromNBT(pkt.data);
+		updateResult(true);
+		CSLogger.log("Updating result from packet");
 	}
 	
 	@Override
@@ -198,6 +229,10 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 				inv[slot] = ItemStack.loadItemStackFromNBT(tag);
 			}
 		}
+		timeCrafting = tagCompound.getInteger("timeCrafting");
+		finishTime = tagCompound.getInteger("finishTime");
+		rotation = tagCompound.getFloat("rotation");
+		increment= tagCompound.getInteger("increment");
 	}
 	
 	@Override
@@ -219,5 +254,10 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 			}
 		}
 		tagCompound.setTag("Inventory", itemList);
+		tagCompound.setInteger("finishTime", finishTime);
+		tagCompound.setInteger("timecrafting", timeCrafting);
+		tagCompound.setFloat("rotation", rotation);
+		tagCompound.setInteger("increment", increment);
+		
 	}
 }

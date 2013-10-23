@@ -9,6 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StatCollector;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -36,14 +37,14 @@ public class GuiModificationTable extends GuiContainer{
 	@Override
 	protected void drawGuiContainerForegroundLayer(int par1, int par2) {
 		//TODO Localization
-		fontRenderer.drawString("Modification Table", 8, 6, 30000800);
+		fontRenderer.drawString(StatCollector.translateToLocal("gui.modificationtable.name"), 8, 6, 30000800);
 	}
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
 		int x = (width-xSize)/2;
 		int y = (height-ySize)/2;
-		if(once){
+		if(once || buttonList.size() == 0){
 			buttonList.add(new CraftButton(x +181, y +112));
 			once = false;
 		}
@@ -87,10 +88,24 @@ public class GuiModificationTable extends GuiContainer{
 		
 		@Override
 		public void drawButton(Minecraft par1Minecraft, int par2, int par3) {
-			if(tileEntity.isCrafting() || tileEntity.craftResult.getStackInSlot(0) != null)
+			enabled = false;
+			if(tileEntity.isCrafting())
 				enabled = false;
-			else 
-				enabled = true;
+			else{
+				ItemStack inSlot = tileEntity.getStackInSlot(5);
+				if(inSlot == null){
+					if(tileEntity.getResult() != null)
+						enabled = true;
+				}else{
+					ItemStack stack = inSlot.copy();
+					stack.stackSize = 1;
+					if(tileEntity.getResult() != null && 
+							ItemStack.areItemStacksEqual(stack, tileEntity.getResult()) &&
+							ItemStack.areItemStackTagsEqual(stack, tileEntity.getResult())){
+						enabled = true;
+					}
+				}
+			}
 			super.drawButton(par1Minecraft, par2, par3);
 			if(enabled){
 				if(getHoverState(field_82253_i) == 2){

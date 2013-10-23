@@ -94,11 +94,6 @@ public class TileEntityModdedTable extends TileEntity{
 	public void readFromNBT(NBTTagCompound tagCompound)
 	{
 		super.readFromNBT(tagCompound);
-		NBTTagList modInfoList = ModificationNBTHelper.getModInfoList(tagCompound);
-		for(int i = 0; i < modInfoList.tagCount(); i++){
-			if(i == 0)
-				upgrades = ModificationNBTHelper.getUpgradeByteArray(modInfoList).byteArray;
-		}
 		init();
 		inventoryHandler.readInventoryFromNBT(tagCompound);
 	}

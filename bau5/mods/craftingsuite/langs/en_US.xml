@@ -7,7 +7,7 @@
     <entry key="tile.bau5_craftingblock.pb.name">Project Bench</entry>
         <!--Items-->
     <entry key="item.modification.crafter.name">Crafting Modifier</entry>
-    <entry key="item.modification.hoildng.name">Holding Modifier</entry>
+    <entry key="item.modification.holding.name">Holding Modifier</entry>
     <entry key="item.modification.storing.name">Storing Modifier</entry>
         <!--Guis-->
     <entry key="gui.modificationtable.name">Modification Table</entry>

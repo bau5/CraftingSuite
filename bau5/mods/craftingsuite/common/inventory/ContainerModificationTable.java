@@ -31,7 +31,7 @@ public class ContainerModificationTable extends ContainerBase {
 		this.addSlotToContainer(new SlotModification(2, table, i++, 11, 92));
 		this.addSlotToContainer(new SlotModification(3, table, i++, 33, 92));
 		this.addSlotToContainer(new SlotModification(4, table, i++, 55, 92));
-		this.addSlotToContainer(new Slot			(   table, i++, 193, 140));
+		this.addSlotToContainer(new SlotModification(5, table, i++, 193, 140));
 		
 		super.bindPlayerInventory(player.inventory, 40, 89);
 		i = 0;

@@ -51,7 +51,9 @@ public class GuiModificationTable extends GuiContainer{
 		mc.getTextureManager().bindTexture(guiTexture);
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		this.drawTexturedModalRect(x, y, 0, 0, xSize, ySize);
-		if(tileEntity.getResult() != null)
+		if(tileEntity.isCrafting())
+			displayResult(tileEntity.craftingResult, x, y);
+		else if(tileEntity.getResult() != null)
 			displayResult(tileEntity.getResult(), x, y);
 	}
 

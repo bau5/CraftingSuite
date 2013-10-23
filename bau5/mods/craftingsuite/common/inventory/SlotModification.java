@@ -21,6 +21,7 @@ public class SlotModification extends Slot {
 		case 0: return (stack.itemID == CraftingSuite.modItems.itemID) ||
 					   (stack.itemID == CraftingSuite.craftingTableBlock.blockID && stack.getItemDamage() == 1);
 		case 1: return (OreDictionary.getOreID(stack) == 1);
+		case 5: return false;
 		default: return super.isItemValid(stack);
 		}
 	}

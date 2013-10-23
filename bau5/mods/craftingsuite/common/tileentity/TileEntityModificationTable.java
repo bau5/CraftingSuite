@@ -21,6 +21,7 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 	
 	public ItemStack[] inv;
 	public ItemStack result = null;
+	public ItemStack craftingResult = null;
 	public ItemStack[] inputForResult = null;
 	
 	public int finishTime;
@@ -43,13 +44,13 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 		if(!worldObj.isRemote)
 			updateResult(false);
 		if(result != null){
+			craftingResult = result.copy();
 			ItemStack[] stacks = new ItemStack[inv.length-1];
 			for(int i = 0; i < stacks.length; i++)
 				stacks[i] = inv[i];
 			ModificationRecipe rec = ModificationCrafter.instance().findRecipe(this, stacks);
 			ItemStack output = rec.getExactOutput(ModificationCrafter.instance().filterNulls(stacks));
 			if(ItemStack.areItemStacksEqual(result, output) && ItemStack.areItemStackTagsEqual(result, output)){
-//				crafting = true;
 				rec.consumeItems(this);
 				initiateCrafting();
 			}else{
@@ -70,27 +71,32 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 	}
 	
 	private void finishCrafting(){
-		if(inv[5] == null)
-			inv[5] = result.copy();
-		else
-			inv[5].stackSize++;
+		if(inv[5] == null){
+			if(craftingResult == null){
+				craftingResult = ModificationCrafter.instance().findRecipe(this, inputForResult).getExactOutput(inputForResult);
+			}
+			inv[5] = craftingResult.copy();
+		}
+		else{
+			if(craftingResult != null){
+				if(ItemStack.areItemStacksEqual(inv[5], craftingResult) && ItemStack.areItemStackTagsEqual(inv[5], craftingResult)){
+					inv[5].stackSize++;			
+				}
+			}
+		}
 		finishTime = 0;
 		timeCrafting = 0;
 		increment = 0;
 		rotation = 0.0F;
-//		crafting = false;
+		craftingResult = null;
 		updateResult(false);
 		if(!worldObj.isRemote)
 			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64D, worldObj.provider.dimensionId, getDescriptionPacket());
 	}
 
 	public ItemStack updateResult(boolean fromPacket){
-//		if(!fromPacket)
-			if((isCrafting() /*|| crafting*/))
-				return null;
-		if(fromPacket == true){
-			System.out.println("asdf");
-		}
+		if(isCrafting())
+			return null;
 		ItemStack[] stacks = new ItemStack[inv.length-1];
 		for(int i = 0; i < stacks.length; i++)
 			stacks[i] = inv[i];
@@ -229,6 +235,7 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 				inv[slot] = ItemStack.loadItemStackFromNBT(tag);
 			}
 		}
+		craftingResult = ItemStack.loadItemStackFromNBT(tagCompound.getCompoundTag("craftingresult"));
 		timeCrafting = tagCompound.getInteger("timeCrafting");
 		finishTime = tagCompound.getInteger("finishTime");
 		rotation = tagCompound.getFloat("rotation");
@@ -258,6 +265,6 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 		tagCompound.setInteger("timecrafting", timeCrafting);
 		tagCompound.setFloat("rotation", rotation);
 		tagCompound.setInteger("increment", increment);
-		
+		tagCompound.setTag("craftingresult", craftingResult != null ? craftingResult.writeToNBT(new NBTTagCompound()) : new NBTTagCompound());
 	}
 }

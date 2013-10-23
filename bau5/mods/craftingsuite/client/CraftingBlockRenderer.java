@@ -28,7 +28,6 @@ import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements IItemRenderer, ISimpleBlockRenderingHandler{
 	
@@ -202,15 +201,15 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
       	
       	float rotational = (Minecraft.getSystemTime()) / (3000.0F) * 300.0F;
       	GL11.glTranslatef(0.5F, 1.6F, 0.5F);
-      	if(tile.isCrafting() && tile.getResult() != null){
-      		theStack = tile.getResult().copy();
+      	if(tile.isCrafting() && tile.craftingResult != null){
+      		theStack = tile.craftingResult.copy();
       		theStack.stackSize = 1;
       		ei.setEntityItemStack(theStack);
       		GL11.glRotatef(Math.abs(tile.rotation) *10, 0F, 1.0F, 0F);
       		GL11.glTranslatef(0.0F, 0.002F * -((tile.finishTime/10)-(tile.timeCrafting/10)), 0.0F);
-      	}else if((tile.getStackInSlot(5) == null && tile.getResult() != null ) || (tile.getResult() != null && !ItemStack.areItemStackTagsEqual(tile.getResult(), tile.getStackInSlot(5)))){
+      	}else if((tile.getStackInSlot(5) == null && tile.craftingResult != null ) || (tile.craftingResult != null && !ItemStack.areItemStackTagsEqual(tile.craftingResult, tile.getStackInSlot(5)))){
       		GL11.glTranslatef(0.0F, -0.5F, 0.0F);
-      		theStack = tile.getResult().copy();
+      		theStack = tile.craftingResult.copy();
       		theStack.stackSize = 1;
 			ei.setEntityItemStack(theStack);
       	}else{
@@ -403,11 +402,13 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         ItemStack planks = ((TileEntityProjectBench)world.getBlockTileEntity(x, y, z)).getPlanksUsed();
         if(planks == null)
         	planks = new ItemStack(Block.planks.blockID, 1, 0);
-
+        Block planksBlock = Block.blocksList[planks.itemID];
+        if(planksBlock == null)
+        	planksBlock = Block.planks;
         //TODO Discoloration of breaking block? set alpha to 1.0F for example
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.1F);
         
-        Icon plankIcon = planks.getIconIndex();
+        Icon plankIcon = planksBlock.getIcon(0, planks.getItemDamage());
         tessellator.setBrightness(renderBlocks.renderMaxX < 1.0D ? l : block.getMixedBrightnessForBlock(world, x + 1, y, z));
         tessellator.setColorOpaque_F(f12, f15, f18);
     	renderBlocks.renderFaceXPos(block, (double)x -0.0009, (double)y, (double)z, plankIcon);

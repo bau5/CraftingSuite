@@ -62,7 +62,7 @@ public class ModificationCrafter {
 		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 2), new ItemStack[]{
 			new ItemStack(CraftingSuite.modItems, 1, 2), 
 			new ItemStack(Block.planks.blockID, 4,  OreDictionary.WILDCARD_VALUE),
-			new ItemStack(Block.carpet.blockID, 1, OreDictionary.WILDCARD_VALUE)
+			new ItemStack(Block.blockClay.blockID, 1, 0)
 		}));
 		//ProjectBench - no render, overlay
 		this.addRecipe(new ModificationRecipe(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 2), new ItemStack[]{
@@ -118,7 +118,10 @@ public class ModificationCrafter {
 				inner : for(ItemStack input : provided){
 					if(input == null)
 						continue inner;
-					if(OreDictionary.itemMatches(component, input, false)){
+					int idi = OreDictionary.getOreID(input);
+					int idc = OreDictionary.getOreID(component);
+					if(OreDictionary.itemMatches(component, input, false)
+							|| (idi != -1 && idi == idc)){
 						if(component.stackSize <= input.stackSize){
 							ItemStack theStack = input.copy();
 							theStack.stackSize = component.stackSize;
@@ -145,7 +148,10 @@ public class ModificationCrafter {
 			boolean flag = true;
 			for(ItemStack component : recipeStacks){
 				for(int i = 0; i < tile.getSizeInventory(); i++){
-					if(OreDictionary.itemMatches(component, tile.getStackInSlot(i), false)){
+					int idi = OreDictionary.getOreID(tile.getStackInSlot(i));
+					int idc = OreDictionary.getOreID(component);
+					if(OreDictionary.itemMatches(component, tile.getStackInSlot(i), false)
+							|| (idi != -1 && idi == idc)){
 						tile.decrStackSize(i, component.stackSize);
 						break;
 					}else

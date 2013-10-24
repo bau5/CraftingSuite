@@ -78,7 +78,7 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		setResult(recipe);
 		
 		if(!ItemStack.areItemStacksEqual(lastResult, result) && !fromPacket && !worldObj.isRemote){
-			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 30D, worldObj.provider.dimensionId, this.getDescriptionPacket());
+			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 30D, worldObj.provider.dimensionId, this.getLiteDescription());
 		}
 		long end = System.currentTimeMillis();
 		CSLogger.log("Recipe found on " + ((worldObj.isRemote) ? "client " : "server ") +"in " +(end - start) +" milliseconds.");
@@ -162,9 +162,19 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tag);
 	}
 	
+	public Packet getLiteDescription() {
+		NBTTagCompound tag = new NBTTagCompound();
+		tag.setTag("displayedResult", result != null ? result.writeToNBT(new NBTTagCompound()) : new NBTTagCompound());
+		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tag);
+	}
+	
 	@Override
 	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
 		super.onDataPacket(net, pkt);
+		if(pkt.data.hasKey("displayedResult")){
+			result = ItemStack.loadItemStackFromNBT(pkt.data.getCompoundTag("displayedResult"));
+			return;
+		}
 		readFromNBT(pkt.data);
 		if(this.worldObj != null)
 			findRecipe(true);

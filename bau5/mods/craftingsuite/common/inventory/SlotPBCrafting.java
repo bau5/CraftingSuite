@@ -106,7 +106,6 @@ public class SlotPBCrafting extends SlotCrafting {
         		//Didn't find it in the supply inventory, remove from crafting matrix
     			if(!found)
         		{
-        			tileEntity.decrStackSize(invIndex, 1);
         			craftingMatrix.decrStackSize(invIndex, 1);
         			if (craftComponentStack.getItem().hasContainerItem())
                     {

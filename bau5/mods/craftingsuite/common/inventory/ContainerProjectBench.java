@@ -73,9 +73,12 @@ public class ContainerProjectBench extends Container{
 			EntityPlayer player) {
 		if(slot == 0 && clickMeta == 6)
 			clickMeta = 0;
-		if(slot == 0)
-			tileEntity.markForUpdate();
-		return super.slotClick(slot, clickType, clickMeta, player);
+		ItemStack stack = super.slotClick(slot, clickType, clickMeta, player);
+		if(slot == 0){
+//			tileEntity.markForUpdate();
+			tileEntity.findRecipe(true);
+		}
+		return stack;
 	}
 	
 	@Override

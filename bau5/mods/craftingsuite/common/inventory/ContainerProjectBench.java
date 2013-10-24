@@ -75,8 +75,7 @@ public class ContainerProjectBench extends Container{
 			clickMeta = 0;
 		ItemStack stack = super.slotClick(slot, clickType, clickMeta, player);
 		if(slot == 0){
-//			tileEntity.markForUpdate();
-			tileEntity.findRecipe(true);
+			tileEntity.findRecipe(false);
 		}
 		return stack;
 	}

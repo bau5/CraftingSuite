@@ -1,5 +1,9 @@
 package bau5.mods.craftingsuite.client;
 
+//import invtweaks.api.container.ChestContainer;
+//import invtweaks.api.container.ContainerSection;
+//import invtweaks.api.container.ContainerSectionCallback;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -19,6 +23,7 @@ import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
+//@ChestContainer
 @SideOnly(Side.CLIENT)
 public class GuiProjectBench extends GuiContainer {
 	private ResourceLocation resource;
@@ -34,6 +39,16 @@ public class GuiProjectBench extends GuiContainer {
 		//TODO Localization
 		fontRenderer.drawString(StatCollector.translateToLocal("gui.projectbench.name"), 8, 6, 4210752);
 	}
+	
+	/*@ContainerSectionCallback
+	public Map<ContainerSection, List<Slot>> getContainerSections(){
+		Map<ContainerSection, List<Slot>> sectionMap = new HashMap<ContainerSection, List<Slot>>();
+		sectionMap.put(ContainerSection.CRAFTING_OUT, inventorySlots.inventorySlots.subList(0, 1));
+		sectionMap.put(ContainerSection.CRAFTING_IN_PERSISTENT, inventorySlots.inventorySlots.subList(1, 10));
+		sectionMap.put(ContainerSection.CHEST, inventorySlots.inventorySlots.subList(10, 28));
+		return sectionMap;
+	}*/
+	
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
 		int x = (width-xSize)/2;
@@ -89,5 +104,4 @@ public class GuiProjectBench extends GuiContainer {
 			return fireButton;
 		}
 	}
-
 }

@@ -46,6 +46,7 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 	public LocalInventoryCrafting craftingMatrix = new LocalInventoryCrafting(this);
 	public boolean containerInit = false;
 	public boolean containerWorking = false;
+	public boolean sendRenderPacket = false;
 	private boolean shouldUpdateOutput;
 	private int update = 0;
 	
@@ -77,9 +78,10 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 //			recipe = getPlanResult();
 		setResult(recipe);
 		
-		if(!ItemStack.areItemStacksEqual(lastResult, result) && !fromPacket && !worldObj.isRemote){
-			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 30D, worldObj.provider.dimensionId, this.getLiteDescription());
-		}
+		if(!ItemStack.areItemStacksEqual(lastResult, result) && !fromPacket && !worldObj.isRemote)
+			sendRenderPacket = true;
+		else
+			sendRenderPacket = false;
 		long end = System.currentTimeMillis();
 		CSLogger.log("Recipe found on " + ((worldObj.isRemote) ? "client " : "server ") +"in " +(end - start) +" milliseconds.");
 		return recipe;
@@ -89,6 +91,14 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 	private void setResult(ItemStack recipe) {
 		result = recipe;
 		craftingResult.setInventorySlotContents(0, result);
+	}
+	
+	public LocalInventoryCrafting getCopyOfMatrix(LocalInventoryCrafting matrix){
+		LocalInventoryCrafting temp = new LocalInventoryCrafting(this);
+		for(int i = 0; i < temp.getSizeInventory(); i++){
+			temp.setInventorySlotContents(i, matrix.getStackInSlot(i) != null ? matrix.getStackInSlot(i) : null);
+		}
+		return temp;
 	}
 	
 
@@ -123,6 +133,8 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 			findRecipe(false);
 			shouldUpdateOutput = false;
 		}
+		if(sendRenderPacket)
+			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64D, worldObj.provider.dimensionId, getLiteDescription());
 		if(update <= 5 && update != -1)
 			update++;
 		if(update >= 5 && worldObj.isRemote){

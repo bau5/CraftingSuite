@@ -22,6 +22,7 @@ public class ModificationStackHelper {
 		ItemStack stack = new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 2);
 		byte[] bytes = ModificationNBTHelper.newBytes();
 		bytes[0] = 2;
+		bytes[1] = 3;
 		bytes[3] = 14;
 		bytes[4] = 1;
 		stack = makeStackFromInfo(stack, bytes, new ItemStack(Block.planks.blockID, 1, 1));
@@ -32,6 +33,11 @@ public class ModificationStackHelper {
 		byte[] bytes = null;
 		ItemStack stack = null;
 		if(tile instanceof TileEntityProjectBench){
+			if(((TileEntityProjectBench) tile).getModifiers() == null){
+				CSLogger.logError("Tile entity has null modifiers. Invalidating.");
+				tile.invalidate();
+				return new ItemStack(Block.stone);
+			}
 			bytes = ModificationNBTHelper.getUpgradeByteArray(((TileEntityProjectBench) tile).getModifiers());
 			stack = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(((TileEntityProjectBench) tile).getModifiers()));
 		}else{
@@ -49,6 +55,8 @@ public class ModificationStackHelper {
 				upgrades = (byte[]) data[0];
 			if(data[1] instanceof ItemStack)
 				planks = (ItemStack) data[1];
+			if(planks == null)
+				planks = new ItemStack(Block.planks.blockID, 1, 0);
 			newTag = ModificationNBTHelper.makeBaseTag();
 			ModificationNBTHelper.setTagUpgradeBytes(newTag, upgrades);
 			ModificationNBTHelper.setTagPlanksUsed(newTag, planks);

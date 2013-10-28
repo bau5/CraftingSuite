@@ -38,4 +38,19 @@ public class ContainerCraftingTable extends ContainerBase{
 			tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord
 		};
 	}
+
+	@Override
+	public EnumInventoryModifier getInventoryModifier() {
+		return EnumInventoryModifier.NONE;
+	}
+
+	@Override
+	public int getSizeInventoryOfTile() {
+		return 0;
+	}
+
+	@Override
+	protected void handleInventoryModifiers() {
+		// TODO Auto-generated method stub
+	}
 }

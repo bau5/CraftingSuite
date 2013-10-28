@@ -9,6 +9,7 @@ import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -16,8 +17,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
+import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import cpw.mods.fml.relauncher.Side;
@@ -140,6 +143,7 @@ public class BlockCrafting extends BlockContainer {
 	@Override
 	public void getSubBlocks(int par1, CreativeTabs par2CreativeTabs,
 			List list) {
+		list.add(ModificationStackHelper.makeBasicMkICrafter());
 		list.add(ModificationStackHelper.makeBasicProjectBench());
 	}
 	
@@ -200,4 +204,26 @@ public class BlockCrafting extends BlockContainer {
 		}
 		super.breakBlock(world, x, y, z, par5, par6);
 	}
+	
+	@Override
+    public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase el, ItemStack stack)
+    {
+		super.onBlockPlacedBy(world, x, y, z, el, stack);
+        byte dir = 0;
+        int plyrFacing = MathHelper.floor_double(((el.rotationYaw * 4F) / 360F) + 0.5D) & 3;
+        if (plyrFacing == 0)
+            dir = 2;
+        if (plyrFacing == 1)
+            dir = 5;
+        if (plyrFacing == 2)
+            dir = 3;
+        if (plyrFacing == 3)
+            dir = 4;
+        TileEntity te = world.getBlockTileEntity(x, y, z);
+        if (te != null && te instanceof IModifiedTileEntityProvider)
+        {
+            ((IModifiedTileEntityProvider)te).setDirectionFacing(dir);
+            world.markBlockForUpdate(x, y, z);
+        }
+    }
 }

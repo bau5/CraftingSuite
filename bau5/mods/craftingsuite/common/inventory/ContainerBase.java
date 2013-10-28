@@ -8,8 +8,8 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.inventory.SlotCrafting;
 import net.minecraft.item.ItemStack;
 
-public abstract class ContainerBase extends Container {
-
+public abstract class ContainerBase extends Container implements IModifiedContainerProvider{
+	
 	@Override
 	public boolean canInteractWith(EntityPlayer entityplayer) {
 		return rangeCheck(entityplayer);
@@ -21,6 +21,7 @@ public abstract class ContainerBase extends Container {
 	}
 
 	protected abstract int[] getXYZ();
+	protected abstract void handleInventoryModifiers();
 
 	@Override
 	public ItemStack slotClick(int par1, int par2, int par3,

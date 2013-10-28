@@ -1,5 +1,12 @@
 package bau5.mods.craftingsuite.common.tileentity;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Random;
+
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
@@ -8,20 +15,27 @@ import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.ModificationNBTHelper;
+import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.PacketDispatcher;
+import cpw.mods.fml.relauncher.Side;
 
-public class TileEntityProjectBench extends TileEntity implements IInventory, ISidedInventory{
+public class TileEntityProjectBench extends TileEntity implements IModifiedTileEntityProvider, IInventory, ISidedInventory{
 	
 	private NBTTagCompound modifiers;
+	private byte[]		   upgrades;
 	
 	public class LocalInventoryCrafting extends InventoryCrafting{
 		private TileEntity theTile;
@@ -39,16 +53,22 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		}
 	}
 	
-	public ItemStack[] inv = new ItemStack[27];
+	public ItemStack[] inv = null;
 	public ItemStack result;
+	public ItemStack[] tools = new ItemStack[3];
 	private ItemStack lastResult = null;
 	public IInventory craftingResult = new InventoryCraftResult();
 	public LocalInventoryCrafting craftingMatrix = new LocalInventoryCrafting(this);
 	public boolean containerInit = false;
 	public boolean containerWorking = false;
 	public boolean sendRenderPacket = false;
+	public boolean initialized = false;
 	private boolean shouldUpdateOutput;
 	private int update = 0;
+	private byte directionFacing = 0;
+	public float randomShift = 0.0F;
+	
+	private HashMap<EnumInventoryModifier, int[]> inventoryMap = new HashMap();
 	
 	/**
 	 * Unlinked crafting matrix, used to test the difference between inventory changes,
@@ -58,6 +78,7 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 
 	public TileEntityProjectBench() {
 		modifiers = ModificationNBTHelper.getModifierTag(null);
+		upgrades = ModificationNBTHelper.newBytes();
 	}
 	
 	public ItemStack findRecipe(boolean fromPacket) {
@@ -88,9 +109,82 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		
 	}
 
+	@Override
+	public void initializeFromNBT(NBTTagCompound nbtTagCompound) {
+		modifiers = nbtTagCompound;
+		upgrades = modifiers.getByteArray(ModificationNBTHelper.upgradeArrayName);
+		initialized = true;
+	}
+
 	private void setResult(ItemStack recipe) {
 		result = recipe;
 		craftingResult.setInventorySlotContents(0, result);
+	}
+
+	@Override
+	public void handleModifiers() {
+		inv = new ItemStack[getModifiedInventorySize()];
+		buildInventoryMap();
+	}
+	
+	@Override
+	public EnumInventoryModifier getInventoryModifier() {
+		switch(upgrades[1]){
+		case 3: return EnumInventoryModifier.TOOLS;
+		default: return EnumInventoryModifier.NONE;
+		}
+	}
+	
+	private void buildInventoryMap(){
+		inventoryMap = new HashMap<EnumInventoryModifier, int[]>();
+		int[] indicies = new int[2];
+		indicies[0] = 0; indicies[1] = 27;
+		inventoryMap.put(EnumInventoryModifier.NONE, indicies);
+		switch(getInventoryModifier()){
+		case TOOLS:
+			indicies = new int[2];
+			indicies[0] = 27; indicies[1] = 30;
+			inventoryMap.put(EnumInventoryModifier.TOOLS, indicies);
+			break;
+		default: break;
+		}
+	}
+
+	@Override
+	public int getToolModifierInvIndex() {
+		if(getInventoryModifier() == EnumInventoryModifier.TOOLS){
+			if(inventoryMap == null || inventoryMap.containsKey(EnumInventoryModifier.TOOLS)){
+				buildInventoryMap();
+				return 27;
+			}
+			return inventoryMap.get(EnumInventoryModifier.TOOLS)[0];
+		}
+		else
+			return -1;
+	}
+	
+	@Override
+	public int getModifiedInventorySize() {
+		return getBaseInventorySize() +getInventoryModifier().getNumSlots();
+	}
+	
+	@Override
+	public int getBaseInventorySize() {
+		return 27;
+	}
+
+	public NBTTagCompound getModifiers() {
+		return modifiers;
+	}
+	
+	public byte[] getUpgrades(){
+		return upgrades;
+	}
+
+	public ItemStack getPlanksUsed() {
+		NBTTagCompound tag = ModificationNBTHelper.getPlanksUsed(modifiers);
+		ItemStack stack = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(modifiers));
+		return stack;
 	}
 	
 	public LocalInventoryCrafting getCopyOfMatrix(LocalInventoryCrafting matrix){
@@ -99,21 +193,6 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 			temp.setInventorySlotContents(i, matrix.getStackInSlot(i) != null ? matrix.getStackInSlot(i) : null);
 		}
 		return temp;
-	}
-	
-
-	public NBTTagCompound getModifiers() {
-		return modifiers;
-	}
-	
-	public byte[] getUpgrades(){
-		return modifiers.getByteArray(ModificationNBTHelper.upgradeArrayName);
-	}
-
-	public ItemStack getPlanksUsed() {
-		NBTTagCompound tag = ModificationNBTHelper.getPlanksUsed(modifiers);
-		ItemStack stack = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(modifiers));
-		return stack;
 	}
 	
 	@Override
@@ -133,15 +212,22 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 			findRecipe(false);
 			shouldUpdateOutput = false;
 		}
-		if(sendRenderPacket)
-			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64D, worldObj.provider.dimensionId, getLiteDescription());
+		if(sendRenderPacket){
+			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64D, worldObj.provider.dimensionId, getLiteDescription(0));
+			sendRenderPacket = false;
+		}
 		if(update <= 5 && update != -1)
 			update++;
 		if(update >= 5 && worldObj.isRemote){
 			FMLClientHandler.instance().getClient().renderGlobal.markBlockForRenderUpdate(xCoord, yCoord, zCoord);
 			update = -1;
 		}
-			
+		if(initialized && (getModifiers() == null || getInventoryModifier() == null)){
+			if(getModifiers() == null)
+				CSLogger.logError("TIle entity has null upgrades.");
+			if(getInventoryModifier() == null)
+				CSLogger.logError("Tile entity has null inventory modifier.");
+		}
 		super.updateEntity();
 	}
 	
@@ -163,10 +249,6 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		shouldUpdateOutput = true;
 	}
 
-	public void initializeFromNBT(NBTTagCompound nbtTagCompound) {
-		modifiers = nbtTagCompound;
-	}
-
 	@Override
 	public Packet getDescriptionPacket() {
 		NBTTagCompound tag = new NBTTagCompound();
@@ -174,9 +256,21 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tag);
 	}
 	
-	public Packet getLiteDescription() {
+	public Packet getLiteDescription(int type) {
 		NBTTagCompound tag = new NBTTagCompound();
-		tag.setTag("displayedResult", result != null ? result.writeToNBT(new NBTTagCompound()) : new NBTTagCompound());
+		if(type == 0){
+			tag.setTag("displayedResult", result != null ? result.writeToNBT(new NBTTagCompound()) : new NBTTagCompound());
+			if(getInventoryModifier() == EnumInventoryModifier.TOOLS){
+				NBTTagCompound tag2 = new NBTTagCompound();
+				for(int i = 0; i < 3; i++){
+					tag2 = new NBTTagCompound();
+					tag.setTag("tool" +i, inv[i +getToolModifierInvIndex()] != null ? tools[i].writeToNBT(tag2) : tag2);
+				}
+			}
+		}
+		if(type == 1){
+			tag.setFloat("randomShift", new Random().nextFloat()/100);
+		}
 		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tag);
 	}
 	
@@ -185,6 +279,15 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		super.onDataPacket(net, pkt);
 		if(pkt.data.hasKey("displayedResult")){
 			result = ItemStack.loadItemStackFromNBT(pkt.data.getCompoundTag("displayedResult"));
+			if(getInventoryModifier() == EnumInventoryModifier.TOOLS){
+				for(int i = 0; i < 3; i++){
+					tools[i] = ItemStack.loadItemStackFromNBT(pkt.data.getCompoundTag("tool" +i));
+				}
+			}
+			return;
+		}
+		if(pkt.data.hasKey("randomShift")){
+			randomShift = pkt.data.getFloat("randomShift");
 			return;
 		}
 		readFromNBT(pkt.data);
@@ -241,24 +344,67 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		{
 			stack.stackSize = getInventoryStackLimit();
 		}
+		if(slot >= 27 && !worldObj.isRemote){
+			sendRenderPacket = true;
+			if(slot == 27)
+				tools[0] = inv[slot];
+			if(slot == 28)
+				tools[1] = inv[slot];
+			if(slot == 29)
+				tools[2] = inv[slot];
+		}
 	}
 
 	public void readFromNBT(NBTTagCompound tagCompound)
 	{
 		super.readFromNBT(tagCompound);
 		
-		modifiers = ModificationNBTHelper.getModifierTag(tagCompound);
+		try{
+		initializeFromNBT(ModificationNBTHelper.getModifierTag(tagCompound));
+		handleModifiers();
+		
 		if(!modifiers.getName().equals(""))
 			modifiers.setName("");
 		
-		NBTTagList tagList = tagCompound.getTagList("Inventory");
-		for(int i = 0; i < tagList.tagCount(); i++)
-		{
-			NBTTagCompound tag = (NBTTagCompound) tagList.tagAt(i);
-			byte slot = tag.getByte("Slot");
-			if(slot >= 0 && slot < inv.length)
+		if(inv != null){
+			NBTTagList tagList = tagCompound.getTagList("Inventory");
+			for(int i = 0; i < tagList.tagCount(); i++)
 			{
-				inv[slot] = ItemStack.loadItemStackFromNBT(tag);
+				NBTTagCompound tag = (NBTTagCompound) tagList.tagAt(i);
+				byte slot = tag.getByte("Slot");
+				if(slot >= 0 && slot < inv.length)
+				{
+					inv[slot] = ItemStack.loadItemStackFromNBT(tag);
+					if(slot >= 27){
+						if(slot == 27)
+							tools[0] = inv[slot];
+						if(slot == 28)
+							tools[1] = inv[slot];
+						if(slot == 29)
+							tools[2] = inv[slot];
+					}
+				}
+			}
+		}
+		directionFacing = tagCompound.getByte("direction");
+		}catch(Exception ex){
+			CSLogger.logError("Failed loading a crafting table. Dropping inventory at " +xCoord +","+yCoord+","+zCoord, ex);
+			NBTTagList tagList = tagCompound.getTagList("Inventory");
+			if(tagList != null && FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER){
+				for(int i = 0; i < tagList.tagCount(); i++)
+				{
+					ItemStack item = ItemStack.loadItemStackFromNBT((NBTTagCompound)tagList.tagAt(i));
+					if(item != null && item.stackSize > 0)
+					{
+						EntityItem ei = new EntityItem(FMLCommonHandler.instance().getMinecraftServerInstance().getEntityWorld(), xCoord, yCoord, zCoord,
+								new ItemStack(item.itemID, item.stackSize, item.getItemDamage()));
+						if(item.hasTagCompound())
+							ei.getEntityItem().setTagCompound((NBTTagCompound) item.getTagCompound().copy());
+						float factor = 0.05f;
+						FMLCommonHandler.instance().getMinecraftServerInstance().getEntityWorld().spawnEntityInWorld(ei);
+						item.stackSize = 0;
+					}
+				}
 			}
 		}
 	}
@@ -269,15 +415,17 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		
 		NBTTagList itemList = new NBTTagList();	
 		
-		for(int i = 0; i < inv.length; i++)
-		{
-			ItemStack stack = inv[i];
-			if(stack != null)
+		if(inv != null){
+			for(int i = 0; i < inv.length; i++)
 			{
-				NBTTagCompound tag = new NBTTagCompound();	
-				tag.setByte("Slot", (byte)i);
-				stack.writeToNBT(tag);
-				itemList.appendTag(tag);
+				ItemStack stack = inv[i];
+				if(stack != null)
+				{
+					NBTTagCompound tag = new NBTTagCompound();	
+					tag.setByte("Slot", (byte)i);
+					stack.writeToNBT(tag);
+					itemList.appendTag(tag);
+				}
 			}
 		}
 		tagCompound.setTag("Inventory", itemList);
@@ -286,6 +434,7 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 		if(!modifiers.getName().equals(""))
 			modifiers.setName(null);
 		tagCompound.setTag(ModificationNBTHelper.modifierTag, modifiers);
+		tagCompound.setByte("direction", directionFacing);
 	}
 	
 	@Override
@@ -313,7 +462,10 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 	public void openChest() {}
 
 	@Override
-	public void closeChest() {}
+	public void closeChest() {
+		if(!worldObj.isRemote)
+			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64D, worldObj.provider.dimensionId, getLiteDescription(1));
+	}
 
 	@Override
 	public boolean isItemValidForSlot(int i, ItemStack itemstack) {
@@ -345,5 +497,15 @@ public class TileEntityProjectBench extends TileEntity implements IInventory, IS
 	@Override
 	public boolean canExtractItem(int i, ItemStack itemstack, int j) {
 		return true;
+	}
+
+	@Override
+	public byte getDirectionFacing() {
+		return directionFacing;
+	}
+
+	@Override
+	public void setDirectionFacing(byte byt) {
+		directionFacing = byt;
 	}
 }

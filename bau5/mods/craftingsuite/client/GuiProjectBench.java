@@ -18,6 +18,7 @@ import org.lwjgl.opengl.GL11;
 
 import bau5.mods.craftingsuite.common.Reference;
 import bau5.mods.craftingsuite.common.inventory.ContainerProjectBench;
+import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.relauncher.Side;
@@ -60,6 +61,8 @@ public class GuiProjectBench extends GuiContainer {
 		mc.getTextureManager().bindTexture(resource);
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		this.drawTexturedModalRect(x, y, 0, 0, xSize, ySize);
+		if(((ContainerProjectBench)inventorySlots).tileEntity.getInventoryModifier() == EnumInventoryModifier.TOOLS)
+			this.drawTexturedModalRect(x-21, y+10, 176, 44, 24, 66);
 	}
 	
 	public class PBClearInventoryButton extends GuiButton{

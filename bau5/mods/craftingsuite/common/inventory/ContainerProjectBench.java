@@ -7,13 +7,16 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 
-public class ContainerProjectBench extends Container{
+public class ContainerProjectBench extends ContainerBase{
 	
 	public TileEntityProjectBench tileEntity;
+	
+	private int index = 0;
 	
 	public ContainerProjectBench(InventoryPlayer invPlayer, TileEntityProjectBench tpb){
 		tileEntity = tpb;
 		layoutContainer(invPlayer, tileEntity);
+		handleInventoryModifiers();
 		tileEntity.findRecipe(false);
 	}
 
@@ -22,17 +25,14 @@ public class ContainerProjectBench extends Container{
 //		addSlotToContainer(new SlotPBPlan(tileEntity, 27, 9, 35));
 		int row;
 		int col;
-		int index = -1;
-		int counter = 0;
 		Slot slot = null;
 
 		for(row = 0; row < 3; row++)
 		{
 			for(col = 0; col < 3; col++)
 			{
-				slot = new Slot(tileEntity, ++index, 30 + col * 18, 17 + row * 18);
+				slot = new Slot(tileEntity, index++, 30 + col * 18, 17 + row * 18);
 				addSlotToContainer(slot);
-				counter++;
 			}
 		}
 		
@@ -51,7 +51,6 @@ public class ContainerProjectBench extends Container{
 							77 + row * 18);
 					addSlotToContainer(slot);
 				}
-				counter++;
 			}
 		}
 		for(int i = 0; i < 3; i++)
@@ -115,7 +114,20 @@ public class ContainerProjectBench extends Container{
 //            if(stack2.getItem().equals(CraftingSuite.instance.pbPlan))
 //            	flag = this.mergeItemStack(stack2, 28, 29, false);
             if(!flag){
-	            if (numSlot == 0)
+            	if(tileEntity.getInventoryModifier() == EnumInventoryModifier.TOOLS 
+            			&& stack.isItemStackDamageable() && numSlot != 0){
+            		if(numSlot < 64){
+	            		if (!this.mergeItemStack(stack2, 64, 67, false)){
+	            			if(!this.mergeItemStack(stack2, 10, 28, false)){
+	            				return null;
+	            			}
+	            		}
+            		}else if(numSlot >= 64 && numSlot <= 66){
+            			if(!this.mergeItemStack(stack2, 28, 63, false)){
+            				return null;
+            			}
+            		}
+            	}else if (numSlot == 0)
 	            {
 	                if (!this.mergeItemStack(stack2, 10, 55, true))
 	                {
@@ -172,4 +184,37 @@ public class ContainerProjectBench extends Container{
 
         return stack;
     }
+
+	@Override
+	public EnumInventoryModifier getInventoryModifier() {
+		return tileEntity.getInventoryModifier();
+	}
+
+	@Override
+	public void handleInventoryModifiers() {
+		//TODO this!@!!!
+		switch(getInventoryModifier()){
+		case NONE: break;
+		case TOOLS: 
+			for(int i = 0; i < 3; i++){
+				this.addSlotToContainer(new SlotTool(tileEntity, tileEntity.getToolModifierInvIndex() +i, -17, 17 + (16*i +(i*2))));
+			}
+		}
+	}
+	
+	@Override
+	public int getSizeInventoryOfTile() {
+		return tileEntity.getSizeInventory();
+	}
+
+	@Override
+	protected int[] getXYZ() {
+		return new int[]{ tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord };
+	}
+	@Override
+	public void onContainerClosed(EntityPlayer par1EntityPlayer) {
+		// TODO Auto-generated method stub
+		super.onContainerClosed(par1EntityPlayer);
+		tileEntity.closeChest();
+	}
 }

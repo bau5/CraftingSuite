@@ -19,8 +19,10 @@ public class SlotModification extends Slot {
 	public boolean isItemValid(ItemStack stack) {
 		switch(type){
 		case 0: return (stack.itemID == CraftingSuite.modItems.itemID) ||
-					   (stack.itemID == CraftingSuite.craftingTableBlock.blockID && stack.getItemDamage() == 1);
-		case 1: return (OreDictionary.getOreID(stack) == 1);
+					   (stack.itemID == CraftingSuite.craftingTableBlock.blockID);
+		case 1: return (OreDictionary.getOreID(stack) == 1 ||
+						(stack.itemID == CraftingSuite.modItems.itemID &&
+						 stack.getItemDamage() == 3));
 		case 5: return false;
 		default: return super.isItemValid(stack);
 		}

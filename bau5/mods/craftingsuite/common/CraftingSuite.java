@@ -125,7 +125,9 @@ public class CraftingSuite {
 			'P', new ItemStack(Block.planks, 1, OreDictionary.WILDCARD_VALUE),
 			'R', new ItemStack(Item.redstone, 1, 0),
 			'S', new ItemStack(Block.stone.blockID, 1, 0)
-			
 		}));
+//		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 1, 2), new Object[]{
+//			
+//		}));
 	}
 }

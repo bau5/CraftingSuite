@@ -2,6 +2,7 @@ package bau5.mods.craftingsuite.common;
 
 import java.util.logging.Level;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
@@ -37,11 +38,19 @@ public class ModificationNBTHelper {
 	
 	public static void setTagUpgradeBytes(NBTTagCompound baseTag, byte[] bytes) {
 		NBTTagCompound modifier = getModifierTag(baseTag);
+		if(bytes == null){
+			CSLogger.logError("Trying to set upgrades tag with null bytes. Expect broken things.");
+			bytes = newBytes();
+		}
 		modifier.setByteArray(upgradeArrayName, bytes);
 	}
 	
 	public static void setTagPlanksUsed(NBTTagCompound newTag, ItemStack planks) {
 		NBTTagCompound tag = getModifierTag(newTag);
+		if(planks == null){
+			CSLogger.logError("Trying to set planks used with null plank ItemStack.");
+			planks = new ItemStack(Block.planks.blockID, 1, 1);
+		}
 		tag.setCompoundTag(planksName, planks.writeToNBT(new NBTTagCompound()));
 	}
 	
@@ -74,10 +83,6 @@ public class ModificationNBTHelper {
 		return array;
 	}
 	
-	public static NBTTagByteArray getUpgradeByteArray(NBTTagList tagList){
-		return (NBTTagByteArray)tagList.tagAt(0);
-	} 
-	
 	public static byte[] ensureSize(byte[] array){
 		if(array.length != ARRAY_LENGTH){
 			byte[] bytes = new byte[ARRAY_LENGTH];
@@ -106,10 +111,15 @@ public class ModificationNBTHelper {
 	}
 	
 	public static NBTTagCompound getPlanksUsed_Base(NBTTagCompound stackTagCompound){
+		if(stackTagCompound == null){
+			return new ItemStack(Block.planks.blockID, 1, 0).writeToNBT(new NBTTagCompound());
+		}
 		return getPlanksUsed(stackTagCompound.getCompoundTag(modifierTag));
 	}
 	
 	public static NBTTagCompound getPlanksUsed(NBTTagCompound stackTagCompound) {
+		if(stackTagCompound == null)
+			return new ItemStack(Block.planks.blockID, 1, 0).writeToNBT(new NBTTagCompound());
 		return stackTagCompound.getCompoundTag(planksName);
 	}
 }

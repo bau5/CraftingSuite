@@ -11,8 +11,9 @@ import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.client.ModelModificationTable;
 import bau5.mods.craftingsuite.common.CSLogger;
-import bau5.mods.craftingsuite.common.ModificationCrafter;
-import bau5.mods.craftingsuite.common.ModificationCrafter.ModificationRecipe;
+import bau5.mods.craftingsuite.common.recipe.IModRecipe;
+import bau5.mods.craftingsuite.common.recipe.ModificationCrafter;
+import bau5.mods.craftingsuite.common.recipe.ModificationRecipeBasic;
 import cpw.mods.fml.common.network.PacketDispatcher;
 
 public class TileEntityModificationTable extends TileEntity implements IInventory{
@@ -48,7 +49,7 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 			ItemStack[] stacks = new ItemStack[inv.length-1];
 			for(int i = 0; i < stacks.length; i++)
 				stacks[i] = inv[i];
-			ModificationRecipe rec = ModificationCrafter.instance().findRecipe(this, stacks);
+			IModRecipe rec = ModificationCrafter.instance().findRecipe(this, stacks);
 			ItemStack output = rec.getExactOutput(ModificationCrafter.instance().filterNulls(stacks));
 			if(ItemStack.areItemStacksEqual(result, output) && ItemStack.areItemStackTagsEqual(result, output)){
 				rec.consumeItems(this);
@@ -100,7 +101,7 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 		ItemStack[] stacks = new ItemStack[inv.length-1];
 		for(int i = 0; i < stacks.length; i++)
 			stacks[i] = inv[i];
-		ModificationRecipe recipe = ModificationCrafter.instance().findRecipe(this, stacks);
+		IModRecipe recipe = ModificationCrafter.instance().findRecipe(this, stacks);
 		result = recipe != null ? recipe.getExactOutput(ModificationCrafter.instance().filterNulls(stacks)) : null;
 		return result;
 	}

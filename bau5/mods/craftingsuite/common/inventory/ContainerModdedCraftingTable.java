@@ -30,4 +30,26 @@ public class ContainerModdedCraftingTable extends ContainerBase {
 				tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord
 		};
 	}
+
+	@Override
+	public EnumInventoryModifier getInventoryModifier() {
+		return tileEntity.getInventoryModifier();
+	}
+
+	@Override
+	public int getSizeInventoryOfTile() {
+		// TODO Auto-generated method stub
+		return tileEntity.getModifiedInventorySize();
+	}
+
+	@Override
+	protected void handleInventoryModifiers() {
+		switch(getInventoryModifier()){
+		case NONE: break;
+		case TOOLS: 
+			for(int i = 0; i < 3; i++){
+				this.addSlotToContainer(new SlotTool(tileEntity.inventoryHandler(), tileEntity.getToolModifierInvIndex() +i, -17, 17 + (16*i +(i*2))));
+			}
+		}		
+	}
 }

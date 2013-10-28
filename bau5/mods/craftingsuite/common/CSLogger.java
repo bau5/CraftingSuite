@@ -10,4 +10,16 @@ public class CSLogger {
 				System.out.println("[CraftingSuite]: " +String.format((String)data[0], data[1]));
 		}
 	}
+	
+	public static void logError(Object ...data){
+		if(data.length == 2 && data[0] instanceof String
+							&& data[1] instanceof Exception){
+			System.err.println("[CraftingSuite]: Crash error");
+			System.err.println(data[0]);
+			((Exception)data[1]).printStackTrace();
+		}else{
+			System.err.println("[CraftingSuite]: Crash error");
+			System.err.println(data[0]);
+		}
+	}
 }

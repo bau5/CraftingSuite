@@ -77,7 +77,8 @@ public class ContainerModificationTable extends ContainerBase {
             }
             else if (index > 5 && index <= 41)
             {
-            	if(itemstack1.itemID == CraftingSuite.modItems.itemID){
+            	if(itemstack1.itemID == CraftingSuite.modItems.itemID ||
+            	   itemstack1.itemID == CraftingSuite.craftingTableBlock.blockID){
             		if(!this.mergeItemStack(itemstack1, 0, 1, false)){
             			return null;
             		}
@@ -138,5 +139,23 @@ public class ContainerModificationTable extends ContainerBase {
 				}
 			}
 		}
+	}
+
+	@Override
+	public EnumInventoryModifier getInventoryModifier() {
+		// TODO Auto-generated method stub
+		return EnumInventoryModifier.NONE;
+	}
+
+	@Override
+	public int getSizeInventoryOfTile() {
+		// TODO Auto-generated method stub
+		return 5;
+	}
+
+	@Override
+	protected void handleInventoryModifiers() {
+		// TODO Auto-generated method stub
+		
 	}
 }

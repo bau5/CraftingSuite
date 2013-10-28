@@ -12,7 +12,7 @@ public class ItemModifications extends Item {
 	
 	private Icon[] icons;
 	private final String[] itemNames = {
-		"crafter", "holding", "storing"	
+		"crafter", "holding", "storing", "tools"	
 	};
 
 	public ItemModifications(int id) {
@@ -24,7 +24,7 @@ public class ItemModifications extends Item {
 	
 	@Override
 	public void registerIcons(IconRegister registrar) {
-		icons = new Icon[3];
+		icons = new Icon[itemNames.length];
 		int i = 0;
 		for(Icon ic : icons)
 			icons[i] = registrar.registerIcon(String.format("%s:%s%s", Reference.TEX_LOC, "p_", itemNames[i++]));
@@ -50,5 +50,6 @@ public class ItemModifications extends Item {
 		list.add(new ItemStack(this, 1, 0));
 		list.add(new ItemStack(this, 1, 1));
 		list.add(new ItemStack(this, 1, 2));
+		list.add(new ItemStack(this, 1, 3));
 	}
 }

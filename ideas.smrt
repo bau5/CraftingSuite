@@ -1,2 +1,2 @@
 Tool Upgrade:
-Upgrade for all benches, adds 3-4 slots on the left side of the gui that will hold only damageable items (aka tools, such as hammer/cutter)
+- Upgrade for holding a liquid and crafting with it rather than an item containing that liquid.

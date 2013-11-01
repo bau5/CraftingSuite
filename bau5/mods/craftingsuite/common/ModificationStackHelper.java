@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.oredict.OreDictionary;
+import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 
 public class ModificationStackHelper {
@@ -29,17 +30,26 @@ public class ModificationStackHelper {
 		return stack;
 	}
 	
+	public static ItemStack makeBasicAdvancedBench(){
+		ItemStack stack = new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 3);
+		byte[] bytes = ModificationNBTHelper.newBytes();
+		bytes[0] = 3;
+		bytes[3] = 13;
+		stack = makeStackFromInfo(stack, bytes, new ItemStack(Block.planks.blockID, 1, 1));
+		return stack;
+	}
+	
 	public static ItemStack makeStackFromInfo(ItemStack vanillaStack, TileEntity tile) {
 		byte[] bytes = null;
 		ItemStack stack = null;
-		if(tile instanceof TileEntityProjectBench){
-			if(((TileEntityProjectBench) tile).getModifiers() == null){
+		if(tile instanceof IModifiedTileEntityProvider){
+			if(((IModifiedTileEntityProvider) tile).getModifierTag() == null){
 				CSLogger.logError("Tile entity has null modifiers. Invalidating.");
 				tile.invalidate();
 				return new ItemStack(Block.stone);
 			}
-			bytes = ModificationNBTHelper.getUpgradeByteArray(((TileEntityProjectBench) tile).getModifiers());
-			stack = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(((TileEntityProjectBench) tile).getModifiers()));
+			bytes = ModificationNBTHelper.getUpgradeByteArray(((IModifiedTileEntityProvider) tile).getModifierTag());
+			stack = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(((TileEntityProjectBench) tile).getModifierTag()));
 		}else{
 			bytes = ModificationNBTHelper.newBytes();
 		}

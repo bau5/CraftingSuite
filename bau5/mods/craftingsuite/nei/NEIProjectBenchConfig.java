@@ -1,7 +1,7 @@
 package bau5.mods.craftingsuite.nei;
 
-import bau5.mods.craftingsuite.client.GuiCraftingSuiteBase;
-import bau5.mods.craftingsuite.client.GuiProjectBench;
+import bau5.mods.craftingsuite.client.gui.GuiCraftingSuiteBase;
+import bau5.mods.craftingsuite.client.gui.GuiProjectBench;
 import codechicken.nei.api.API;
 import codechicken.nei.api.IConfigureNEI;
 import codechicken.nei.recipe.DefaultOverlayHandler;

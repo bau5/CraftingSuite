@@ -1,4 +1,4 @@
-package bau5.mods.craftingsuite.common.recipe;
+package bau5.mods.craftingsuite.common.recipe.modification;
 
 import java.util.ArrayList;
 

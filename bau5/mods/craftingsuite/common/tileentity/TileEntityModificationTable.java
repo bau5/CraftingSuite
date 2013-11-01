@@ -11,8 +11,8 @@ import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.client.ModelModificationTable;
 import bau5.mods.craftingsuite.common.CSLogger;
-import bau5.mods.craftingsuite.common.recipe.IModRecipe;
-import bau5.mods.craftingsuite.common.recipe.ModificationCrafter;
+import bau5.mods.craftingsuite.common.recipe.modification.IModRecipe;
+import bau5.mods.craftingsuite.common.recipe.modification.ModificationCrafter;
 import cpw.mods.fml.common.network.PacketDispatcher;
 
 public class TileEntityModificationTable extends TileEntity implements IInventory{

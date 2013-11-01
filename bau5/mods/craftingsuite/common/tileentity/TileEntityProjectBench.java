@@ -197,10 +197,6 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 		return 27;
 	}
 
-	public NBTTagCompound getModifiers() {
-		return modifiers;
-	}
-	
 	public byte[] getUpgrades(){
 		return upgrades;
 	}
@@ -246,8 +242,8 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			FMLClientHandler.instance().getClient().renderGlobal.markBlockForRenderUpdate(xCoord, yCoord, zCoord);
 			update = -1;
 		}
-		if(initialized && (getModifiers() == null || getInventoryModifier() == null)){
-			if(getModifiers() == null)
+		if(initialized && (getModifierTag() == null || getInventoryModifier() == null)){
+			if(getModifierTag() == null)
 				CSLogger.logError("TIle entity has null upgrades.");
 			if(getInventoryModifier() == null)
 				CSLogger.logError("Tile entity has null inventory modifier.");
@@ -538,5 +534,10 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	@Override
 	public void setDirectionFacing(byte byt) {
 		directionFacing = byt;
+	}
+
+	@Override
+	public NBTTagCompound getModifierTag() {
+		return modifiers;
 	}
 }

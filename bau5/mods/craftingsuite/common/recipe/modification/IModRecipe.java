@@ -1,4 +1,4 @@
-package bau5.mods.craftingsuite.common.recipe;
+package bau5.mods.craftingsuite.common.recipe.modification;
 
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;

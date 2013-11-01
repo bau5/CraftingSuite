@@ -82,6 +82,7 @@ public class ItemBlockCrafting extends ItemBlock {
 				break;
 			case 2: part = "pb";
 				break;
+			case 3: part = "ab";
 			}
 			String str = String.format("%s.%s", super.getUnlocalizedName(stack), part);
 			return str;

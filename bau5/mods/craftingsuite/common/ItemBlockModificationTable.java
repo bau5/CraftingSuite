@@ -8,7 +8,7 @@ import net.minecraft.world.World;
 
 public class ItemBlockModificationTable extends ItemBlock {
 	private final static String blockNames[] = {
-		"modder", "pb"
+		"modder"
 	};
 	public ItemBlockModificationTable(int id){
 		super(id);

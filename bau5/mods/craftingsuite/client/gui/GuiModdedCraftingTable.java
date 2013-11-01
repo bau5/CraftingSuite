@@ -1,4 +1,4 @@
-package bau5.mods.craftingsuite.client;
+package bau5.mods.craftingsuite.client.gui;
 
 import net.minecraft.entity.player.EntityPlayer;
 import bau5.mods.craftingsuite.common.inventory.ContainerModdedCraftingTable;

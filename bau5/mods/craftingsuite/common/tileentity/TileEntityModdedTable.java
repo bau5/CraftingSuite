@@ -165,4 +165,9 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 	public void setDirectionFacing(byte byt) {
 		direcitonFacing = byt;
 	}
+
+	@Override
+	public NBTTagCompound getModifierTag() {
+		return modifiers;
+	}
 }

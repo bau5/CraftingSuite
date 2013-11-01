@@ -6,7 +6,7 @@ import net.minecraft.inventory.Slot;
 public class SlotDummy extends Slot {
 
 	public SlotDummy(IInventory inv, int index) {
-		super(inv, index, 0, 0);
+		super(inv, index, -100, -100);
 		
 	}
 }

@@ -13,6 +13,9 @@
     <entry key="item.modification.tools.name">Tools Modifier</entry>
     <!--Guis-->
     <entry key="gui.modificationtable.name">Modification Table</entry>
-    <entry key="gui.projectbench.name">Project Bench</entry><!--Descriptions--><entry
-    	key="item.modifications.tools.description">Allows for the holding of tools in the crafting block.</entry>
+    <entry key="gui.projectbench.name">Project Bench</entry>
+    <entry key="gui.modificationtable.modifiers">Modifier</entry>
+    <entry key="gui.modificationtable.aesthetics">Aesthetics</entry>
+    <!--Descriptions-->
+    <entry key="item.modifications.tools.description">Allows for the holding of tools in the crafting block.</entry>
 </properties>

@@ -4,12 +4,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StatCollector;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -36,8 +35,9 @@ public class GuiModificationTable extends GuiContainer{
 	
 	@Override
 	protected void drawGuiContainerForegroundLayer(int par1, int par2) {
-		//TODO Localization
-		fontRenderer.drawString(StatCollector.translateToLocal("gui.modificationtable.name"), 8, 6, 30000800);
+		this.fontRenderer.drawString(I18n.getString("gui.modificationtable.name"), 8, 6, 30000800);
+		this.fontRenderer.drawString(I18n.getString("gui.modificationtable.modifiers"), 8, 45, 0);
+		this.fontRenderer.drawString(I18n.getString("gui.modificationtable.aesthetics"), 8, 81, 0);
 	}
 
 	@Override
@@ -123,29 +123,5 @@ public class GuiModificationTable extends GuiContainer{
 				}
 			}
 		}
-		
-		private void drawRecipeToolTip(int mouseX, int mouseY){
-			ItemStack[] stacksToDraw = ((ContainerModificationTable)inventorySlots).tileEntity.inputForResult;
-			if(stacksToDraw != null){
-		        GL11.glTranslatef(0.0F, 0.0F, 32.0F);
-		        this.zLevel = 200.0F;
-		        float prevZ = itemRenderer.zLevel;
-		        itemRenderer.zLevel = 300.0F;
-		        drawGradientRect(mouseX+9, mouseY+1, mouseX + (16 * (stacksToDraw.length + 1)) - 7, 3+mouseY + 16, -99999999, -99999999);
-		        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 240.0F);
-		        for(int i = 0; i < stacksToDraw.length; i++){
-		        	GL11.glPushMatrix();
-			        FontRenderer font = stacksToDraw[i].getItem().getFontRenderer(stacksToDraw[i]);
-			        if (font == null) font = fontRenderer;
-			        itemRenderer.renderItemAndEffectIntoGUI(font, mc.renderEngine, stacksToDraw[i], 9 + mouseX + (i * 16), mouseY+2);
-			        itemRenderer.renderItemOverlayIntoGUI(font, mc.renderEngine, stacksToDraw[i], 9 + mouseX + (i * 16), mouseY+2, Integer.toString(stacksToDraw[i].stackSize));
-			        GL11.glPopMatrix();
-		        }
-		        this.zLevel = 0.0F;
-		        itemRenderer.zLevel = prevZ;
-			}
-		}
-		
-		
 	}
 }

@@ -1,7 +1,5 @@
 package bau5.mods.craftingsuite.common.tileentity;
 
-import com.google.common.collect.EnumBiMap;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;

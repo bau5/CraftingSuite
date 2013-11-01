@@ -11,7 +11,6 @@ import net.minecraftforge.common.Configuration;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityCraftingTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
@@ -45,7 +44,9 @@ public class CraftingSuite {
 	public static Block craftingTableBlock;
 	public static Item  craftingFrame;
 	public static Item  modItems;
+	
 	public static boolean VERBOSE;
+	public static boolean VERSION_CHECK;
 	
 	private int[] blockIDs;
 	private int[] itemIDs;
@@ -62,11 +63,14 @@ public class CraftingSuite {
 			blockIDs[1] = config.getBlock("Crafting Block", 701).getInt(701);
 			itemIDs[0] = config.getItem("Modifications",  18976).getInt(18976) -256;
 			VERBOSE = config.get(Configuration.CATEGORY_GENERAL, "Verbose Logging", false).getBoolean(false);
+			VERSION_CHECK = config.get(Configuration.CATEGORY_GENERAL, "Version Check", true).getBoolean(true);
 		}catch(Exception ex){
 			FMLLog.log(Level.SEVERE, ex, "Crafting Suite: Failed loading configuration file.");
 		}finally{
 			config.save();
 		}
+		if(VERSION_CHECK)
+			VersionChecker.go();
 		initParts();
 	}
 
@@ -77,10 +81,9 @@ public class CraftingSuite {
 		GameRegistry.registerBlock(craftingTableBlock, ItemBlockCrafting.class, "craftingtableblock");
 		GameRegistry.registerTileEntity(TileEntityModificationTable.class, "bau5csMT");
 		GameRegistry.registerTileEntity(TileEntityModdedTable.class, "bau5csMCT");
-		GameRegistry.registerTileEntity(TileEntityCraftingTable.class, "bau5csCT");
+//		GameRegistry.registerTileEntity(TileEntityCraftingTable.class, "bau5csCT");
 		GameRegistry.registerTileEntity(TileEntityProjectBench.class,  "bau5csPB");
 		modItems = new ItemModifications(itemIDs[0]);
-//		craftingFrame = new ItemCraftingFrame(itemIDs[1], EntityCraftingFrame.class);
 		entityID = EntityRegistry.findGlobalUniqueEntityId();
 		EntityRegistry.registerModEntity(EntityCraftingFrame.class, "craftingframe", entityID++, this, 15, Integer.MAX_VALUE, false);
 		NetworkRegistry.instance().registerGuiHandler(this, proxy);
@@ -89,7 +92,7 @@ public class CraftingSuite {
 	
 	@EventHandler
 	public void mainInit(FMLInitializationEvent ev){
-		//TODO recipes
+		
 	}
 	
 	@EventHandler
@@ -126,8 +129,10 @@ public class CraftingSuite {
 			'R', new ItemStack(Item.redstone, 1, 0),
 			'S', new ItemStack(Block.stone.blockID, 1, 0)
 		}));
-//		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 1, 2), new Object[]{
-//			
-//		}));
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 1, 3), new Object[]{
+			" I ", "IBI", "III",
+			'I', new ItemStack(Item.ingotIron, 1, 0),
+			'B', new ItemStack(Item.bucketEmpty, 1, 0)
+		}));
 	}
 }

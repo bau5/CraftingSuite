@@ -5,7 +5,7 @@ public class CSLogger {
 	public static void log(Object ...data){
 		if(CraftingSuite.VERBOSE){
 			if(data.length == 1)
-				System.out.println("[CraftingSuite]: " +(String)data[0]);
+				System.out.println("[CraftingSuite]: " +data[0].toString());
 			else if(data.length == 2)
 				System.out.println("[CraftingSuite]: " +String.format((String)data[0], data[1]));
 		}

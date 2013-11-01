@@ -2,7 +2,6 @@ package bau5.mods.craftingsuite.common.inventory;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
@@ -72,6 +71,17 @@ public class ContainerProjectBench extends ContainerBase{
 			EntityPlayer player) {
 		if(slot == 0 && clickMeta == 6)
 			clickMeta = 0;
+		if(getInventoryModifier() == EnumInventoryModifier.TOOLS && slot >= 64 && slot <= 66){
+			int index = slot - 64;
+			
+			if(clickType == 0 && clickMeta == 0 && tileEntity.tools[index] != null){
+				tileEntity.setSelectedTool(index);
+				tileEntity.findRecipe(false);
+				return null;
+			}
+			tileEntity.setSelectedTool(-1);
+			tileEntity.findRecipe(false);
+		}
 		ItemStack stack = super.slotClick(slot, clickType, clickMeta, player);
 		if(slot == 0){
 			tileEntity.findRecipe(false);

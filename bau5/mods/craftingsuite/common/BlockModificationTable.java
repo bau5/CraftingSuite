@@ -29,6 +29,7 @@ public class BlockModificationTable extends BlockContainer {
 		setResistance(1.5f);
 		setUnlocalizedName("bau5_moddingblock");
 		setCreativeTab(CreativeTabs.tabDecorations);
+		setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 0.7F, 1.0f);
 	}
 	
 	@Override
@@ -44,6 +45,8 @@ public class BlockModificationTable extends BlockContainer {
 		return true;
 		
 	}
+	
+	
 	
 	@Override
 	public Icon getIcon(int par1, int par2) {

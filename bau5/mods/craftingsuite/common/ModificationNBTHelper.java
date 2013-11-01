@@ -4,9 +4,7 @@ import java.util.logging.Level;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import cpw.mods.fml.common.FMLLog;
 
 public class ModificationNBTHelper {
@@ -77,8 +75,11 @@ public class ModificationNBTHelper {
 				array = tag.getByteArray(upgradeArrayName);
 		}catch(Exception ex){
 			FMLLog.log(Level.SEVERE, ex, "%s", "Crafting Suite encountered an error. A broken stack was encountered, resetting stack.");
-			array = newBytes();
+
 			getModifierTag(tag).setByteArray(upgradeArrayName, array);
+		}
+		if(array == null){
+			array = placeHolderBytes();
 		}
 		return array;
 	}
@@ -101,6 +102,20 @@ public class ModificationNBTHelper {
 		int i = 0;
 		for(byte b : bytes)
 			bytes[i++] = -1;
+		return bytes;
+	}
+	
+	/**
+	 * Avoids crashes...
+	 * 
+	 * @return Generic project table byte array.
+	 */
+	public static byte[] placeHolderBytes(){
+		byte[] bytes = new byte[ARRAY_LENGTH];
+		bytes[0] = 2;
+		bytes[1] = 3;
+		bytes[3] = 14;
+		bytes[4] = 1;
 		return bytes;
 	}
 	

@@ -104,7 +104,6 @@ public class BlockCrafting extends BlockContainer {
 	
 	@Override
 	public TileEntity createTileEntity(World world, int metadata){
-		//TODO TE here
 		switch(metadata){
 		case 1: return new TileEntityModdedTable();
 		case 2: return new TileEntityProjectBench();
@@ -143,7 +142,8 @@ public class BlockCrafting extends BlockContainer {
 	@Override
 	public void getSubBlocks(int par1, CreativeTabs par2CreativeTabs,
 			List list) {
-		list.add(ModificationStackHelper.makeBasicMkICrafter());
+		//TODO Crafter Mk I 
+//		list.add(ModificationStackHelper.makeBasicMkICrafter());
 		list.add(ModificationStackHelper.makeBasicProjectBench());
 	}
 	

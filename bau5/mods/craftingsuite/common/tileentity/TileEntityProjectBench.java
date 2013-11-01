@@ -1,8 +1,5 @@
 package bau5.mods.craftingsuite.common.tileentity;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -15,14 +12,11 @@ import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.ModificationNBTHelper;
@@ -56,6 +50,8 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	public ItemStack[] inv = null;
 	public ItemStack result;
 	public ItemStack[] tools = new ItemStack[3];
+	public int selectedToolIndex  = -1;
+	public int toolIndexInCrafting= -1;
 	private ItemStack lastResult = null;
 	public IInventory craftingResult = new InventoryCraftResult();
 	public LocalInventoryCrafting craftingMatrix = new LocalInventoryCrafting(this);
@@ -86,12 +82,25 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			return null;
 		long start = System.currentTimeMillis();
 		lastResult = result;
-		
+		boolean toolIn = false;
 		ItemStack stack = null;
+		if(getStackInSlot(4) == null && selectedToolIndex != -1 && !toolIn && stack == null){
+			craftingMatrix.setInventorySlotContents(4, getSelectedTool());
+			toolIn = true;
+			toolIndexInCrafting = 4;
+		}
 		for(int i = 0; i < craftingMatrix.getSizeInventory(); ++i) 
 		{
 			stack = getStackInSlot(i);
-			craftingMatrix.setInventorySlotContents(i, stack);
+			if(i == 4 && (toolIn && toolIndexInCrafting == 4))
+				continue;
+			if(!toolIn && selectedToolIndex != -1 && stack == null){
+				craftingMatrix.setInventorySlotContents(i, getSelectedTool());
+				toolIn = true;
+				toolIndexInCrafting = i;
+			}
+			else
+				craftingMatrix.setInventorySlotContents(i, stack);
 		}
 	
 		ItemStack recipe = CraftingManager.getInstance().findMatchingRecipe(craftingMatrix, worldObj);
@@ -101,8 +110,6 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 		
 		if(!ItemStack.areItemStacksEqual(lastResult, result) && !fromPacket && !worldObj.isRemote)
 			sendRenderPacket = true;
-		else
-			sendRenderPacket = false;
 		long end = System.currentTimeMillis();
 		CSLogger.log("Recipe found on " + ((worldObj.isRemote) ? "client " : "server ") +"in " +(end - start) +" milliseconds.");
 		return recipe;
@@ -153,7 +160,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	@Override
 	public int getToolModifierInvIndex() {
 		if(getInventoryModifier() == EnumInventoryModifier.TOOLS){
-			if(inventoryMap == null || inventoryMap.containsKey(EnumInventoryModifier.TOOLS)){
+			if(inventoryMap == null || !inventoryMap.containsKey(EnumInventoryModifier.TOOLS)){
 				buildInventoryMap();
 				return 27;
 			}
@@ -162,7 +169,24 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 		else
 			return -1;
 	}
+
+	public void setSelectedTool(int toolIndex) {
+		if(toolIndex == selectedToolIndex)
+			selectedToolIndex = -1;
+		else
+			selectedToolIndex = toolIndex;
+		sendRenderPacket = true;
+	}
 	
+	public ItemStack getSelectedTool(){
+		if(getInventoryModifier() != EnumInventoryModifier.TOOLS)
+			return null;
+		return inv[selectedToolIndex + getToolModifierInvIndex()];
+	}
+	
+	public int getSelectedToolIndex(){
+		return selectedToolIndex;
+	}
 	@Override
 	public int getModifiedInventorySize() {
 		return getBaseInventorySize() +getInventoryModifier().getNumSlots();
@@ -190,7 +214,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	public LocalInventoryCrafting getCopyOfMatrix(LocalInventoryCrafting matrix){
 		LocalInventoryCrafting temp = new LocalInventoryCrafting(this);
 		for(int i = 0; i < temp.getSizeInventory(); i++){
-			temp.setInventorySlotContents(i, matrix.getStackInSlot(i) != null ? matrix.getStackInSlot(i) : null);
+			temp.setInventorySlotContents(i, matrix.getStackInSlot(i) != null ? matrix.getStackInSlot(i).copy() : null);
 		}
 		return temp;
 	}
@@ -264,8 +288,9 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 				NBTTagCompound tag2 = new NBTTagCompound();
 				for(int i = 0; i < 3; i++){
 					tag2 = new NBTTagCompound();
-					tag.setTag("tool" +i, inv[i +getToolModifierInvIndex()] != null ? tools[i].writeToNBT(tag2) : tag2);
+					tag.setTag("tool" +i, inv[i +getToolModifierInvIndex()] != null ? inv[i +getToolModifierInvIndex()].writeToNBT(tag2) : tag2);
 				}
+				tag.setByte("selectedToolIndex", (byte)selectedToolIndex);
 			}
 		}
 		if(type == 1){
@@ -284,6 +309,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 					tools[i] = ItemStack.loadItemStackFromNBT(pkt.data.getCompoundTag("tool" +i));
 				}
 			}
+			selectedToolIndex = pkt.data.getByte("selectedToolIndex");
 			return;
 		}
 		if(pkt.data.hasKey("randomShift")){
@@ -360,33 +386,36 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 		super.readFromNBT(tagCompound);
 		
 		try{
-		initializeFromNBT(ModificationNBTHelper.getModifierTag(tagCompound));
-		handleModifiers();
-		
-		if(!modifiers.getName().equals(""))
-			modifiers.setName("");
-		
-		if(inv != null){
-			NBTTagList tagList = tagCompound.getTagList("Inventory");
-			for(int i = 0; i < tagList.tagCount(); i++)
-			{
-				NBTTagCompound tag = (NBTTagCompound) tagList.tagAt(i);
-				byte slot = tag.getByte("Slot");
-				if(slot >= 0 && slot < inv.length)
+			initializeFromNBT(ModificationNBTHelper.getModifierTag(tagCompound));
+			handleModifiers();
+			
+			if(!modifiers.getName().equals(""))
+				modifiers.setName("");
+			
+			if(inv != null){
+				NBTTagList tagList = tagCompound.getTagList("Inventory");
+				for(int i = 0; i < tagList.tagCount(); i++)
 				{
-					inv[slot] = ItemStack.loadItemStackFromNBT(tag);
-					if(slot >= 27){
-						if(slot == 27)
-							tools[0] = inv[slot];
-						if(slot == 28)
-							tools[1] = inv[slot];
-						if(slot == 29)
-							tools[2] = inv[slot];
+					NBTTagCompound tag = (NBTTagCompound) tagList.tagAt(i);
+					byte slot = tag.getByte("Slot");
+					if(slot >= 0 && slot < inv.length)
+					{
+						inv[slot] = ItemStack.loadItemStackFromNBT(tag);
+						if(slot >= 27){
+							if(slot == 27)
+								tools[0] = inv[slot];
+							if(slot == 28)
+								tools[1] = inv[slot];
+							if(slot == 29)
+								tools[2] = inv[slot];
+						}
 					}
 				}
 			}
-		}
-		directionFacing = tagCompound.getByte("direction");
+			if(getInventoryModifier() == EnumInventoryModifier.TOOLS){
+				selectedToolIndex = tagCompound.getByte("selectedToolIndex");
+			}
+			directionFacing = tagCompound.getByte("direction");
 		}catch(Exception ex){
 			CSLogger.logError("Failed loading a crafting table. Dropping inventory at " +xCoord +","+yCoord+","+zCoord, ex);
 			NBTTagList tagList = tagCompound.getTagList("Inventory");
@@ -435,6 +464,8 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			modifiers.setName(null);
 		tagCompound.setTag(ModificationNBTHelper.modifierTag, modifiers);
 		tagCompound.setByte("direction", directionFacing);
+		if(getInventoryModifier() == EnumInventoryModifier.TOOLS)
+			tagCompound.setByte("selectedToolIndex", (byte)selectedToolIndex);
 	}
 	
 	@Override

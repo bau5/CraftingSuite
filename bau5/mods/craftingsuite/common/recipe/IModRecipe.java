@@ -1,7 +1,7 @@
 package bau5.mods.craftingsuite.common.recipe;
 
-import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 import net.minecraft.item.ItemStack;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 
 public interface IModRecipe {
 	public ItemStack getOutput();

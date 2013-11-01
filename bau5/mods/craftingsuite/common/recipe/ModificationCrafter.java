@@ -6,7 +6,6 @@ import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 import bau5.mods.craftingsuite.common.CraftingSuite;
-import bau5.mods.craftingsuite.common.ModificationStackHelper;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 
 public class ModificationCrafter {

@@ -16,8 +16,6 @@ import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 
 public class ItemBlockCrafting extends ItemBlock {
 

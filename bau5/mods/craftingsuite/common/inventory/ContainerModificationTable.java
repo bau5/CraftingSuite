@@ -134,8 +134,8 @@ public class ContainerModificationTable extends ContainerBase {
 			for(int i = 0; i < forRender.getSizeInventory(); i++){
 				forRender.setInventorySlotContents(i, null);
 				if(dummySlots[i] != null){
-					dummySlots[i].xDisplayPosition = 0;
-					dummySlots[i].yDisplayPosition = 0;
+					dummySlots[i].xDisplayPosition = -100;
+					dummySlots[i].yDisplayPosition = -100;
 				}
 			}
 		}

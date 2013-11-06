@@ -2,5 +2,5 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties version="1.0">  
   <entry key = "0.1.8">Added version checking.</entry>
-  <entry key = "0.1.8.1">Fixed possible NPE, added tool render in table.</entry>
+  <entry key = "0.1.8.2">Fixed possible NPE</entry>
 </properties>

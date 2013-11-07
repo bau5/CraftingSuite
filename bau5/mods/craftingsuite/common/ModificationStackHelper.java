@@ -6,16 +6,18 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.oredict.OreDictionary;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 
 public class ModificationStackHelper {
 	
 	public static ItemStack makeBasicMkICrafter(){
+		ItemStack theStack = new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 1);
 		NBTTagCompound baseTag = ModificationNBTHelper.makeBaseTag();
 		byte[] bytes = ModificationNBTHelper.getUpgradeByteArray(baseTag);
 		bytes[0] = 1;
-		ItemStack theStack = new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 1);
-		theStack.setTagCompound(baseTag);
+//		bytes[1] = 3;
+		bytes[3] = 14;
+		bytes[4] = 1;
+		theStack = makeStackFromInfo(theStack, bytes, new ItemStack(Block.planks.blockID, 1, 0));
 		return theStack;
 	}
 
@@ -30,26 +32,17 @@ public class ModificationStackHelper {
 		return stack;
 	}
 	
-	public static ItemStack makeBasicAdvancedBench(){
-		ItemStack stack = new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 3);
-		byte[] bytes = ModificationNBTHelper.newBytes();
-		bytes[0] = 3;
-		bytes[3] = 13;
-		stack = makeStackFromInfo(stack, bytes, new ItemStack(Block.planks.blockID, 1, 1));
-		return stack;
-	}
-	
 	public static ItemStack makeStackFromInfo(ItemStack vanillaStack, TileEntity tile) {
 		byte[] bytes = null;
 		ItemStack stack = null;
 		if(tile instanceof IModifiedTileEntityProvider){
-			if(((IModifiedTileEntityProvider) tile).getModifierTag() == null){
+			if(((IModifiedTileEntityProvider) tile).getModifiers() == null){
 				CSLogger.logError("Tile entity has null modifiers. Invalidating.");
 				tile.invalidate();
 				return new ItemStack(Block.stone);
 			}
-			bytes = ModificationNBTHelper.getUpgradeByteArray(((IModifiedTileEntityProvider) tile).getModifierTag());
-			stack = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(((TileEntityProjectBench) tile).getModifierTag()));
+			bytes = ModificationNBTHelper.getUpgradeByteArray(((IModifiedTileEntityProvider) tile).getModifiers());
+			stack = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(((IModifiedTileEntityProvider) tile).getModifiers()));
 		}else{
 			bytes = ModificationNBTHelper.newBytes();
 		}

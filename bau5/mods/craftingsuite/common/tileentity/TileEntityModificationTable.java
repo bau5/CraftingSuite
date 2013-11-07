@@ -11,13 +11,13 @@ import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.client.ModelModificationTable;
 import bau5.mods.craftingsuite.common.CSLogger;
-import bau5.mods.craftingsuite.common.recipe.modification.IModRecipe;
-import bau5.mods.craftingsuite.common.recipe.modification.ModificationCrafter;
+import bau5.mods.craftingsuite.common.recipe.IModRecipe;
+import bau5.mods.craftingsuite.common.recipe.ModificationCrafter;
 import cpw.mods.fml.common.network.PacketDispatcher;
 
 public class TileEntityModificationTable extends TileEntity implements IInventory{
 	
-	public ModelModificationTable model = new ModelModificationTable();
+	public ModelModificationTable model;
 	
 	public ItemStack[] inv;
 	public ItemStack result = null;
@@ -112,6 +112,9 @@ public class TileEntityModificationTable extends TileEntity implements IInventor
 	@Override
 	public void updateEntity() {
 		super.updateEntity();
+		if(model == null && worldObj != null && worldObj.isRemote){
+			model = new ModelModificationTable();
+		}
 		timeCrafting += increment;
 		if(!isCrafting() && timeCrafting > 0){
 			finishCrafting();

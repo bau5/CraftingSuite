@@ -6,7 +6,6 @@
         <!--Benches-->
     <entry key="tile.bau5_craftingblock.pb.name">Project Bench</entry>
     <entry key="tile.bau5_craftingblock.ct.name">Crafting Bench</entry>
-    <entry key="tile.bau5_craftingblock.ab.name">Advanced Bench</entry>
     <!--Items-->
     <entry key="item.modification.crafter.name">Crafting Modifier</entry>
     <entry key="item.modification.holding.name">Holding Modifier</entry>
@@ -15,7 +14,6 @@
     <!--Guis-->
     <entry key="gui.modificationtable.name">Modification Table</entry>
     <entry key="gui.projectbench.name">Project Bench</entry>
-    <entry key="gui.advancedbench.name">Advanced Bench</entry>
     <entry key="gui.modificationtable.modifiers">Modifier</entry>
     <entry key="gui.modificationtable.aesthetics">Aesthetics</entry>
     <!--Descriptions-->

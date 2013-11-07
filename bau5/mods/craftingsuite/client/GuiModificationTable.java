@@ -1,4 +1,4 @@
-package bau5.mods.craftingsuite.client.gui;
+package bau5.mods.craftingsuite.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -13,7 +13,6 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-import bau5.mods.craftingsuite.client.CraftingBlockRenderer;
 import bau5.mods.craftingsuite.common.Reference;
 import bau5.mods.craftingsuite.common.inventory.ContainerModificationTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;

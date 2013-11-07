@@ -9,9 +9,9 @@ public interface IModifiedTileEntityProvider {
 	public int getBaseInventorySize();
 	public void initializeFromNBT(NBTTagCompound modifierTag);
 	public void handleModifiers();
-	public NBTTagCompound getModifierTag();
 	
 	public int getToolModifierInvIndex();
 	public byte getDirectionFacing();
 	public void setDirectionFacing(byte byt);
+	public NBTTagCompound getModifiers();
 }

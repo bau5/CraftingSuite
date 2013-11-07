@@ -38,14 +38,6 @@ public class ItemBlockCrafting extends ItemBlock {
 			tile.initializeFromNBT(ModificationNBTHelper.getModifierTag(stack2.stackTagCompound));
 			tile.handleModifiers();
 		}
-//		if(te instanceof TileEntityModdedTable){
-//			TileEntityModdedTable tile = (TileEntityModdedTable)te;
-//			tile.initializeFromNBT(ModificationNBTHelper.getModifierTag(stack2.stackTagCompound));
-//		}else if(te instanceof TileEntityProjectBench){
-//			TileEntityProjectBench tile = (TileEntityProjectBench)te;
-//			tile.initializeFromNBT(ModificationNBTHelper.getModifierTag(stack2.stackTagCompound));
-//			tile.handleModifiers();
-//		}
 		return bool;
 	}
 	
@@ -62,6 +54,8 @@ public class ItemBlockCrafting extends ItemBlock {
 			byte[] bytes = ModificationNBTHelper.getUpgradeByteArray(itemstack.stackTagCompound);
 			if(bytes[0] == 2)
 				list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(new ItemStack(CraftingSuite.modItems, 1, 2).getUnlocalizedName() +".name"));
+			if(bytes[0] == 1)
+				list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(new ItemStack(CraftingSuite.modItems, 1, 1).getUnlocalizedName() +".name"));
 			if(bytes[1] != -1){
 				if(bytes[1] == 3)
 					list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(new ItemStack(CraftingSuite.modItems, 1, 3).getUnlocalizedName() +".name"));
@@ -82,7 +76,6 @@ public class ItemBlockCrafting extends ItemBlock {
 				break;
 			case 2: part = "pb";
 				break;
-			case 3: part = "ab";
 			}
 			String str = String.format("%s.%s", super.getUnlocalizedName(stack), part);
 			return str;

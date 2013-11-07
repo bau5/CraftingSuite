@@ -9,7 +9,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench.LocalInventoryCrafting;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 public class SlotPBCrafting extends SlotCrafting {

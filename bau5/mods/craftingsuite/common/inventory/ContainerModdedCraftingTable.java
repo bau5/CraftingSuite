@@ -1,7 +1,6 @@
 package bau5.mods.craftingsuite.common.inventory;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Slot;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 
 public class ContainerModdedCraftingTable extends ContainerBase {
@@ -18,9 +17,9 @@ public class ContainerModdedCraftingTable extends ContainerBase {
 		if(tileEntity.getUpgrades()[0] == 1){
 			buildBasicCraftingInventory(player.inventory, tileEntity.inventoryHandler(), tileEntity.inventoryHandler().resultMatrix());
 		}else{
-			for(Slot slot : tileEntity.containerHandler().getSlots()){
-				this.addSlotToContainer(slot);
-			}
+//			for(Slot slot : tileEntity.containerHandler().getSlots()){
+//				this.addSlotToContainer(slot);
+//			}
 		}
 	}
 

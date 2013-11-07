@@ -11,7 +11,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
-import cpw.mods.fml.common.network.PacketDispatcher;
 
 public class InventoryHandler implements IInventory{
 	public ItemStack[] inv = null;
@@ -50,7 +49,7 @@ public class InventoryHandler implements IInventory{
 		setResult(recipe);
 		
 		if(!ItemStack.areItemStacksEqual(lastResult, result) && !fromPacket && !tileEntity.worldObj.isRemote){
-			PacketDispatcher.sendPacketToAllAround(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, 30D, tileEntity.worldObj.provider.dimensionId, tileEntity.getDescriptionPacket());
+			tileEntity.sendRenderPacket = true;
 		}
 		return recipe;
 	}
@@ -167,13 +166,15 @@ public class InventoryHandler implements IInventory{
 
 	public void readInventoryFromNBT(NBTTagCompound tagCompound) {
 		NBTTagList tagList = tagCompound.getTagList("Inventory");
-		for(int i = 0; i < tagList.tagCount(); i++)
-		{
-			NBTTagCompound tag = (NBTTagCompound) tagList.tagAt(i);
-			byte slot = tag.getByte("Slot");
-			if(slot >= 0 && slot < inv.length)
+		if(inv != null){
+			for(int i = 0; i < tagList.tagCount(); i++)
 			{
-				inv[slot] = ItemStack.loadItemStackFromNBT(tag);
+				NBTTagCompound tag = (NBTTagCompound) tagList.tagAt(i);
+				byte slot = tag.getByte("Slot");
+				if(slot >= 0 && slot < inv.length)
+				{
+					inv[slot] = ItemStack.loadItemStackFromNBT(tag);
+				}
 			}
 		}
 	}
@@ -181,15 +182,17 @@ public class InventoryHandler implements IInventory{
 
 	public void writeInventoryToNBT(NBTTagCompound tagCompound) {	
 		NBTTagList itemList = new NBTTagList();	
-		for(int i = 0; i < inv.length; i++)
-		{
-			ItemStack stack = inv[i];
-			if(stack != null)
+		if(inv != null){
+			for(int i = 0; i < inv.length; i++)
 			{
-				NBTTagCompound tag = new NBTTagCompound();	
-				tag.setByte("Slot", (byte)i);
-				stack.writeToNBT(tag);
-				itemList.appendTag(tag);
+				ItemStack stack = inv[i];
+				if(stack != null)
+				{
+					NBTTagCompound tag = new NBTTagCompound();	
+					tag.setByte("Slot", (byte)i);
+					stack.writeToNBT(tag);
+					itemList.appendTag(tag);
+				}
 			}
 		}
 		tagCompound.setTag("Inventory", itemList);

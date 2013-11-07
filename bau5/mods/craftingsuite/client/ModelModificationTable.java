@@ -3,6 +3,8 @@ package bau5.mods.craftingsuite.client;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.ResourceLocation;
+import bau5.mods.craftingsuite.common.Reference;
 
 public class ModelModificationTable extends ModelBase{
     ModelRenderer Base1;
@@ -19,11 +21,11 @@ public class ModelModificationTable extends ModelBase{
     ModelRenderer Nub4;
     ModelRenderer Spin;
     ModelRenderer TopBase2;
+    
+    public ResourceLocation modelTexture = new ResourceLocation(Reference.TEX_LOC +":" +"textures/models/ModificationTable.png");
   
     public ModelModificationTable()
   	{
-	    textureWidth = 64;
-	    textureHeight = 64;
 	    textureWidth = 64;
 	    textureHeight = 64;
 	    

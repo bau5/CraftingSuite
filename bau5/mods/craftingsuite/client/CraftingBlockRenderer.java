@@ -14,7 +14,6 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.client.IItemRenderer;
 
@@ -24,7 +23,6 @@ import bau5.mods.craftingsuite.common.BlockCrafting;
 import bau5.mods.craftingsuite.common.BlockModificationTable;
 import bau5.mods.craftingsuite.common.CraftingSuite;
 import bau5.mods.craftingsuite.common.ModificationNBTHelper;
-import bau5.mods.craftingsuite.common.Reference;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
@@ -36,13 +34,15 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 	private RenderBlocks renderBlocks;
 	private RenderItem  renderItems;
 	
-	private ModelModificationTable model;
-	private ResourceLocation modelTexture = new ResourceLocation(Reference.TEX_LOC +":" +"textures/models/ModificationTable.png");
+	private ModelModificationTable modelModificationTable;
+	private ModelCraftingTable	   modelCraftingTable;
 	
 	public static boolean renderInDisplay = false;
 	
 	public CraftingBlockRenderer(){
-		model = new ModelModificationTable();
+		modelModificationTable = new ModelModificationTable();
+		modelCraftingTable = new ModelCraftingTable();
+		
 		renderBlocks = new RenderBlocks();
 		renderItems  = new RenderItem() {
 			public byte getMiniItemCountForItemStack(ItemStack stack) { return 1; }
@@ -72,29 +72,19 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 
         switch(item.getItemDamage()){
         case 0: 
-    		FMLClientHandler.instance().getClient().renderEngine.bindTexture(modelTexture);
-            switch(type){
-            case INVENTORY:
-            	GL11.glTranslatef(0, 1f, 0);
-                GL11.glRotatef(180, 1f, 0, 0);
-                break;
-            case EQUIPPED:
-            	GL11.glRotatef(180, 1f, 0, 0);
-            	GL11.glTranslatef(0.4f, -2f, -0.4f);
-            	break;
-            case EQUIPPED_FIRST_PERSON:
-            	GL11.glRotatef(180, 1f, 0, 0);
-            	GL11.glTranslatef(0.5f, -2f, -0.5f);
-            	break;
-            case ENTITY:
-            	GL11.glRotatef(180, 1f, 0, 0);
-            	GL11.glTranslatef(0f, -1.2f, 0);
-            	break;
-            default: break;
-            }
-            model.renderAll();
+        	FMLClientHandler.instance().getClient().renderEngine.bindTexture(modelModificationTable.modelTexture);
+    		modelPreRender(type);
+    		modelModificationTable.renderAll();
             break;
-        case 1: renderModdedCraftingTableInInventory(item);
+        case 1:
+        	//Bind model texture...
+        	FMLClientHandler.instance().getClient().renderEngine.bindTexture(modelCraftingTable.modelTexture);
+        	modelPreRender(type); //set up model rendering environment
+        	modelCraftingTable.renderDefaultParts(); //render all parts of the model, except the planks area.
+        	//Unbind model texture, rebind normal texture environment.
+        	FMLClientHandler.instance().getClient().renderEngine.bindTexture(FMLClientHandler.instance().getClient().getTextureManager().getResourceLocation(item.getItemSpriteNumber()));
+        	//Pass off to custom renderer to finish the job, planks, overlay, display, etc.
+        	renderModdedCraftingTableInInventory(item);
         	break;
         case 2: 
         	switch(type){
@@ -118,6 +108,35 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         }
         GL11.glPopMatrix();
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+	}
+	
+	/**
+	 * Applies the appropriate translates/rotates to align the model
+	 * correctly in the corresponding environment.
+	 * 
+	 * @param type ItemRenderType passed on by Forge
+	 */
+	private void modelPreRender(ItemRenderType type){
+    	switch(type){
+	        case INVENTORY:
+	        	GL11.glTranslatef(0, 1f, 0);
+	            GL11.glRotatef(180, 1f, 0, 0);
+	            break;
+	        case EQUIPPED:
+	        	GL11.glRotatef(180, 1f, 0, 0);
+	        	GL11.glTranslatef(0.4f, -2f, -0.4f);
+	        	break;
+	        case EQUIPPED_FIRST_PERSON:
+	        	GL11.glRotatef(180, 1f, 0, 0);
+	        	GL11.glTranslatef(0.5f, -2f, -0.5f);
+	        	break;
+	        case ENTITY:
+	        	GL11.glRotatef(180, 1f, 0, 0);
+	        	GL11.glTranslatef(0f, -1.2f, 0);
+	        	break;
+	        default:
+	        	break;
+        }
 	}
 
 	@Override
@@ -149,38 +168,7 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         if(renderResult){
         	ItemStack stack = tile.result;
         	if(stack != null){
-        		ItemStack copy = stack.copy();
-        		copy.stackSize = 1;
-	        	EntityItem ei = new EntityItem(tile.worldObj, tile.xCoord, tile.yCoord +1, tile.zCoord);
-	            ei.hoverStart = 0f;
-	            ei.setEntityItemStack(copy);
-	            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-	            GL11.glPushMatrix();
-	            GL11.glEnable(32826 /* rescale */);
-	            int l = tile.worldObj.getLightBrightnessForSkyBlocks(tile.xCoord, tile.yCoord, tile.zCoord, 0);
-	            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-	            
-	            float rotational = (Minecraft.getSystemTime()) / (3000.0F) * 300.0F;
-	            if(stack.itemID < Block.blocksList.length && Block.blocksList[stack.itemID] != null
-	                              && Block.blocksList[stack.itemID].blockID != 0)
-	            {
-	            	GL11.glPushMatrix();
-	            	GL11.glTranslatef(0.5F, 1.2F, 0.5F);
-	            	GL11.glRotatef(rotational / 5, 0F, 1.0F, 0F);
-	                renderItems.doRenderItem(ei, 0, 0, 0, 0, 0);
-	                GL11.glPopMatrix();
-	            }else
-	            {
-	            	GL11.glPushMatrix();
-	            	GL11.glTranslatef(0.5F, 1.12F, 0.5F);
-	            	GL11.glScalef(0.65F, 0.65F, 0.65F);
-	            	GL11.glRotatef(rotational / 5, 0F, 1.0F, 0F);
-	                renderItems.doRenderItem(ei, 0, 0, 0, 0, 0);
-	                GL11.glPopMatrix();
-	            }
-	            GL11.glDisable(32826 /* scale */);
-	            GL11.glPopMatrix();
-	            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            	renderTileEntityResult((TileEntity)tile, stack);
         	}
         }
         if(renderTools && tile.getSizeInventory() >= 30 && Minecraft.isFancyGraphicsEnabled()){
@@ -232,15 +220,52 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         GL11.glPopMatrix();
 	}
 	
+	private void renderTileEntityResult(TileEntity tile, ItemStack stack) {
+		ItemStack copy = stack.copy();
+		copy.stackSize = 1;
+    	EntityItem ei = new EntityItem(tile.worldObj, tile.xCoord, tile.yCoord +1, tile.zCoord);
+        ei.hoverStart = 0f;
+        ei.setEntityItemStack(copy);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GL11.glPushMatrix();
+        GL11.glEnable(32826 /* rescale */);
+        int l = tile.worldObj.getLightBrightnessForSkyBlocks(tile.xCoord, tile.yCoord, tile.zCoord, 0);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        
+        float rotational = (Minecraft.getSystemTime()) / (3000.0F) * 300.0F;
+        if(stack.itemID < Block.blocksList.length && Block.blocksList[stack.itemID] != null
+                          && Block.blocksList[stack.itemID].blockID != 0)
+        {
+        	GL11.glPushMatrix();
+        	GL11.glTranslatef(0.5F, 1.2F, 0.5F);
+        	GL11.glRotatef(rotational / 5, 0F, 1.0F, 0F);
+            renderItems.doRenderItem(ei, 0, 0, 0, 0, 0);
+            GL11.glPopMatrix();
+        }else
+        {
+        	GL11.glPushMatrix();
+        	GL11.glTranslatef(0.5F, 1.12F, 0.5F);
+        	GL11.glScalef(0.65F, 0.65F, 0.65F);
+        	GL11.glRotatef(rotational / 5, 0F, 1.0F, 0F);
+            renderItems.doRenderItem(ei, 0, 0, 0, 0, 0);
+            GL11.glPopMatrix();
+        }
+        GL11.glDisable(32826 /* scale */);
+        GL11.glPopMatrix();
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+	}
+
 	public void renderModificationTable(TileEntityModificationTable tile, double x, double y, double z, float f){
-		bindTexture(modelTexture);
+		bindTexture(modelModificationTable.modelTexture);
 		GL11.glPushMatrix();
         GL11.glEnable(32826 /*GL_RESCALE_NORMAL_EXT*/);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         GL11.glTranslatef((float)x +0.5f, (float)y +1.5f, (float)z +0.5f);
         GL11.glRotatef(180, 1f, 0, 0);
-        tile.model.renderAll();
-        tile.model.rotateSpinner(tile.rotation);
+        if(tile.model != null){
+	        tile.model.renderAll();
+	        tile.model.rotateSpinner(tile.rotation);
+        }
         renderResultModificationTable(tile);
         GL11.glDisable(32826 /* scale */);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -285,14 +310,120 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 	}
 	
 	public void renderModdedTable(TileEntityModdedTable tile, double d0, double d1, double d2, float f) {
-		//TODO 
+		if(tile.getUpgrades() != null && tile.getUpgrades()[0] == 1)
+			renderCraftingTable(tile, d0, d1, d2, f);
 	}
 	
-	private void renderModdedCraftingTableInInventory(ItemStack item) {
-		// TODO Auto-generated method stub
-		
+	private void renderCraftingTable(TileEntityModdedTable tile, double x, double y, double z, float f){
+		Block blck = Block.blocksList[tile.worldObj.getBlockId(tile.xCoord, tile.yCoord, tile.zCoord)];
+		if(blck == null)
+			return;
+		renderBlocks.renderBlockByRenderType(blck, tile.xCoord, tile.yCoord, tile.zCoord);
+		bindTexture(modelCraftingTable.modelTexture);
+		GL11.glPushMatrix();
+        GL11.glEnable(32826 /*GL_RESCALE_NORMAL_EXT*/);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GL11.glTranslatef((float)x +0.5F, (float)y +1.5F, (float)z +0.5F);
+        GL11.glRotatef(180, 1f, 0, 0);
+        modelCraftingTable.renderDefaultParts();
+        if(tile.getUpgrades() != null){
+        	if(tile.getUpgrades()[4] == 1){
+        		if(tile.inventoryHandler().result != null){
+        			GL11.glRotatef(180, 1.0F, 0.0F, 0.0F);
+        			GL11.glTranslatef(-0.5F, -1.5F, -0.5F);
+        			renderTileEntityResult(tile, tile.inventoryHandler().result);
+        		}
+        	}
+        }
+        
+        GL11.glDisable(32826 /* scale */);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GL11.glPopMatrix();
 	}
-	
+
+	private void renderModdedCraftingTableInInventory(ItemStack theStack) {
+		 Tessellator tessellator = Tessellator.instance;
+        if(tessellator.isDrawing)
+        	tessellator.draw();
+        if(theStack.stackTagCompound == null)
+        	return;
+        byte[] bytes = ModificationNBTHelper.getUpgradeByteArray(theStack.stackTagCompound);
+        if(bytes == null || bytes.length != 5)
+        	return;
+
+        ItemStack plankUsed = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed_Base(theStack.stackTagCompound));
+        Block block = Block.blocksList[theStack.itemID];
+        if(plankUsed == null)
+        	return;
+        Icon plankIcon = Block.blocksList[plankUsed.itemID].getIcon(0, plankUsed.getItemDamage());
+        GL11.glPushMatrix();
+        if (renderBlocks.useInventoryTint)
+        {
+        	int j = block.getRenderColor(0);
+            float f11 = (float)(j >> 16 & 255) / 255.0F;
+            float f21 = (float)(j >> 8 & 255) / 255.0F;
+            float f31 = (float)(j & 255) / 255.0F;
+            GL11.glColor4f(f11 * 1.0F, f21 * 1.0F, f31 * 1.0F, 1.0F);
+        }
+        
+        block.setBlockBoundsForItemRender();
+        renderBlocks.clearOverrideBlockTexture();
+        renderBlocks.setRenderBoundsFromBlock(block);
+        GL11.glTranslatef(-0.5F, 0.6F, -0.5F);
+        renderBlocks.setOverrideBlockTexture(plankIcon);
+        
+        renderBlocks.renderMinY = 0.125D;
+        renderBlocks.renderMaxY = 0.75D;
+        renderBlocks.renderMaxX = 0.7D;
+        renderBlocks.renderMaxZ = 0.78D;
+        renderBlocks.renderMinZ = 0.22D;
+        if(!tessellator.isDrawing)
+        	tessellator.startDrawingQuads();
+    	renderBlocks.renderFaceXPos(block, 0.080D, 0.0D, 0.0D, null);
+    	tessellator.draw();
+    	tessellator.startDrawingQuads();
+    	renderBlocks.renderFaceXNeg(block, 0.220D, 0.0D, 0.0D, null);
+    	tessellator.draw();
+        renderBlocks.renderMinY = 0.0D;
+        renderBlocks.renderMaxY = 1.0D;
+        renderBlocks.renderMaxX = 1.0D;
+        renderBlocks.renderMaxZ = 1.0D;
+        renderBlocks.renderMinZ = 0.0D;
+        renderBlocks.renderMinY = 0.125D;
+        renderBlocks.renderMaxY = 0.75D;
+        renderBlocks.renderMaxZ = 0.7D;
+        renderBlocks.renderMaxX = 0.78D;
+        renderBlocks.renderMinX = 0.22D;
+        tessellator.startDrawingQuads();
+    	renderBlocks.renderFaceZPos(block, 0.0D, 0.0D, 0.080D, null);
+    	tessellator.draw();
+    	tessellator.startDrawingQuads();
+    	renderBlocks.renderFaceZNeg(block, 0.0D, 0.0D, 0.220D, null);
+    	tessellator.draw();
+        renderBlocks.renderMinY = 0.0D;
+        renderBlocks.renderMaxY = 1.0D;
+        renderBlocks.renderMaxZ = 1.0D;
+        renderBlocks.renderMaxX = 1.0D;
+        renderBlocks.renderMinX = 0.0D;
+        renderBlocks.renderMinX = 0.2D;
+        renderBlocks.renderMaxX = 0.8D;
+        renderBlocks.renderMinZ = 0.2D;
+        renderBlocks.renderMaxZ = 0.8D;
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(0.0F, -1.0F, 0.0F);
+        renderBlocks.renderFaceYNeg(block, 0.0D, 0.125D, 0.0D, null);
+        tessellator.draw();
+        renderBlocks.renderMinX = 0.0D;
+        renderBlocks.renderMaxX = 1.0D;
+        renderBlocks.renderMinZ = 0.0D;
+        renderBlocks.renderMaxZ = 1.0D;
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(-1.0F, -1.0F, -1.0F);
+        renderBlocks.renderFaceYNeg(block, 0.0D, -0.090D, 0.0D, null);
+        tessellator.draw();	
+        renderBlocks.clearOverrideBlockTexture();
+        GL11.glPopMatrix();
+	}
 	
 	/**
 	 * Renders the item in inventories.
@@ -424,8 +555,6 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 	@Override
 	public void renderInventoryBlock(Block block, int metadata, int modelID,
 			RenderBlocks renderer) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	/**
@@ -447,10 +576,61 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 		default: return false;
 		}
 	}
-
+	
 	private boolean renderModdedCraftingTableInWorld(IBlockAccess world, int x,
 			int y, int z, Block block, RenderBlocks renderer) {
-		// TODO Auto-generated method stub
+		Tessellator tessellator = Tessellator.instance;
+		int l = block.getMixedBrightnessForBlock(world, x, y, z);
+
+		ItemStack planks = ((TileEntityModdedTable)world.getBlockTileEntity(x, y, z)).getPlanksUsed();
+        if(planks == null)
+        	planks = new ItemStack(Block.planks.blockID, 1, 0);
+        Block planksBlock = Block.blocksList[planks.itemID];
+        if(planksBlock == null)
+        	planksBlock = Block.planks;
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.1F);
+        
+        //Wrapping plank texture around middle thing
+        renderBlocks.renderMinY = 0.125D;
+        renderBlocks.renderMaxY = 0.75D;
+        renderBlocks.renderMaxX = 0.7D;
+        renderBlocks.renderMaxZ = 0.78D;
+        renderBlocks.renderMinZ = 0.22D;
+        Icon plankIcon = planksBlock.getIcon(0, planks.getItemDamage());
+        tessellator.setBrightness(renderBlocks.renderMaxX < 1.0D ? l : block.getMixedBrightnessForBlock(world, x, y, z));
+        tessellator.setColorOpaque_F(0.6F, 0.6F, 0.6F);
+    	renderBlocks.renderFaceXPos(block, (double)x + 0.080F, (double)y, (double)z, plankIcon);
+    	renderBlocks.renderFaceXNeg(block, (double)x + 0.22F, (double)y, (double)z, plankIcon);
+        renderBlocks.renderMinY = 0.0D;
+        renderBlocks.renderMaxY = 1.0D;
+        renderBlocks.renderMaxX = 1.0D;
+        renderBlocks.renderMaxZ = 1.0D;
+        renderBlocks.renderMinZ = 0.0D;
+        renderBlocks.renderMinY = 0.125D;
+        renderBlocks.renderMaxY = 0.75D;
+        renderBlocks.renderMaxZ = 0.7D;
+        renderBlocks.renderMaxX = 0.78D;
+        renderBlocks.renderMinX = 0.22D;
+    	renderBlocks.renderFaceZPos(block, (double)x, (double)y, (double)z + 0.080F, plankIcon);
+    	renderBlocks.renderFaceZNeg(block, (double)x, (double)y, (double)z + 0.22F, plankIcon);
+        renderBlocks.renderMinY = 0.0D;
+        renderBlocks.renderMaxY = 1.0D;
+        renderBlocks.renderMaxZ = 1.0D;
+        renderBlocks.renderMaxX = 1.0D;
+        renderBlocks.renderMinX = 0.0D;
+        renderBlocks.renderMinX = 0.2D;
+        renderBlocks.renderMaxX = 0.8D;
+        renderBlocks.renderMinZ = 0.2D;
+        renderBlocks.renderMaxZ = 0.8D;
+        renderBlocks.renderFaceYPos(block, (double)x, (double)y -0.25F, (double)z, plankIcon);
+        renderBlocks.renderMinX = 0.0D;
+        renderBlocks.renderMaxX = 1.0D;
+        renderBlocks.renderMinZ = 0.0D;
+        renderBlocks.renderMaxZ = 1.0D;
+        renderBlocks.renderFaceYPos(block, (double)x, (double)y -0.0003F, (double)z, plankIcon);
+        
+//        renderBlocks.renderMinX = 1.0D;
+		
 		return false;
 	}
 
@@ -489,7 +669,6 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         Block planksBlock = Block.blocksList[planks.itemID];
         if(planksBlock == null)
         	planksBlock = Block.planks;
-        //TODO Discoloration of breaking block? set alpha to 1.0F for example
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.1F);
         
         Icon plankIcon = planksBlock.getIcon(0, planks.getItemDamage());

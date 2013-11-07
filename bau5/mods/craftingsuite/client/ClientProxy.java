@@ -4,7 +4,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import bau5.mods.craftingsuite.common.CommonProxy;
 import bau5.mods.craftingsuite.common.CraftingSuite;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityAdvancedBench;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import cpw.mods.fml.client.FMLClientHandler;
@@ -21,7 +21,7 @@ public class ClientProxy extends CommonProxy{
 		RenderingRegistry.registerBlockHandler(renderid, generalRenderer);
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityModificationTable.class, generalRenderer);
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityProjectBench.class, generalRenderer);
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityAdvancedBench.class, generalRenderer);
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityModdedTable.class, generalRenderer);
 	}
 	
 	@Override

@@ -1,4 +1,4 @@
-package bau5.mods.craftingsuite.client.gui;
+package bau5.mods.craftingsuite.client;
 
 //import invtweaks.api.container.ChestContainer;
 //import invtweaks.api.container.ContainerSection;

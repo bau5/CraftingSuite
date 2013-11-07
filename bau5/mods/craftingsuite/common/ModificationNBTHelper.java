@@ -135,6 +135,8 @@ public class ModificationNBTHelper {
 	public static NBTTagCompound getPlanksUsed(NBTTagCompound stackTagCompound) {
 		if(stackTagCompound == null)
 			return new ItemStack(Block.planks.blockID, 1, 0).writeToNBT(new NBTTagCompound());
+		if(stackTagCompound.hasKey(modifierTag))
+			return stackTagCompound.getCompoundTag(modifierTag).getCompoundTag(planksName);
 		return stackTagCompound.getCompoundTag(planksName);
 	}
 }

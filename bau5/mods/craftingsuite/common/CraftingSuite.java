@@ -11,7 +11,6 @@ import net.minecraftforge.common.Configuration;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityAdvancedBench;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
@@ -84,7 +83,6 @@ public class CraftingSuite {
 		GameRegistry.registerTileEntity(TileEntityModdedTable.class, "bau5csMCT");
 //		GameRegistry.registerTileEntity(TileEntityCraftingTable.class, "bau5csCT");
 		GameRegistry.registerTileEntity(TileEntityProjectBench.class,  "bau5csPB");
-		GameRegistry.registerTileEntity(TileEntityAdvancedBench.class,  "bau5csAB");
 		modItems = new ItemModifications(itemIDs[0]);
 		entityID = EntityRegistry.findGlobalUniqueEntityId();
 		EntityRegistry.registerModEntity(EntityCraftingFrame.class, "craftingframe", entityID++, this, 15, Integer.MAX_VALUE, false);

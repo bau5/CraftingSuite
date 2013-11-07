@@ -21,7 +21,6 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityAdvancedBench;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import cpw.mods.fml.relauncher.Side;
@@ -34,8 +33,8 @@ public class BlockCrafting extends BlockContainer {
 	public class CachedUpgrade{
 		public final int x, y, z;
 		public final NBTTagCompound modList;
-		public CachedUpgrade(IModifiedTileEntityProvider tile, int x1, int y1, int z1){
-			modList = tile.getModifierTag();
+		public CachedUpgrade(TileEntityProjectBench tile, int x1, int y1, int z1){
+			modList = tile.getModifiers();
 			x = x1;
 			y = y1;
 			z = z1;
@@ -93,16 +92,12 @@ public class BlockCrafting extends BlockContainer {
 		if(te == null)
 			return false;
 		int meta = world.getBlockMetadata(x, y, z);
-		if(!player.isSneaking()){
-			player.openGui(CraftingSuite.instance, meta, world, x, y, z);
+		switch(meta){
+		case 1: if(!player.isSneaking()) player.openGui(CraftingSuite.instance, 1, world, x, y, z);
+			return true;
+		case 2: if(!player.isSneaking()) player.openGui(CraftingSuite.instance, 2, world, x, y, z);
 			return true;
 		}
-//		switch(meta){
-//		case 1: if(!player.isSneaking()) player.openGui(CraftingSuite.instance, 1, world, x, y, z);
-//			return true;
-//		case 2: if(!player.isSneaking()) player.openGui(CraftingSuite.instance, 2, world, x, y, z);
-//			return true;
-//		}
 		return false;
 		
 	}
@@ -112,7 +107,6 @@ public class BlockCrafting extends BlockContainer {
 		switch(metadata){
 		case 1: return new TileEntityModdedTable();
 		case 2: return new TileEntityProjectBench();
-		case 3: return new TileEntityAdvancedBench();
 		}
 		return null;
     }
@@ -149,9 +143,8 @@ public class BlockCrafting extends BlockContainer {
 	public void getSubBlocks(int par1, CreativeTabs par2CreativeTabs,
 			List list) {
 		//TODO Crafter Mk I 
-//		list.add(ModificationStackHelper.makeBasicMkICrafter());
+		list.add(ModificationStackHelper.makeBasicMkICrafter());
 		list.add(ModificationStackHelper.makeBasicProjectBench());
-		list.add(ModificationStackHelper.makeBasicAdvancedBench());
 	}
 	
 	@Override
@@ -183,9 +176,9 @@ public class BlockCrafting extends BlockContainer {
 		if(te instanceof TileEntityProjectBench)
 			cache.add(new CachedUpgrade((TileEntityProjectBench)te, x, y, z));
 		
-		if(!(te instanceof IInventory))
+		if(!(te instanceof IInventory || te instanceof TileEntityModdedTable))
 			return;
-		IInventory inv = (IInventory)te;
+		IInventory inv = te instanceof IInventory ? (IInventory)te : ((TileEntityModdedTable)te).inventoryHandler();
 		int i = 0; 
 		int size = inv.getSizeInventory();
 		for(; i < size; i++)

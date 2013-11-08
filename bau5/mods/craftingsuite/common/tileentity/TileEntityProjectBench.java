@@ -317,7 +317,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			return;
 		}
 		readFromNBT(pkt.data);
-		if(this.worldObj != null)
+		if(this.worldObj != null && inv != null)
 			findRecipe(true);
 	}
 	

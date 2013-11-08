@@ -43,6 +43,7 @@ public class ModificationRecipeUpgrade implements IModRecipe{
 			}
 		}
 		ItemStack newStack = input[0].copy();
+		newStack.stackSize = 1;
 		ModificationNBTHelper.setTagUpgradeBytes(newStack.stackTagCompound, bytes);
 		return newStack;
 	}

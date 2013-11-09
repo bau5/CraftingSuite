@@ -55,12 +55,15 @@ public class ModificationNBTHelper {
 	public static NBTTagCompound getModifierTag(NBTTagCompound baseTag){
 		if(baseTag == null)
 			baseTag = makeBaseTag();
-		if(baseTag.getName() == modifierTag)
+		if(baseTag.getName().equals(modifierTag))
 			return baseTag;
-		if(baseTag.hasKey(modifierTag))
-			return baseTag.getCompoundTag(modifierTag);
+		if(baseTag.hasKey(modifierTag)){
+			NBTTagCompound returnTag = baseTag.getCompoundTag(modifierTag);
+			return returnTag;
+		}
 		else{
-			NBTTagCompound tag = new NBTTagCompound();
+			NBTTagCompound tag = new NBTTagCompound();		
+			tag.setByteArray(upgradeArrayName, newBytes());
 			baseTag.setTag(modifierTag, tag);
 			return tag.getCompoundTag(modifierTag);
 		}
@@ -96,6 +99,41 @@ public class ModificationNBTHelper {
 			return bytes;
 		}
 		return array;
+	}
+	
+	public static boolean ensureIntegrity(Object ...data){ 
+		if(data == null)
+			return false;
+		byte[] bytes = null;
+		if(data.length > 0){
+			if(data[0] instanceof NBTTagCompound){
+				NBTTagCompound tag = (NBTTagCompound)data[0];
+				if(tag.getName().equals(modifierTag)){
+					bytes = getUpgradeByteArray(tag);
+					if(bytes.length > 0){
+						if(bytes[0] > -1){
+							return true;
+						}
+					}
+				}else if(tag.hasKey(modifierTag)){
+					tag = tag.getCompoundTag(modifierTag);
+					bytes = getUpgradeByteArray(tag);
+					if(bytes.length > 0){
+						if(bytes[0] > -1){
+							return true;
+						}
+					}
+				}
+			}else if(data[0] instanceof byte[]){
+				bytes = (byte[])data[0];
+				if(bytes.length > 0){
+					if(bytes[0] > -1){
+						return true;
+					}
+				}				
+			}
+		}
+		return false;
 	}
 	public static byte[] newBytes(){
 		byte[] bytes = new byte[ARRAY_LENGTH];

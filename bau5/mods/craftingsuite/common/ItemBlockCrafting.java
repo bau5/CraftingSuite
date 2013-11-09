@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
@@ -35,7 +36,20 @@ public class ItemBlockCrafting extends ItemBlock {
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		if(te instanceof IModifiedTileEntityProvider){
 			IModifiedTileEntityProvider tile = (IModifiedTileEntityProvider)te;
-			tile.initializeFromNBT(ModificationNBTHelper.getModifierTag(stack2.stackTagCompound));
+			NBTTagCompound tagToUse = null; 
+			if(stack2.stackTagCompound == null || !ModificationNBTHelper.ensureIntegrity(stack2.stackTagCompound)){
+				switch(stack.getItemDamage()){
+				case 1: tagToUse = ModificationStackHelper.makeBasicMkICrafter().stackTagCompound;
+					break;
+				case 2: tagToUse = ModificationStackHelper.makeBasicProjectBench().stackTagCompound;
+					break;
+				}
+				if(player.worldObj.isRemote){
+					player.addChatMessage("[CraftingSuite]: You are using a broken stack, please destroy.");
+				}
+			}else
+				tagToUse = stack2.stackTagCompound;
+			tile.initializeFromNBT(ModificationNBTHelper.getModifierTag(tagToUse));
 			tile.handleModifiers();
 		}
 		return bool;

@@ -14,4 +14,13 @@ public interface IModifiedTileEntityProvider {
 	public byte getDirectionFacing();
 	public void setDirectionFacing(byte byt);
 	public NBTTagCompound getModifiers();
+	
+	/**
+	 * Get the bytes that contain the information 
+	 * for the modifiers, typically will be the same 
+	 * as the NBTTagCompound.getByteArray("modifiers")
+	 * 
+	 * @return the byte array with the modifiers.
+	 */
+	public byte[] getModifierBytes();
 }

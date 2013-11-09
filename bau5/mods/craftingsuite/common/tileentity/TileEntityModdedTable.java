@@ -229,4 +229,9 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 	public NBTTagCompound getModifiers() {
 		return modifiers;
 	}
+
+	@Override
+	public byte[] getModifierBytes() {
+		return upgrades;
+	}
 }

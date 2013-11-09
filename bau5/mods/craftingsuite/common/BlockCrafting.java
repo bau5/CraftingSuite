@@ -52,6 +52,12 @@ public class BlockCrafting extends BlockContainer {
 	@Override
 	public ItemStack getPickBlock(MovingObjectPosition target, World world,
 			int x, int y, int z) {
+		TileEntity te = world.getBlockTileEntity(x, y, z);
+		if(te != null && te instanceof IModifiedTileEntityProvider){
+			IModifiedTileEntityProvider moddedTile = (IModifiedTileEntityProvider)te;
+			if(!ModificationNBTHelper.ensureIntegrity(moddedTile.getModifiers()) || !ModificationNBTHelper.ensureIntegrity(moddedTile.getModifierBytes()))
+				return ModificationStackHelper.makeBasicMkICrafter();
+		}
 		ItemStack vanillaStack = super.getPickBlock(target, world, x, y, z);
 		vanillaStack = ModificationStackHelper.makeStackFromInfo(vanillaStack, world.getBlockTileEntity(x, y, z));
 		return vanillaStack;
@@ -92,6 +98,11 @@ public class BlockCrafting extends BlockContainer {
 		if(te == null)
 			return false;
 		int meta = world.getBlockMetadata(x, y, z);
+		if(te instanceof IModifiedTileEntityProvider){
+			IModifiedTileEntityProvider moddedTile = (IModifiedTileEntityProvider)te;
+			if(!ModificationNBTHelper.ensureIntegrity(moddedTile.getModifiers()) || !ModificationNBTHelper.ensureIntegrity(moddedTile.getModifierBytes()))
+				return false;
+		}
 		switch(meta){
 		case 1: if(!player.isSneaking()) player.openGui(CraftingSuite.instance, 1, world, x, y, z);
 			return true;
@@ -172,6 +183,12 @@ public class BlockCrafting extends BlockContainer {
 			int par5, int par6) {
 		Random rand = new Random();	
 		TileEntity te = world.getBlockTileEntity(x, y, z);
+		
+		if(te instanceof IModifiedTileEntityProvider){
+			IModifiedTileEntityProvider moddedTile = (IModifiedTileEntityProvider)te;			
+			if(!ModificationNBTHelper.ensureIntegrity(moddedTile.getModifiers()) || !ModificationNBTHelper.ensureIntegrity(moddedTile.getModifierBytes()))
+				return;
+		}
 
 		if(te instanceof TileEntityProjectBench)
 			cache.add(new CachedUpgrade((TileEntityProjectBench)te, x, y, z));

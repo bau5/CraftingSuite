@@ -118,7 +118,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 
 	@Override
 	public void initializeFromNBT(NBTTagCompound nbtTagCompound) {
-		modifiers = nbtTagCompound;
+		modifiers = ModificationNBTHelper.getModifierTag(nbtTagCompound);
 		upgrades = modifiers.getByteArray(ModificationNBTHelper.upgradeArrayName);
 		initialized = true;
 	}
@@ -246,7 +246,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			FMLClientHandler.instance().getClient().renderGlobal.markBlockForRenderUpdate(xCoord, yCoord, zCoord);
 			update = -1;
 		}
-		if(initialized && (getModifiers() == null || getInventoryModifier() == null)){
+		if(initialized && upgrades != null && (upgrades.length == 0 || getModifiers() == null || getInventoryModifier() == null)){
 			if(getModifiers() == null)
 				CSLogger.logError("TIle entity has null upgrades.");
 			if(getInventoryModifier() == null)
@@ -417,24 +417,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			}
 			directionFacing = tagCompound.getByte("direction");
 		}catch(Exception ex){
-			CSLogger.logError("Failed loading a crafting table. Dropping inventory at " +xCoord +","+yCoord+","+zCoord, ex);
-			NBTTagList tagList = tagCompound.getTagList("Inventory");
-			if(tagList != null && FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER){
-				for(int i = 0; i < tagList.tagCount(); i++)
-				{
-					ItemStack item = ItemStack.loadItemStackFromNBT((NBTTagCompound)tagList.tagAt(i));
-					if(item != null && item.stackSize > 0)
-					{
-						EntityItem ei = new EntityItem(FMLCommonHandler.instance().getMinecraftServerInstance().getEntityWorld(), xCoord, yCoord, zCoord,
-								new ItemStack(item.itemID, item.stackSize, item.getItemDamage()));
-						if(item.hasTagCompound())
-							ei.getEntityItem().setTagCompound((NBTTagCompound) item.getTagCompound().copy());
-						float factor = 0.05f;
-						FMLCommonHandler.instance().getMinecraftServerInstance().getEntityWorld().spawnEntityInWorld(ei);
-						item.stackSize = 0;
-					}
-				}
-			}
+			CSLogger.logError("Failed loading a crafting table.", ex);
 		}
 	}
 	@Override
@@ -538,5 +521,10 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	@Override
 	public void setDirectionFacing(byte byt) {
 		directionFacing = byt;
+	}
+
+	@Override
+	public byte[] getModifierBytes() {
+		return upgrades;
 	}
 }

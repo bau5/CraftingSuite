@@ -71,8 +71,9 @@ public class ItemBlockCrafting extends ItemBlock {
 			if(bytes[0] == 1)
 				list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(new ItemStack(CraftingSuite.modItems, 1, 1).getUnlocalizedName() +".name"));
 			if(bytes[1] != -1){
-				if(bytes[1] == 3)
-					list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(new ItemStack(CraftingSuite.modItems, 1, 3).getUnlocalizedName() +".name"));
+				if(bytes[1] >= 3)
+					list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(new ItemStack(CraftingSuite.modItems, 1, bytes[1]).getUnlocalizedName() +".name"));
+				
 			}
 			if(bytes[3] != -1)
 				list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(Item.itemsList[Block.cloth.blockID].getUnlocalizedName(new ItemStack(Block.cloth.blockID, 1, bytes[3])) +".name"));

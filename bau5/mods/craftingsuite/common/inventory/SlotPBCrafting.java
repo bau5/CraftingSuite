@@ -33,28 +33,8 @@ public class SlotPBCrafting extends SlotCrafting {
 		tileEntity.containerWorking = true;
 		boolean found = false;
 		boolean metaSens = false;
-//		LocalInventoryCrafting crafting = tileEntity.getCopyOfMatrix(tileEntity.craftingMatrix);
-//        GameRegistry.onItemCrafted(thePlayer, stack, crafting/*tileEntity.craftingMatrix*/);
 		GameRegistry.onItemCrafted(thePlayer, stack, tileEntity.craftingMatrix);	
         this.onCrafting(stack);
-//        for(int i = 0; i < crafting.getSizeInventory(); i++){
-//        	ItemStack stack1 = crafting.getStackInSlot(i);
-//        	ItemStack stack2 = tileEntity.craftingMatrix.getStackInSlot(i);
-//        	ItemStack stack3 = tileEntity.getStackInSlot(i);
-//        	CSLogger.log("  Pre process");
-//        	CSLogger.log("   Copy: "  +stack1);
-//        	CSLogger.log("   TileM: " +stack2); 
-//        	CSLogger.log("   TileI: " +stack3);
-//        	if(!ItemStack.areItemStacksEqual(stack1, stack2)){
-//        		tileEntity.setInventorySlotContents(i, stack1);
-//        		toolStack = stack1;
-//        		toolSlot = i;
-//        	}
-//        	CSLogger.log("  Post process");
-//        	CSLogger.log("   Copy: "  +stack1);
-//        	CSLogger.log("   TileM: " +stack2); 
-//        	CSLogger.log("   TileI: " +stack3);
-//        }
 
         //Looping through crafting matrix finding required items
         for(int invIndex = 0; invIndex < 9; invIndex++)
@@ -62,7 +42,6 @@ public class SlotPBCrafting extends SlotCrafting {
         	metaSens = false;
         	found = false;
         	//Grabs the item for comparison
-//        	ItemStack craftComponentStack = tileEntity.getStackInSlot(invIndex);
         	ItemStack craftComponentStack = tileEntity.craftingMatrix.getStackInSlot(invIndex);
         	if(craftComponentStack != null)
         	{
@@ -75,7 +54,6 @@ public class SlotPBCrafting extends SlotCrafting {
 				}
         		//Consume extras in crafting matrix
         		for(int craftInv = 0; craftInv < 9; craftInv++){
-//        			ItemStack craftStack = tileEntity.getStackInSlot(craftInv);
         			ItemStack craftStack = tileEntity.craftingMatrix.getStackInSlot(craftInv);
         			if(craftStack != null && craftStack.stackSize > 1){
         				if(craftStack.getItem().equals(craftComponentStack.getItem()) && craftComponentStack.stackSize <= craftStack.stackSize){
@@ -92,7 +70,6 @@ public class SlotPBCrafting extends SlotCrafting {
 	    					}
 	    					else
 	    					{
-//	        					tileEntity.decrStackSize(craftInv, 1);
 	    						tileEntity.craftingMatrix.decrStackSize(craftInv, 1);
 	        					found = true;
 	    					}
@@ -109,10 +86,6 @@ public class SlotPBCrafting extends SlotCrafting {
 
 	                            if (conStack != null && (!craftComponentStack.getItem().doesContainerItemLeaveCraftingGrid(craftComponentStack) || !this.thePlayer.inventory.addItemStackToInventory(conStack)))
 	                            {
-//	                                if (this.craftingMatrix.getStackInSlot(invIndex) == null)
-//	                                {
-//	                                    this.craftingMatrix.setInventorySlotContents(invIndex, conStack);
-//	                                }
 	                            	if (tileEntity.craftingMatrix.getStackInSlot(invIndex) == null)
 	                                {
 	                            		tileEntity.craftingMatrix.setInventorySlotContents(invIndex, conStack);
@@ -129,6 +102,9 @@ public class SlotPBCrafting extends SlotCrafting {
         			}
         		}
         		//Checking the supply inventory for matching item
+        		if(!found){
+        			
+        		}
         		if(!found){
 	    			for(int supplyInv = 9; supplyInv < 27; supplyInv++)
 					{
@@ -198,10 +174,6 @@ public class SlotPBCrafting extends SlotCrafting {
 
                         if (conStack != null && (!craftComponentStack.getItem().doesContainerItemLeaveCraftingGrid(craftComponentStack) || !this.thePlayer.inventory.addItemStackToInventory(conStack)))
                         {
-//                            if (this.craftingMatrix.getStackInSlot(invIndex) == null)
-//                            {
-//                                this.craftingMatrix.setInventorySlotContents(invIndex, conStack);
-//                            } 
                             if (tileEntity.craftingMatrix.getStackInSlot(invIndex) == null)
                             {
                             	tileEntity.craftingMatrix.setInventorySlotContents(invIndex, conStack);

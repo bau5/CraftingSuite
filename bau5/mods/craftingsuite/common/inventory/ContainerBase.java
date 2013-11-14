@@ -1,15 +1,22 @@
-package bau5.mods.craftingsuite.common.inventory;
+	package bau5.mods.craftingsuite.common.inventory;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
-import net.minecraft.inventory.SlotCrafting;
 import net.minecraft.item.ItemStack;
+import bau5.mods.craftingsuite.common.handlers.IModifierHandler;
+import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 
 public abstract class ContainerBase extends Container implements IModifiedContainerProvider{
-	
+	public boolean containerIsWorking = false;
+	public IModifiedTileEntityProvider modifiedTile;
+	public IModifierHandler 		   handler;
+	public ContainerBase(IModifiedTileEntityProvider til){
+		modifiedTile = til;
+	}
 	@Override
 	public boolean canInteractWith(EntityPlayer entityplayer) {
 		return rangeCheck(entityplayer);
@@ -24,9 +31,17 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 	protected abstract void handleInventoryModifiers();
 
 	@Override
-	public ItemStack slotClick(int par1, int par2, int par3,
-			EntityPlayer par4EntityPlayer) {
- 		return super.slotClick(par1, par2, par3, par4EntityPlayer);
+	public ItemStack slotClick(int slot, int clickType, int clickMeta,
+			EntityPlayer player) {
+		if(clickMeta == 6 && slot == 0)
+			clickMeta = 0;
+		if(handler != null && handler.handlesSlotClicks())
+			return handler.handleSlotClick(slot, clickType, clickMeta, player);
+ 		return slotClick_plain(slot, clickType, clickMeta, player);
+	}
+	
+	public ItemStack slotClick_plain(int slot, int clickType, int clickMeta, EntityPlayer player){
+		return super.slotClick(slot, clickType, clickMeta, player);
 	}
 	
 	/**
@@ -79,7 +94,7 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 	 */
 	protected void buildBasicCraftingInventory(InventoryPlayer invPlayer, 
 					IInventory craftingMatrix, IInventory resultMatrix){
-		this.addSlotToContainer(new SlotCrafting(invPlayer.player, craftingMatrix, resultMatrix, 0, 124, 35));
+		this.addSlotToContainer(new SlotMTCrafting(invPlayer.player, (TileEntityModdedTable)modifiedTile, craftingMatrix, resultMatrix, 0, 124, 35, handler));
 		int i;
 		int j;
 		
@@ -93,8 +108,15 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 		basicBindPlayerInventory(invPlayer);
 	}
 	
+	@Override
 	public ItemStack transferStackInSlot(EntityPlayer par1EntityPlayer, int par2)
     {
+		if(handler != null && handler.handlesTransfers())
+			return handler.handleTransferClick(par1EntityPlayer, par2);
+		return transferStackInSlot_plain(par1EntityPlayer, par2);
+    }
+	
+	public ItemStack transferStackInSlot_plain(EntityPlayer par1EntityPlayer, int par2){
         ItemStack itemstack = null;
         Slot slot = (Slot)this.inventorySlots.get(par2);
 
@@ -105,7 +127,7 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 
             if (par2 == 0)
             {
-                if (!this.mergeItemStack(itemstack1, 10, 46, true))
+                if (!this.mergeItemStack(itemstack1, 11, 46, true))
                 {
                     return null;
                 }
@@ -121,12 +143,12 @@ public abstract class ContainerBase extends Container implements IModifiedContai
             }
             else if (par2 >= 37 && par2 < 46)
             {
-                if (!this.mergeItemStack(itemstack1, 10, 37, false))
+                if (!this.mergeItemStack(itemstack1, 11, 37, false))
                 {
                     return null;
                 }
             }
-            else if (!this.mergeItemStack(itemstack1, 10, 46, false))
+            else if (!this.mergeItemStack(itemstack1, 11, 46, false))
             {
                 return null;
             }
@@ -149,5 +171,31 @@ public abstract class ContainerBase extends Container implements IModifiedContai
         }
 
         return itemstack;
-    }
+	}
+	
+	public boolean invokeMerge(ItemStack par1ItemStack, int par2,
+			int par3, boolean par4) {
+		return super.mergeItemStack(par1ItemStack, par2, par3, par4);
+	}
+	@Override
+	public void putStacksInSlots(ItemStack[] par1ArrayOfItemStack) {
+		if(modifiedTile != null && modifiedTile.getContainerHandler() != null)
+			modifiedTile.getContainerHandler().containerWorking = true;
+		containerIsWorking = true;
+		super.putStacksInSlots(par1ArrayOfItemStack);
+		containerIsWorking = false;
+		if(modifiedTile != null && modifiedTile.getContainerHandler() != null)
+			modifiedTile.getContainerHandler().containerWorking = false;
+	}
+	
+	@Override
+	public void putStackInSlot(int par1, ItemStack par2ItemStack) {
+		if(modifiedTile != null && modifiedTile.getContainerHandler() != null)
+			modifiedTile.getContainerHandler().containerWorking = true;
+		containerIsWorking = true;
+		super.putStackInSlot(par1, par2ItemStack);
+		containerIsWorking = false;
+		if(modifiedTile != null && modifiedTile.getContainerHandler() != null)
+			modifiedTile.getContainerHandler().containerWorking = false;
+	}
 }

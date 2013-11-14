@@ -2,16 +2,19 @@ package bau5.mods.craftingsuite.client;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.inventory.Container;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
+import bau5.mods.craftingsuite.common.inventory.ContainerBase;
+
 public class GuiCraftingSuiteBase extends GuiContainer{
 	protected ResourceLocation guiTexture;
-	public GuiCraftingSuiteBase(Container par1Container) {
-		super(par1Container);
+	protected GuiHandler guiHandler;
+	public GuiCraftingSuiteBase(ContainerBase container) {
+		super(container);
 		setGuiTexture();
+		guiHandler = new GuiHandler(this, container.getTileEntity());
 	}
 
 	protected void setGuiTexture(){
@@ -31,6 +34,6 @@ public class GuiCraftingSuiteBase extends GuiContainer{
         int k = (this.width - this.xSize) / 2;
         int l = (this.height - this.ySize) / 2;
         this.drawTexturedModalRect(k, l, 0, 0, this.xSize, this.ySize);
-    
+        guiHandler.drawAdditionalParts(k, l, this.xSize, this.ySize);
 	}
 }

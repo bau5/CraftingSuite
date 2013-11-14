@@ -104,9 +104,9 @@ public class BlockCrafting extends BlockContainer {
 				return false;
 		}
 		switch(meta){
-		case 1: if(!player.isSneaking()) player.openGui(CraftingSuite.instance, 1, world, x, y, z);
+		case 1: if(!player.isSneaking()) if(!world.isRemote) player.openGui(CraftingSuite.instance, 1, world, x, y, z);
 			return true;
-		case 2: if(!player.isSneaking()) player.openGui(CraftingSuite.instance, 2, world, x, y, z);
+		case 2: if(!player.isSneaking()) if(!world.isRemote) player.openGui(CraftingSuite.instance, 2, world, x, y, z);
 			return true;
 		}
 		return false;
@@ -195,7 +195,7 @@ public class BlockCrafting extends BlockContainer {
 		
 		if(!(te instanceof IInventory || te instanceof TileEntityModdedTable))
 			return;
-		IInventory inv = te instanceof IInventory ? (IInventory)te : ((TileEntityModdedTable)te).inventoryHandler();
+		IInventory inv = te instanceof IInventory ? (IInventory)te : ((TileEntityModdedTable)te).getInventoryHandler();
 		int i = 0; 
 		int size = inv.getSizeInventory();
 		for(; i < size; i++)

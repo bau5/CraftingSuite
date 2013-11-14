@@ -326,12 +326,12 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         GL11.glTranslatef((float)x +0.5F, (float)y +1.5F, (float)z +0.5F);
         GL11.glRotatef(180, 1f, 0, 0);
         modelCraftingTable.renderDefaultParts();
-        if(tile.getUpgrades() != null){
+        if(tile.getUpgrades() != null && tile.getUpgrades().length > 0){
         	if(tile.getUpgrades()[4] == 1){
-        		if(tile.inventoryHandler().result != null){
+        		if(tile.getInventoryHandler().result != null){
         			GL11.glRotatef(180, 1.0F, 0.0F, 0.0F);
         			GL11.glTranslatef(-0.5F, -1.5F, -0.5F);
-        			renderTileEntityResult(tile, tile.inventoryHandler().result);
+        			renderTileEntityResult(tile, tile.getInventoryHandler().result);
         		}
         	}
         }
@@ -656,7 +656,7 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         float f17 = f5;
         float f18 = f6;
         byte[] bytes = ((TileEntityProjectBench)world.getBlockTileEntity(x, y, z)).getUpgrades();
-        if(bytes == null)
+        if(bytes == null || bytes.length == 0)
         	return false;
         boolean overlay = bytes[3] != -1;
         

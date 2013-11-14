@@ -22,7 +22,7 @@ public class SlotModification extends Slot {
 					   (stack.itemID == CraftingSuite.craftingTableBlock.blockID);
 		case 1: return (OreDictionary.getOreID(stack) == 1 ||
 						(stack.itemID == CraftingSuite.modItems.itemID &&
-						 stack.getItemDamage() == 3));
+						 stack.getItemDamage() >= 3));
 		case 5: return false;
 		default: return super.isItemValid(stack);
 		}

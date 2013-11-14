@@ -2,7 +2,8 @@ package bau5.mods.craftingsuite.common.inventory;
 
 public enum EnumInventoryModifier {
 	NONE(0),
-	TOOLS(3);
+	TOOLS(3),
+	DEEP(1);
 	
 	int extraSize;
 	

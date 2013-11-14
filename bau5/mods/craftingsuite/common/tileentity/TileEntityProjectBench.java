@@ -1,9 +1,7 @@
 package bau5.mods.craftingsuite.common.tileentity;
 
 import java.util.HashMap;
-import java.util.Random;
 
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
@@ -21,15 +19,18 @@ import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.ModificationNBTHelper;
 import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
+import bau5.mods.craftingsuite.common.tileentity.parthandlers.ContainerHandler;
+import bau5.mods.craftingsuite.common.tileentity.parthandlers.InventoryHandler;
 import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.network.PacketDispatcher;
-import cpw.mods.fml.relauncher.Side;
 
 public class TileEntityProjectBench extends TileEntity implements IModifiedTileEntityProvider, IInventory, ISidedInventory{
 	
 	private NBTTagCompound modifiers;
 	private byte[]		   upgrades;
+	
+	public TileNetHandler netHandler;
+	public InventoryHandler inventoryHandler;
+	public ContainerHandler containerHandler;
 	
 	public class LocalInventoryCrafting extends InventoryCrafting{
 		private TileEntity theTile;
@@ -75,6 +76,9 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	public TileEntityProjectBench() {
 		modifiers = ModificationNBTHelper.getModifierTag(null);
 		upgrades = ModificationNBTHelper.newBytes();
+		netHandler = new TileNetHandler(this);
+		containerHandler = new ContainerHandler();
+//		inventoryHandler = new InventoryHandler();
 	}
 	
 	public ItemStack findRecipe(boolean fromPacket) {
@@ -136,6 +140,8 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	
 	@Override
 	public EnumInventoryModifier getInventoryModifier() {
+		if(upgrades == null || upgrades.length == 0)
+			return EnumInventoryModifier.NONE;
 		switch(upgrades[1]){
 		case 3: return EnumInventoryModifier.TOOLS;
 		default: return EnumInventoryModifier.NONE;
@@ -170,20 +176,14 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			return -1;
 	}
 
-	public void setSelectedTool(int toolIndex) {
-		if(toolIndex == selectedToolIndex)
-			selectedToolIndex = -1;
-		else
-			selectedToolIndex = toolIndex;
-		sendRenderPacket = true;
-	}
-	
+	@Override
 	public ItemStack getSelectedTool(){
 		if(getInventoryModifier() != EnumInventoryModifier.TOOLS)
 			return null;
 		return inv[selectedToolIndex + getToolModifierInvIndex()];
 	}
 	
+	@Override
 	public int getSelectedToolIndex(){
 		return selectedToolIndex;
 	}
@@ -236,10 +236,11 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			findRecipe(false);
 			shouldUpdateOutput = false;
 		}
-		if(sendRenderPacket){
-			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64D, worldObj.provider.dimensionId, getLiteDescription(0));
+		if(sendRenderPacket && !worldObj.isRemote){
+			netHandler.postRenderPacket(0);
 			sendRenderPacket = false;
 		}
+		netHandler.tick();
 		if(update <= 5 && update != -1)
 			update++;
 		if(update >= 5 && worldObj.isRemote){
@@ -280,44 +281,11 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tag);
 	}
 	
-	public Packet getLiteDescription(int type) {
-		NBTTagCompound tag = new NBTTagCompound();
-		if(type == 0){
-			tag.setTag("displayedResult", result != null ? result.writeToNBT(new NBTTagCompound()) : new NBTTagCompound());
-			if(getInventoryModifier() == EnumInventoryModifier.TOOLS){
-				NBTTagCompound tag2 = new NBTTagCompound();
-				for(int i = 0; i < 3; i++){
-					tag2 = new NBTTagCompound();
-					tag.setTag("tool" +i, inv[i +getToolModifierInvIndex()] != null ? inv[i +getToolModifierInvIndex()].writeToNBT(tag2) : tag2);
-				}
-				tag.setByte("selectedToolIndex", (byte)selectedToolIndex);
-			}
-		}
-		if(type == 1){
-			tag.setFloat("randomShift", new Random().nextFloat()/100);
-		}
-		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tag);
-	}
-	
 	@Override
 	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
 		super.onDataPacket(net, pkt);
-		if(pkt.data.hasKey("displayedResult")){
-			result = ItemStack.loadItemStackFromNBT(pkt.data.getCompoundTag("displayedResult"));
-			if(getInventoryModifier() == EnumInventoryModifier.TOOLS){
-				for(int i = 0; i < 3; i++){
-					tools[i] = ItemStack.loadItemStackFromNBT(pkt.data.getCompoundTag("tool" +i));
-				}
-			}
-			selectedToolIndex = pkt.data.getByte("selectedToolIndex");
-			return;
-		}
-		if(pkt.data.hasKey("randomShift")){
-			randomShift = pkt.data.getFloat("randomShift");
-			return;
-		}
-		readFromNBT(pkt.data);
-		if(this.worldObj != null && inv != null)
+		netHandler.onDataPacket(pkt);
+		if(worldObj != null && inv != null)
 			findRecipe(true);
 	}
 	
@@ -417,7 +385,8 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			}
 			directionFacing = tagCompound.getByte("direction");
 		}catch(Exception ex){
-			CSLogger.logError("Failed loading a crafting table.", ex);
+			String coords = "" +xCoord +" " +yCoord +" " +zCoord;
+			CSLogger.logError("Failed loading a crafting table at " +coords, ex);
 		}
 	}
 	@Override
@@ -478,7 +447,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	@Override
 	public void closeChest() {
 		if(!worldObj.isRemote)
-			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64D, worldObj.provider.dimensionId, getLiteDescription(1));
+			netHandler.postRenderPacket(1);
 	}
 
 	@Override
@@ -526,5 +495,51 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	@Override
 	public byte[] getModifierBytes() {
 		return upgrades;
+	}
+
+	@Override
+	public ItemStack getRenderedResult() {
+		return result;
+	}
+
+	@Override
+	public ItemStack[] getInventory() {
+		return inv;
+	}
+
+	@Override
+	public void setRenderedResult(ItemStack stack) {
+		result = stack;
+	}
+
+	@Override
+	public void setTools(ItemStack[] stacks) {
+		int i = 0;
+		for(ItemStack stack : stacks)
+			tools[i++] = stack == null ? stack : stack.copy();
+	}
+
+	@Override
+	public void setSelectedToolIndex(int i) {
+		if(i == selectedToolIndex)
+			selectedToolIndex = -1;
+		else
+			selectedToolIndex = i;
+		sendRenderPacket = true;
+	}
+
+	@Override
+	public void setRandomShift(float f) {
+		randomShift = f;
+	}
+
+	@Override
+	public ContainerHandler getContainerHandler() {
+		return containerHandler;
+	}
+
+	@Override
+	public InventoryHandler getInventoryHandler() {
+		return inventoryHandler;
 	}
 }

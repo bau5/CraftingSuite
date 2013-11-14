@@ -37,9 +37,8 @@ public class ModificationRecipeUpgrade implements IModRecipe{
 			if(stack.itemID == Block.blockClay.blockID)
 				bytes[4] = 1;
 			if(stack.itemID == CraftingSuite.modItems.itemID){
-				switch(stack.getItemDamage()){
-				case 3: bytes[1] = (byte) stack.getItemDamage();
-				}
+				if(stack.getItemDamage() >= 3)
+					bytes[1] = (byte) stack.getItemDamage();
 			}
 		}
 		ItemStack newStack = input[0].copy();
@@ -62,6 +61,17 @@ public class ModificationRecipeUpgrade implements IModRecipe{
 		}
 		if(base == null)
 			return null;
+		for(int i = 0; i < provided.length; i++){
+			for(int j = 0; j < provided.length; i++){
+				if(i >= provided.length)
+					break;
+				if(i == j)
+					continue;
+				if(provided[i].itemID == CraftingSuite.modItems.itemID && provided[j].itemID == provided[i].itemID){
+					return null;
+				}
+			}
+		}
 		ArrayList<ItemStack> list = new ArrayList<ItemStack>();
 		list.add(base);
 		if(baseResult.itemID == provided[0].itemID && baseResult.getItemDamage() == provided[0].getItemDamage()){
@@ -85,15 +95,13 @@ public class ModificationRecipeUpgrade implements IModRecipe{
 							newPiece.stackSize = 1;
 							list.add(newPiece);
 						}else if(provided[i].itemID == CraftingSuite.modItems.itemID){
-							switch(provided[i].getItemDamage()){
-							case 3: if(bytes[1] == -1){
-										bytes[1] = (byte)provided[i].getItemDamage();
-										newPiece = provided[i].copy();
-										newPiece.stackSize = 1;
-										list.add(newPiece);
-									}
-									break;
-							default: continue outer;
+							if(provided[i].getItemDamage() >= 3){
+								if(bytes[1] == -1){
+									bytes[1] = (byte)provided[i].getItemDamage();
+									newPiece = provided[i].copy();
+									newPiece.stackSize = 1;
+									list.add(newPiece);
+								}
 							}
 						}
 					}

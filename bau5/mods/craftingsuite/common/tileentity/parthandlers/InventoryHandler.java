@@ -10,10 +10,16 @@ import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import bau5.mods.craftingsuite.common.CSLogger;
+import bau5.mods.craftingsuite.common.helpers.ItemHelper;
+import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 
 public class InventoryHandler implements IInventory{
 	public ItemStack[] inv = null;
+	public ItemStack[] tools = new ItemStack[3];
+	public int selectedToolIndex  = -1;
+	public int toolIndexInCrafting= -1;
 	private TileEntityModdedTable tileEntity;
 	private IInventory craftResult = new InventoryCraftResult();
 	private LocalInventoryCrafting craftingMatrix = new LocalInventoryCrafting();
@@ -37,20 +43,38 @@ public class InventoryHandler implements IInventory{
 	public ItemStack findRecipe(boolean fromPacket){
 		if(tileEntity.worldObj == null)
 			return null;
+		long start = System.currentTimeMillis();
 		lastResult = result;
+		boolean toolIn = false;
 		ItemStack stack = null;
+		if(getStackInSlot(4) == null && selectedToolIndex != -1 && !toolIn && stack == null){
+			craftingMatrix.setInventorySlotContents(4, tileEntity.getSelectedTool());
+			toolIn = true;
+			toolIndexInCrafting = 4;
+		}
 		for(int i = 0; i < craftingMatrix.getSizeInventory(); ++i) 
 		{
-			stack = getStackInSlot(i + craftingInventoryRange[0]);
-			craftingMatrix.setInventorySlotContents(i, stack);
+			stack = getStackInSlot(i);
+			if(i == 4 && (toolIn && toolIndexInCrafting == 4))
+				continue;
+			if(!toolIn && selectedToolIndex != -1 && stack == null){
+				craftingMatrix.setInventorySlotContents(i, tileEntity.getSelectedTool());
+				toolIn = true;
+				toolIndexInCrafting = i;
+			}
+			else
+				craftingMatrix.setInventorySlotContents(i, stack);
 		}
 	
 		ItemStack recipe = CraftingManager.getInstance().findMatchingRecipe(craftingMatrix, tileEntity.worldObj);
+//		if(recipe == null && validPlanInSlot() && haveSuppliesForPlan())
+//			recipe = getPlanResult();
 		setResult(recipe);
 		
-		if(!ItemStack.areItemStacksEqual(lastResult, result) && !fromPacket && !tileEntity.worldObj.isRemote){
+		if(!ItemStack.areItemStacksEqual(lastResult, result) && !fromPacket && !tileEntity.worldObj.isRemote)
 			tileEntity.sendRenderPacket = true;
-		}
+		long end = System.currentTimeMillis();
+		CSLogger.log("Recipe found on " + ((tileEntity.worldObj.isRemote) ? "client " : "server ") +"in " +(end - start) +" milliseconds.");
 		return recipe;
 	}
 
@@ -171,9 +195,15 @@ public class InventoryHandler implements IInventory{
 			{
 				NBTTagCompound tag = (NBTTagCompound) tagList.tagAt(i);
 				byte slot = tag.getByte("Slot");
-				if(slot >= 0 && slot < inv.length)
-				{
-					inv[slot] = ItemStack.loadItemStackFromNBT(tag);
+				if(!tag.hasKey("Large")){
+					if(slot >= 0 && slot < inv.length)
+					{
+						inv[slot] = ItemStack.loadItemStackFromNBT(tag);
+					}
+				}else{
+					if(slot >= 0 && slot < inv.length){
+						inv[slot] = ItemHelper.loadLargeItemStack(tag);
+					}
 				}
 			}
 		}
@@ -190,8 +220,15 @@ public class InventoryHandler implements IInventory{
 				{
 					NBTTagCompound tag = new NBTTagCompound();	
 					tag.setByte("Slot", (byte)i);
-					stack.writeToNBT(tag);
+					if(stack.stackSize > 64){
+						tag.setByte("Large", (byte)1);
+						ItemHelper.writeLargeStackToTag(stack, tag);
+					}
+					else{
+						stack.writeToNBT(tag);
+					}
 					itemList.appendTag(tag);
+					
 				}
 			}
 		}
@@ -223,4 +260,11 @@ public class InventoryHandler implements IInventory{
 		onTileInventoryChanged();
 	}
 	
+	public IModifiedTileEntityProvider getTileProvider(){
+		return tileEntity;
+	}
+
+	public boolean checkValidity() {
+		return inv != null && inv.length > 0;
+	}
 }

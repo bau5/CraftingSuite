@@ -12,6 +12,8 @@ public class ContainerHandler {
 	public ContainerHandler(TileEntityModdedTable tile) {
 		tileEntity = tile;
 	}
+	
+	public ContainerHandler(){}
 
 	public Slot[] getSlots() {
 		return null;

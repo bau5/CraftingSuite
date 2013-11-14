@@ -1,5 +1,7 @@
 package bau5.mods.craftingsuite.common.tileentity.parthandlers;
 
+import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
+
 public class ModdedTableInfo {
 	private byte[] upgrades = null;
 	private int[] craftingStartStop = new int[2];
@@ -20,11 +22,22 @@ public class ModdedTableInfo {
 			craftingStartStop[0] = 0;
 			craftingStartStop[1] = 8;
 			hasChest = chestSupplies = false;
-			inventorySize = 9;
 			holdsCrafting = true;
+			computerInventorySize();
 		}
 	}
-
+	
+	private void computerInventorySize(){
+		switch(upgrades[1]){
+		case 3: inventorySize = 9 + EnumInventoryModifier.TOOLS.getNumSlots();
+			break;
+		case 4: inventorySize = 9 + EnumInventoryModifier.DEEP.getNumSlots();
+			break;
+		default: inventorySize = 9;
+			break;
+		}
+	}
+	
 	public int getSizeInventory() {
 		return inventorySize;
 	}

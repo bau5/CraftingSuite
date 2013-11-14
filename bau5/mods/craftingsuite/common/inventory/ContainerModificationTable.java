@@ -7,6 +7,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 import bau5.mods.craftingsuite.common.CraftingSuite;
+import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -20,6 +21,7 @@ public class ContainerModificationTable extends ContainerBase {
 	private SlotDummy[] dummySlots = new SlotDummy[forRender.getSizeInventory()];
 	
 	public ContainerModificationTable(TileEntityModificationTable table, EntityPlayer player) {
+		super(null);
 		tileEntity = table;
 		buildContainer(table, player);
 	}
@@ -157,5 +159,11 @@ public class ContainerModificationTable extends ContainerBase {
 	protected void handleInventoryModifiers() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public IModifiedTileEntityProvider getTileEntity() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

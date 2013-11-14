@@ -123,6 +123,13 @@ public class ModificationNBTHelper {
 							return true;
 						}
 					}
+				}else if(tag.hasKey(planksName)){
+					bytes = getUpgradeByteArray(tag);
+					if(bytes.length > 0){
+						if(bytes[0] > -1){
+							return true;
+						}
+					}
 				}
 			}else if(data[0] instanceof byte[]){
 				bytes = (byte[])data[0];

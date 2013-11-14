@@ -12,7 +12,7 @@ public class ItemModifications extends Item {
 	
 	private Icon[] icons;
 	private final String[] itemNames = {
-		"crafter", "holding", "storing", "tools"	
+		"crafter", "holding", "storing", "tools", "deep"	
 	};
 
 	public ItemModifications(int id) {
@@ -47,9 +47,7 @@ public class ItemModifications extends Item {
 	@Override
 	public void getSubItems(int par1, CreativeTabs par2CreativeTabs,
 			List list) {
-		list.add(new ItemStack(this, 1, 0));
-		list.add(new ItemStack(this, 1, 1));
-		list.add(new ItemStack(this, 1, 2));
-		list.add(new ItemStack(this, 1, 3));
+		for(int i = 0; i < itemNames.length; i++)
+			list.add(new ItemStack(this, 1, i));
 	}
 }

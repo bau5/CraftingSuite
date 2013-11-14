@@ -8,8 +8,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
@@ -19,7 +19,7 @@ import org.lwjgl.opengl.GL11;
 
 import bau5.mods.craftingsuite.common.Reference;
 import bau5.mods.craftingsuite.common.inventory.ContainerProjectBench;
-import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
+import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.relauncher.Side;
@@ -27,13 +27,17 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 //@ChestContainer
 @SideOnly(Side.CLIENT)
-public class GuiProjectBench extends GuiContainer {
+public class GuiProjectBench extends GuiContainer implements IGuiBridge{
 	private ResourceLocation resource;
+	private ResourceLocation parts;
+	private GuiHandler		 guiHandler;
 	private boolean once = true;
 	public GuiProjectBench(InventoryPlayer inventory, TileEntity te) {
 		super(new ContainerProjectBench(inventory, (TileEntityProjectBench)te));
 		ySize += 48;
 		resource = new ResourceLocation("craftingsuite", "textures/gui/pbGUI.png");
+		parts    = new ResourceLocation("craftingsuite", "textures/gui/parts.png");
+		guiHandler = new GuiHandler(this, (IModifiedTileEntityProvider)te);
 	}
 
 	@Override
@@ -61,41 +65,7 @@ public class GuiProjectBench extends GuiContainer {
 		mc.getTextureManager().bindTexture(resource);
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		this.drawTexturedModalRect(x, y, 0, 0, xSize, ySize);
-		if(((ContainerProjectBench)inventorySlots).tileEntity.getInventoryModifier() == EnumInventoryModifier.TOOLS){
-			TileEntityProjectBench tpb = (TileEntityProjectBench)((ContainerProjectBench)inventorySlots).tileEntity;
-			this.drawTexturedModalRect(x-21, y+10, 176, 44, 24, 66);
-			int index = tpb.selectedToolIndex;
-			if(index != -1){
-				this.zLevel = 700F;
-				this.drawTexturedModalRect(x-21, y+13 + (index * 18), 176, 110, 24, 24);
-				this.zLevel = 0F;
-				if(tpb.getSelectedTool() == null)
-					return;
-				ItemStack stack = tpb.getSelectedTool();
-				if(stack == null)
-					return;
-				
-				GL11.glTranslatef(0.0F, 0.0F, 32.0F);        
-				GL11.glEnable(GL11.GL_BLEND);
-		        GL11.glBlendFunc(768, 1);
-		        GL11.glColor4d(1.0F, 1.0F, 1.0F, 0.9F);
-		        
-		        this.zLevel = 200.0F;
-		        itemRenderer.zLevel = 200.0F;
-		        FontRenderer font = null;
-		        if (stack != null) font = stack.getItem().getFontRenderer(stack);
-		        if (font == null) font = fontRenderer;
-		        GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.5F);
-		        itemRenderer.renderItemAndEffectIntoGUI(font, this.mc.getTextureManager(), stack, x+48, y+35);
-		        itemRenderer.renderItemOverlayIntoGUI(font, this.mc.getTextureManager(), stack, x+48, y+35, null);
-		        this.zLevel = 0.0F;
-		        itemRenderer.zLevel = 0.0F;
-		        
-		        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		        GL11.glDisable(GL11.GL_BLEND);
-		        GL11.glEnable(GL11.GL_LIGHTING);
-			}
-		}
+		guiHandler.drawAdditionalParts(i, j, xSize, ySize);
 	}
 	
 	public class PBClearInventoryButton extends GuiButton{
@@ -104,6 +74,7 @@ public class GuiProjectBench extends GuiContainer {
 				int height, String label) {
 			super(id, xPos, yPos, width, height, label);
 		}
+		
 		@Override
 		public void drawButton(Minecraft mc, int i, int j) {
 			if (this.drawButton)
@@ -139,5 +110,25 @@ public class GuiProjectBench extends GuiContainer {
 			}
 			return fireButton;
 		}
+	}
+
+	@Override
+	public void setZLevel(float f) {
+		this.zLevel = f;
+	}
+
+	@Override
+	public FontRenderer getFontRenderer() {
+		return fontRenderer;
+	}
+
+	@Override
+	public RenderItem getItemRenderer() {
+		return itemRenderer;
+	}
+
+	@Override
+	public Minecraft getMinecraft() {
+		return mc;
 	}
 }

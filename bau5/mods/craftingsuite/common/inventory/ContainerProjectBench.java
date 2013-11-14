@@ -4,6 +4,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 
 public class ContainerProjectBench extends ContainerBase{
@@ -13,6 +14,7 @@ public class ContainerProjectBench extends ContainerBase{
 	private int index = 0;
 	
 	public ContainerProjectBench(InventoryPlayer invPlayer, TileEntityProjectBench tpb){
+		super(tpb);
 		tileEntity = tpb;
 		layoutContainer(invPlayer, tileEntity);
 		handleInventoryModifiers();
@@ -75,11 +77,11 @@ public class ContainerProjectBench extends ContainerBase{
 			int index = slot - 64;
 			
 			if(clickType == 0 && clickMeta == 0 && tileEntity.tools[index] != null){
-				tileEntity.setSelectedTool(index);
+				tileEntity.setSelectedToolIndex(index);
 				tileEntity.findRecipe(false);
 				return null;
 			}
-			tileEntity.setSelectedTool(-1);
+			tileEntity.setSelectedToolIndex(-1);
 			tileEntity.findRecipe(false);
 		}
 		ItemStack stack = super.slotClick(slot, clickType, clickMeta, player);
@@ -226,5 +228,10 @@ public class ContainerProjectBench extends ContainerBase{
 		// TODO Auto-generated method stub
 		super.onContainerClosed(par1EntityPlayer);
 		tileEntity.closeChest();
+	}
+
+	@Override
+	public IModifiedTileEntityProvider getTileEntity() {
+		return tileEntity;
 	}
 }

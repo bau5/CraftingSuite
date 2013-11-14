@@ -1,5 +1,6 @@
 package bau5.mods.craftingsuite.common.tileentity;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -16,7 +17,6 @@ import bau5.mods.craftingsuite.common.tileentity.parthandlers.InventoryHandler;
 import bau5.mods.craftingsuite.common.tileentity.parthandlers.ModdedTableInfo;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.relauncher.Side;
 
 public class TileEntityModdedTable extends TileEntity implements IModifiedTileEntityProvider{
@@ -24,6 +24,7 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 	private byte[] upgrades = null;
 	private final InventoryHandler inventoryHandler;
 	private final ContainerHandler containerHandler;
+	private final TileNetHandler 	   netHandler;
 	
 	private ModdedTableInfo modifications;
 	
@@ -33,21 +34,23 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 	public boolean sendRenderPacket = false;
 	private byte direcitonFacing = 0;
 	private int update = 0;
+	public float randomShift = 0.0F;
 	
 	public TileEntityModdedTable(){
 		inventoryHandler = new InventoryHandler(this);
 		containerHandler = new ContainerHandler(this);
+		netHandler		 = new TileNetHandler(this);
 	}
 	
 	@Override
 	public void updateEntity() {
 		if(!(inventoryHandler == null || containerHandler == null)){
- 			if(inventoryHandler().shouldUpdate && !containerHandler().isContainerInit() && !containerHandler().isContainerWorking()){
-				inventoryHandler().findRecipe(false);
-				inventoryHandler().shouldUpdate = false;
+ 			if(inventoryHandler.shouldUpdate && !containerHandler().isContainerInit() && !containerHandler().isContainerWorking()){
+				inventoryHandler.findRecipe(false);
+				inventoryHandler.shouldUpdate = false;
 			}
- 			if(sendRenderPacket){
- 				PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64D, worldObj.provider.dimensionId, getLiteDescription(0));
+ 			if(sendRenderPacket && !worldObj.isRemote){
+ 				netHandler.postRenderPacket(0);
  				sendRenderPacket = false;
  			}
 		}
@@ -58,22 +61,6 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 			update = -1;
 		}
 		super.updateEntity();
-	}
-	
-	private Packet getLiteDescription(int type) {
-		NBTTagCompound tag = new NBTTagCompound();
-		if(type == 0){
-			tag.setTag("displayedResult", inventoryHandler.result != null ? inventoryHandler.result.writeToNBT(new NBTTagCompound()) : new NBTTagCompound());
-			if(getInventoryModifier() == EnumInventoryModifier.TOOLS){
-				NBTTagCompound tag2 = new NBTTagCompound();
-				for(int i = 0; i < 3; i++){
-					tag2 = new NBTTagCompound();
-					tag.setTag("tool" +i, inventoryHandler.inv[i +getToolModifierInvIndex()] != null ? inventoryHandler.inv[i +getToolModifierInvIndex()].writeToNBT(tag2) : tag2);
-				}
-//				tag.setByte("selectedToolIndex", (byte)selectedToolIndex);
-			}
-		}
-		return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tag);
 	}
 
 	@Override
@@ -89,14 +76,14 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 	
 	@Override
 	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
-		if(pkt.data.hasKey("displayedResult")){
-			inventoryHandler.result = ItemStack.loadItemStackFromNBT(pkt.data.getCompoundTag("displayedResult"));
-			return;
-		}
-		readFromNBT(pkt.data);
+		super.onDataPacket(net, pkt);
 		initializeFromNBT(ModificationNBTHelper.getModifierTag(pkt.data));
 		handleModifiers();
-		super.onDataPacket(net, pkt);
+		netHandler.onDataPacket(pkt);
+		if(!inventoryHandler.checkValidity())
+			return;
+		if(worldObj != null)
+			inventoryHandler.findRecipe(true);
 	}
 
 	@Override
@@ -104,11 +91,6 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 		inventoryHandler.onTileInventoryChanged();
 		super.onInventoryChanged();
 	}
-	
-	public InventoryHandler inventoryHandler(){
-		return inventoryHandler;
-	}
-	
 	public ContainerHandler containerHandler(){
 		return containerHandler;
 	}
@@ -120,7 +102,7 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 	public void init(){
 		if(!initialized){
 			modifications = new ModdedTableInfo(upgrades);
-			inventoryHandler().initInventory();
+			inventoryHandler.initInventory();
 			initialized = true;
 		}
 	}
@@ -135,7 +117,7 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 			handleModifiers();
 			init();
 			inventoryHandler.readInventoryFromNBT(tagCompound);
-			if(!modifiers.getName().equals(""))
+			if(modifiers != null && !modifiers.getName().equals(""))
 				modifiers.setName("");
 		}catch(Exception ex){
 			CSLogger.logError("Failed loading a crafting table. Dropping inventory at " +xCoord +","+yCoord+","+zCoord, ex);
@@ -182,8 +164,11 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 	}
 	@Override
 	public EnumInventoryModifier getInventoryModifier() {
+		if(upgrades == null || upgrades.length == 0)
+			return EnumInventoryModifier.NONE;
 		switch(upgrades[1]){
-		case 1: return EnumInventoryModifier.TOOLS;
+		case 3: return EnumInventoryModifier.TOOLS;
+		case 4: return EnumInventoryModifier.DEEP;
 		default:return EnumInventoryModifier.NONE;
 		}
 	}
@@ -234,4 +219,62 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 	public byte[] getModifierBytes() {
 		return upgrades;
 	}
+
+	@Override
+	public ItemStack[] getInventory() {
+		return inventoryHandler.inv;
+	}
+
+	@Override
+	public ItemStack getRenderedResult() {
+		return inventoryHandler.result;
+	}
+
+	@Override
+	public int getSelectedToolIndex() {
+		return inventoryHandler.selectedToolIndex;
+	}
+
+	@Override
+	public void setRenderedResult(ItemStack stack) {
+		inventoryHandler.result = stack;
+	}
+
+	@Override
+	public void setTools(ItemStack[] stacks) {
+		int i = 0;
+		for(ItemStack stack : stacks)
+			inventoryHandler.tools[i++] = stack == null ? stack : stack.copy();
+	}
+
+	@Override
+	public void setSelectedToolIndex(int i) {
+		inventoryHandler.selectedToolIndex = i;
+	}
+
+	@Override
+	public void setRandomShift(float f) {
+		randomShift = f;
+	}
+	
+	@Override
+	public ItemStack getSelectedTool(){
+		if(getInventoryModifier() != EnumInventoryModifier.TOOLS)
+			return null;
+		if(inventoryHandler.selectedToolIndex + getToolModifierInvIndex() < inventoryHandler.inv.length)
+			return inventoryHandler.inv[inventoryHandler.selectedToolIndex + getToolModifierInvIndex()];
+		else
+			return new ItemStack(Block.stone);
+	}
+
+	@Override
+	public ContainerHandler getContainerHandler() {
+		return containerHandler;
+	}
+
+	@Override
+	public InventoryHandler getInventoryHandler() {
+		return inventoryHandler;
+	}
+	
 }

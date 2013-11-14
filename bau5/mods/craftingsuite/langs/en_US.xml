@@ -11,6 +11,7 @@
     <entry key="item.modification.holding.name">Holding Modifier</entry>
     <entry key="item.modification.storing.name">Storing Modifier</entry>
     <entry key="item.modification.tools.name">Tools Modifier</entry>
+    <entry key="item.modification.deep.name">Deep Slot Modifier</entry>
     <!--Guis-->
     <entry key="gui.modificationtable.name">Modification Table</entry>
     <entry key="gui.projectbench.name">Project Bench</entry>

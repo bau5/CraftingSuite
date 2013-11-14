@@ -134,5 +134,8 @@ public class CraftingSuite {
 			'I', new ItemStack(Item.ingotIron, 1, 0),
 			'B', new ItemStack(Item.bucketEmpty, 1, 0)
 		}));
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 1, 4), new Object[]{
+			"P P", "PIP", " P ", 'P', Block.planks, 'I', new ItemStack(Item.ingotIron, 1, 0)
+		}));
 	}
 }

@@ -166,7 +166,7 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         GL11.glEnable(32826 /* rescale */);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if(renderResult){
-        	ItemStack stack = tile.result;
+        	ItemStack stack = tile.inventoryHandler.result;
         	if(stack != null){
             	renderTileEntityResult((TileEntity)tile, stack);
         	}

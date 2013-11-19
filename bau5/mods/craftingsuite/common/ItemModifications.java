@@ -12,7 +12,7 @@ public class ItemModifications extends Item {
 	
 	private Icon[] icons;
 	private final String[] itemNames = {
-		"crafter", "holding", "storing", "tools", "deep"	
+		"crafter", "holding", "storing", "tools", "deep", "plan"
 	};
 
 	public ItemModifications(int id) {

@@ -11,6 +11,8 @@ import bau5.mods.craftingsuite.common.inventory.ContainerBase;
 public class GuiCraftingSuiteBase extends GuiContainer{
 	protected ResourceLocation guiTexture;
 	protected GuiHandler guiHandler;
+	private boolean once = true;
+	
 	public GuiCraftingSuiteBase(ContainerBase container) {
 		super(container);
 		setGuiTexture();
@@ -30,6 +32,15 @@ public class GuiCraftingSuiteBase extends GuiContainer{
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		if(once){
+			guiHandler.makeButtons();
+			once = false;
+		}
+		if(buttonList.size() != guiHandler.buttons.size()){
+			if(!buttonList.containsAll(guiHandler.buttons)){
+				buttonList.addAll(guiHandler.buttons);
+			}
+		}
         this.mc.getTextureManager().bindTexture(guiTexture);
         int k = (this.width - this.xSize) / 2;
         int l = (this.height - this.ySize) / 2;

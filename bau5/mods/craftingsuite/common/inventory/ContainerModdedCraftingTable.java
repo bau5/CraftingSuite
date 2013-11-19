@@ -3,6 +3,7 @@ package bau5.mods.craftingsuite.common.inventory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.handlers.DeepSlotHandler;
+import bau5.mods.craftingsuite.common.handlers.PlanHandler;
 import bau5.mods.craftingsuite.common.handlers.ToolsHandler;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
@@ -63,17 +64,23 @@ public class ContainerModdedCraftingTable extends ContainerBase {
 		switch(getInventoryModifier()){
 		case NONE: break;
 		case TOOLS: 
+			SlotTool[] toolSlots = new SlotTool[3];
 			for(int i = 0; i < 3; i++){
-				this.addSlotToContainer(new SlotTool(tileEntity.getInventoryHandler(), tileEntity.getToolModifierInvIndex() +i, -17, 17 + (16*i +(i*2))));
+				toolSlots[i] = new SlotTool(tileEntity.getInventoryHandler(), tileEntity.getToolModifierInvIndex() +i, -17, 17 + (16*i +(i*2)));
+				this.addSlotToContainer(toolSlots[i]);
 			}
-			handler = new ToolsHandler(this);
+			handler = new ToolsHandler(this, toolSlots);
 			break;
 		case DEEP:
 			SlotDeep slot = new SlotDeep(tileEntity.getInventoryHandler(), 9, -17, 34);
 			this.addSlotToContainer(slot);
 			handler = new DeepSlotHandler(this, slot);
 			break;
-		}		
+		case PLAN:
+			SlotPlan planSlot = new SlotPlan(tileEntity.getInventoryHandler(), 9, 10, 34);
+			this.addSlotToContainer(planSlot);
+			handler = new PlanHandler(this, planSlot);
+		}
 	}
 
 	@Override

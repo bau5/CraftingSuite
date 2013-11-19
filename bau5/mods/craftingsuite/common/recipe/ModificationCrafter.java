@@ -98,6 +98,7 @@ public class ModificationCrafter {
 		this.addRecipe(new ModificationRecipeUpgrade(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 2), new ItemStack[]{
 			new ItemStack(CraftingSuite.modItems.itemID, 1, 3),
 			new ItemStack(CraftingSuite.modItems.itemID, 1, 4),
+			new ItemStack(CraftingSuite.modItems.itemID, 1, 5),
 			new ItemStack(Block.carpet.blockID, 1, OreDictionary.WILDCARD_VALUE),
 			new ItemStack(Block.blockClay.blockID, 1, 0)
 		}));
@@ -105,6 +106,7 @@ public class ModificationCrafter {
 		this.addRecipe(new ModificationRecipeUpgrade(new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 1), new ItemStack[]{
 			new ItemStack(CraftingSuite.modItems.itemID, 1, 3),
 			new ItemStack(CraftingSuite.modItems.itemID, 1, 4),
+			new ItemStack(CraftingSuite.modItems.itemID, 1, 5),
 			new ItemStack(Block.blockClay.blockID, 1, 0)
 		}));
 	}

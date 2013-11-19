@@ -1,43 +1,49 @@
 package bau5.mods.craftingsuite.common.tileentity.parthandlers;
 
+import java.util.HashMap;
+
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCraftResult;
-import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.helpers.ItemHelper;
+import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
+import bau5.mods.craftingsuite.common.inventory.LocalInventoryCrafting;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
-import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityBase;
 
 public class InventoryHandler implements IInventory{
 	public ItemStack[] inv = null;
 	public ItemStack[] tools = new ItemStack[3];
 	public int selectedToolIndex  = -1;
 	public int toolIndexInCrafting= -1;
-	private TileEntityModdedTable tileEntity;
+
+	public int planIndex;
+	
+	private TileEntityBase tileEntity;
+	
 	private IInventory craftResult = new InventoryCraftResult();
 	private LocalInventoryCrafting craftingMatrix = new LocalInventoryCrafting();
 	private LocalInventoryCrafting lastCraftMatrix= new LocalInventoryCrafting();
 	private int[] craftingInventoryRange = new int[2];
+	
+	public HashMap<EnumInventoryModifier, Integer> inventoryMap = new HashMap<EnumInventoryModifier, Integer>();
 	
 	public ItemStack result = null;
 	public ItemStack lastResult = null;
 	
 	public boolean shouldUpdate = false;
 	
-	public InventoryHandler(TileEntityModdedTable tile){
+	public InventoryHandler(TileEntityBase tile){
 		tileEntity = tile;
 	}
 	
 	public void initInventory() {
-		inv = new ItemStack[tileEntity.modifications().getSizeInventory()];
-		craftingInventoryRange = tileEntity.modifications().getCrafingRange();
+		inv = new ItemStack[tileEntity.getModifiedInventorySize()];
 	}
 
 	public ItemStack findRecipe(boolean fromPacket){
@@ -67,9 +73,14 @@ public class InventoryHandler implements IInventory{
 		}
 	
 		ItemStack recipe = CraftingManager.getInstance().findMatchingRecipe(craftingMatrix, tileEntity.worldObj);
-//		if(recipe == null && validPlanInSlot() && haveSuppliesForPlan())
-//			recipe = getPlanResult();
-		setResult(recipe);
+		if(recipe == null && tileEntity.getInventoryModifier() == EnumInventoryModifier.PLAN){
+			ItemStack planStack = inv[planIndex];
+			if(planStack != null && planStack.hasTagCompound()){
+				setResult(ItemStack.loadItemStackFromNBT((NBTTagCompound)planStack.stackTagCompound.getTag("Result")));
+			}else
+				setResult(recipe);
+		}else
+			setResult(recipe);
 		
 		if(!ItemStack.areItemStacksEqual(lastResult, result) && !fromPacket && !tileEntity.worldObj.isRemote)
 			tileEntity.sendRenderPacket = true;
@@ -83,8 +94,12 @@ public class InventoryHandler implements IInventory{
 		craftResult.setInventorySlotContents(0, recipe);
 	}
 	
+	public ItemStack getResult(){
+		return result;
+	}
+	
 	public void onTileInventoryChanged() {
-		if(!tileEntity.containerHandler().isContainerInit() && !tileEntity.containerHandler().isContainerWorking()){
+		if(!tileEntity.getContainerHandler().isContainerInit() && !tileEntity.getContainerHandler().isContainerWorking()){
 			if(checkDifferences()){
 				markForUpdate();
 				makeNewMatrix();
@@ -187,7 +202,14 @@ public class InventoryHandler implements IInventory{
 	@Override
 	public void closeChest() {}
 
-
+	public LocalInventoryCrafting getCraftingMatrix(){
+		return craftingMatrix;
+	}
+	
+	public void setCraftingMatrix(LocalInventoryCrafting crafting){
+		craftingMatrix = crafting;
+	}
+	
 	public void readInventoryFromNBT(NBTTagCompound tagCompound) {
 		NBTTagList tagList = tagCompound.getTagList("Inventory");
 		if(inv != null){
@@ -237,22 +259,6 @@ public class InventoryHandler implements IInventory{
 
 	public IInventory resultMatrix() {
 		return craftResult;
-	}
-	
-	public class LocalInventoryCrafting extends InventoryCrafting{
-		private TileEntity theTile;
-		public LocalInventoryCrafting() {
-			super(new Container(){
-				@Override
-				public boolean canInteractWith(EntityPlayer var1) {
-					return false;
-				}
-			}, 3, 3);
-		}
-		public LocalInventoryCrafting(TileEntity tileEntity){
-			this();
-			theTile = tileEntity;
-		}
 	}
 
 	@Override

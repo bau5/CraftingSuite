@@ -22,15 +22,19 @@ public class TileNetHandler {
 	
 	public void onDataPacket(Packet132TileEntityData packet){
 		if(packet.data.hasKey("displayedResult")){
-			tile.setRenderedResult(ItemStack.loadItemStackFromNBT(packet.data.getCompoundTag("displayedResult"))); 
+			NBTTagCompound tag = packet.data.getCompoundTag("displayedResult");
+			if(tag.hasKey("displayedResult"))
+				tag = packet.data.getCompoundTag("displayedResult");
+//			tile.setRenderedResult(ItemStack.loadItemStackFromNBT(tag));
+			tile.getInventoryHandler().result = ItemStack.loadItemStackFromNBT(tag);
 			if(tile.getInventoryModifier() == EnumInventoryModifier.TOOLS){
 				ItemStack[] tools = new ItemStack[3];
 				for(int i = 0; i < 3; i++){
 					tools[i] = ItemStack.loadItemStackFromNBT(packet.data.getCompoundTag("tool" +i));
 				}
 				tile.setTools(tools);
+				tile.setSelectedToolIndex(packet.data.getByte("selectedToolIndex"));
 			}
-			tile.setSelectedToolIndex(packet.data.getByte("selectedToolIndex"));
 			return;
 		}
 		if(packet.data.hasKey("randomShift")){

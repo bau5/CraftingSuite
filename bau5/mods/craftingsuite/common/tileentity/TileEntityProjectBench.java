@@ -9,7 +9,6 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.INetworkManager;
@@ -23,7 +22,7 @@ import bau5.mods.craftingsuite.common.tileentity.parthandlers.ContainerHandler;
 import bau5.mods.craftingsuite.common.tileentity.parthandlers.InventoryHandler;
 import cpw.mods.fml.client.FMLClientHandler;
 
-public class TileEntityProjectBench extends TileEntity implements IModifiedTileEntityProvider, IInventory, ISidedInventory{
+public class TileEntityProjectBench extends TileEntityBase implements IModifiedTileEntityProvider, IInventory, ISidedInventory{
 	
 	private NBTTagCompound modifiers;
 	private byte[]		   upgrades;
@@ -58,7 +57,6 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	public LocalInventoryCrafting craftingMatrix = new LocalInventoryCrafting(this);
 	public boolean containerInit = false;
 	public boolean containerWorking = false;
-	public boolean sendRenderPacket = false;
 	public boolean initialized = false;
 	private boolean shouldUpdateOutput;
 	private int update = 0;
@@ -78,47 +76,47 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 		upgrades = ModificationNBTHelper.newBytes();
 		netHandler = new TileNetHandler(this);
 		containerHandler = new ContainerHandler();
-//		inventoryHandler = new InventoryHandler();
+		inventoryHandler = new InventoryHandler(this);
 	}
 	
-	public ItemStack findRecipe(boolean fromPacket) {
-		if(worldObj == null)
-			return null;
-		long start = System.currentTimeMillis();
-		lastResult = result;
-		boolean toolIn = false;
-		ItemStack stack = null;
-		if(getStackInSlot(4) == null && selectedToolIndex != -1 && !toolIn && stack == null){
-			craftingMatrix.setInventorySlotContents(4, getSelectedTool());
-			toolIn = true;
-			toolIndexInCrafting = 4;
-		}
-		for(int i = 0; i < craftingMatrix.getSizeInventory(); ++i) 
-		{
-			stack = getStackInSlot(i);
-			if(i == 4 && (toolIn && toolIndexInCrafting == 4))
-				continue;
-			if(!toolIn && selectedToolIndex != -1 && stack == null){
-				craftingMatrix.setInventorySlotContents(i, getSelectedTool());
-				toolIn = true;
-				toolIndexInCrafting = i;
-			}
-			else
-				craftingMatrix.setInventorySlotContents(i, stack);
-		}
-	
-		ItemStack recipe = CraftingManager.getInstance().findMatchingRecipe(craftingMatrix, worldObj);
-//		if(recipe == null && validPlanInSlot() && haveSuppliesForPlan())
-//			recipe = getPlanResult();
-		setResult(recipe);
-		
-		if(!ItemStack.areItemStacksEqual(lastResult, result) && !fromPacket && !worldObj.isRemote)
-			sendRenderPacket = true;
-		long end = System.currentTimeMillis();
-		CSLogger.log("Recipe found on " + ((worldObj.isRemote) ? "client " : "server ") +"in " +(end - start) +" milliseconds.");
-		return recipe;
-		
-	}
+//	public ItemStack findRecipe(boolean fromPacket) {
+//		if(worldObj == null)
+//			return null;
+//		long start = System.currentTimeMillis();
+//		lastResult = result;
+//		boolean toolIn = false;
+//		ItemStack stack = null;
+//		if(getStackInSlot(4) == null && selectedToolIndex != -1 && !toolIn && stack == null){
+//			craftingMatrix.setInventorySlotContents(4, getSelectedTool());
+//			toolIn = true;
+//			toolIndexInCrafting = 4;
+//		}
+//		for(int i = 0; i < craftingMatrix.getSizeInventory(); ++i) 
+//		{
+//			stack = getStackInSlot(i);
+//			if(i == 4 && (toolIn && toolIndexInCrafting == 4))
+//				continue;
+//			if(!toolIn && selectedToolIndex != -1 && stack == null){
+//				craftingMatrix.setInventorySlotContents(i, getSelectedTool());
+//				toolIn = true;
+//				toolIndexInCrafting = i;
+//			}
+//			else
+//				craftingMatrix.setInventorySlotContents(i, stack);
+//		}
+//	
+//		ItemStack recipe = CraftingManager.getInstance().findMatchingRecipe(craftingMatrix, worldObj);
+////		if(recipe == null && validPlanInSlot() && haveSuppliesForPlan())
+////			recipe = getPlanResult();
+//		setResult(recipe);
+//		
+//		if(!ItemStack.areItemStacksEqual(lastResult, result) && !fromPacket && !worldObj.isRemote)
+//			sendRenderPacket = true;
+//		long end = System.currentTimeMillis();
+//		CSLogger.log("Recipe found on " + ((worldObj.isRemote) ? "client " : "server ") +"in " +(end - start) +" milliseconds.");
+//		return recipe;
+//		
+//	}
 
 	@Override
 	public void initializeFromNBT(NBTTagCompound nbtTagCompound) {
@@ -135,6 +133,9 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	@Override
 	public void handleModifiers() {
 		inv = new ItemStack[getModifiedInventorySize()];
+		inventoryHandler.inv = inv;
+		if(getInventoryModifier() == EnumInventoryModifier.PLAN)
+			inventoryHandler.planIndex = 27;
 		buildInventoryMap();
 	}
 	
@@ -144,8 +145,10 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			return EnumInventoryModifier.NONE;
 		switch(upgrades[1]){
 		case 3: return EnumInventoryModifier.TOOLS;
-		default: return EnumInventoryModifier.NONE;
+		case 4: return EnumInventoryModifier.DEEP;
+		case 5: return EnumInventoryModifier.PLAN;
 		}
+		return EnumInventoryModifier.NONE;
 	}
 	
 	private void buildInventoryMap(){
@@ -158,6 +161,13 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 			indicies = new int[2];
 			indicies[0] = 27; indicies[1] = 30;
 			inventoryMap.put(EnumInventoryModifier.TOOLS, indicies);
+			break;
+		case DEEP: 
+			indicies[0] = indicies[1] = 27;
+			inventoryMap.put(EnumInventoryModifier.DEEP, indicies);
+		case PLAN:
+			indicies[0] = 27; indicies[1] = 27;
+			inventoryMap.put(EnumInventoryModifier.PLAN, indicies);
 			break;
 		default: break;
 		}
@@ -222,10 +232,10 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	@Override
 	public void onInventoryChanged() {
 		if(!containerInit && !containerWorking){
-			if(checkDifferences()){
+//			if(checkDifferences()){
 				markForUpdate();
-				makeNewMatrix();
-			}
+//				makeNewMatrix();
+//			}
 		}
 		super.onInventoryChanged();
 	}
@@ -233,7 +243,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	@Override
 	public void updateEntity() {
 		if(shouldUpdateOutput && !containerInit && !containerWorking){
-			findRecipe(false);
+			inventoryHandler.findRecipe(false);
 			shouldUpdateOutput = false;
 		}
 		if(sendRenderPacket && !worldObj.isRemote){
@@ -285,8 +295,12 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
 		super.onDataPacket(net, pkt);
 		netHandler.onDataPacket(pkt);
-		if(worldObj != null && inv != null)
-			findRecipe(true);
+		inventoryHandler.inv = inv;
+		if(pkt.data.hasKey("id")){
+			if(worldObj != null && inv != null)
+				inventoryHandler.findRecipe(true);
+		}else if(getInventoryModifier() == EnumInventoryModifier.TOOLS)
+			inventoryHandler.findRecipe(true);
 	}
 	
 	@Override
@@ -338,7 +352,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 		{
 			stack.stackSize = getInventoryStackLimit();
 		}
-		if(slot >= 27 && !worldObj.isRemote){
+		if(slot >= 27 && getInventoryModifier() == EnumInventoryModifier.TOOLS && !worldObj.isRemote){
 			sendRenderPacket = true;
 			if(slot == 27)
 				tools[0] = inv[slot];
@@ -346,6 +360,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 				tools[1] = inv[slot];
 			if(slot == 29)
 				tools[2] = inv[slot];
+			inventoryHandler.tools = tools;
 		}
 	}
 
@@ -376,12 +391,14 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 								tools[1] = inv[slot];
 							if(slot == 29)
 								tools[2] = inv[slot];
+							if(inventoryHandler != null)
+								inventoryHandler.tools = tools;
 						}
 					}
 				}
 			}
 			if(getInventoryModifier() == EnumInventoryModifier.TOOLS){
-				selectedToolIndex = tagCompound.getByte("selectedToolIndex");
+				setSelectedToolIndex(tagCompound.getByte("selectedToolIndex"));
 			}
 			directionFacing = tagCompound.getByte("direction");
 		}catch(Exception ex){
@@ -499,7 +516,7 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 
 	@Override
 	public ItemStack getRenderedResult() {
-		return result;
+		return inventoryHandler.result;
 	}
 
 	@Override
@@ -517,14 +534,14 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 		int i = 0;
 		for(ItemStack stack : stacks)
 			tools[i++] = stack == null ? stack : stack.copy();
+		if(inventoryHandler != null)
+			inventoryHandler.tools = tools;
 	}
 
 	@Override
 	public void setSelectedToolIndex(int i) {
-		if(i == selectedToolIndex)
-			selectedToolIndex = -1;
-		else
-			selectedToolIndex = i;
+		selectedToolIndex = i;
+		inventoryHandler.selectedToolIndex = selectedToolIndex;
 		sendRenderPacket = true;
 	}
 
@@ -541,5 +558,11 @@ public class TileEntityProjectBench extends TileEntity implements IModifiedTileE
 	@Override
 	public InventoryHandler getInventoryHandler() {
 		return inventoryHandler;
+	}
+
+	@Override
+	public int getPlanIndexInInventory() {
+		// TODO Auto-generated method stub
+		return inventoryHandler.planIndex;
 	}
 }

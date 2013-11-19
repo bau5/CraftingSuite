@@ -5,6 +5,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.helpers.ItemHelper;
 import bau5.mods.craftingsuite.common.inventory.ContainerBase;
+import bau5.mods.craftingsuite.common.inventory.ContainerProjectBench;
 import bau5.mods.craftingsuite.common.inventory.SlotDeep;
 
 public class DeepSlotHandler implements IModifierHandler{
@@ -23,7 +24,15 @@ public class DeepSlotHandler implements IModifierHandler{
 			if(theSlot.getStack() != null){
 				ItemStack playerStack = player.inventory.getItemStack();
 				if(playerStack != null && theSlot.isItemValid(playerStack)){
-					theSlot.putStack(playerStack);
+					ItemStack copy = playerStack;
+					if(clickType == 1){
+						copy = playerStack.copy();
+						copy.stackSize = 1;
+					}
+					theSlot.putStack(copy);
+					if(!playerStack.equals(copy) && copy.stackSize == 0){
+						playerStack.stackSize -= 1;
+					}
 					if(playerStack.stackSize == 0)
 						player.inventory.setItemStack(null);
 					return null;
@@ -68,8 +77,9 @@ public class DeepSlotHandler implements IModifierHandler{
                 return itemstack;
             }
         }
-		
-        return container.transferStackInSlot_plain(par1EntityPlayer, par2);
+		if(!(container instanceof ContainerProjectBench))
+			return container.transferStackInSlot_plain(par1EntityPlayer, par2);
+		return null;
 	}
 
 	@Override
@@ -93,6 +103,8 @@ public class DeepSlotHandler implements IModifierHandler{
 			ItemStack slotStack = deepSlot.getStack();
 			if(ItemHelper.checkItemMatch(neededStack, slotStack)){
 				slotStack.stackSize -= 1;
+				if(slotStack.stackSize <= 0)
+					deepSlot.putStack(null);
 				return true;
 			}
 		}

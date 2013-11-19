@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 import bau5.mods.craftingsuite.common.CraftingSuite;
 import bau5.mods.craftingsuite.common.ModificationNBTHelper;
+import bau5.mods.craftingsuite.common.helpers.ItemHelper;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 
 public class ModificationRecipeUpgrade implements IModRecipe{
@@ -56,6 +57,7 @@ public class ModificationRecipeUpgrade implements IModRecipe{
 			if(stack.itemID == baseResult.itemID &&
 					stack.getItemDamage() == baseResult.getItemDamage()){
 				base = stack.copy();
+				base.stackSize = 1;
 				break;
 			}
 		}
@@ -80,11 +82,11 @@ public class ModificationRecipeUpgrade implements IModRecipe{
  			System.arraycopy(fromStack, 0, bytes, 0, bytes.length);
 			for(ItemStack possible : possibleInputs){
 			outer : for(int i = 0; i < provided.length; i++){
-					if(OreDictionary.itemMatches(possible, provided[i], false)){
+					if(ItemHelper.checkItemMatch(possible, provided[i])){
 						ItemStack newPiece = null;
 						if(provided[i].itemID == Block.carpet.blockID){
-							if(bytes[3] != -1)
-								continue outer;
+//							if(bytes[3] != -1)
+//								continue outer;
 							newPiece = provided[i].copy();
 							newPiece.stackSize = 1;
 							list.add(newPiece);

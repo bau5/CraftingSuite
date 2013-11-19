@@ -2,8 +2,10 @@ package bau5.mods.craftingsuite.common.helpers;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.oredict.OreDictionary;
 
 public class ItemHelper {
+	
 	/**
 	 * Check if the stacks are identical, omitting stack size.
 	 * 
@@ -14,7 +16,8 @@ public class ItemHelper {
 	public static boolean checkItemMatch(ItemStack stack, ItemStack stack1){
 		if(stack == null || stack1 == null)
 			return false;
-		return stack.itemID == stack1.itemID && stack.getItemDamage() == stack1.getItemDamage()
+		return stack.itemID == stack1.itemID && (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE
+												|| stack.getItemDamage() == stack1.getItemDamage())
 				&& ItemStack.areItemStackTagsEqual(stack, stack1);
 	}
 	
@@ -42,5 +45,15 @@ public class ItemHelper {
             stack.stackTagCompound = tag.getCompoundTag("tag");
         }
         return stack;
+	}
+
+	public static boolean checkOreDictMatch(ItemStack craftComponentStack,
+			ItemStack supplyMatrixStack) {
+		int idTarget = OreDictionary.getOreID(craftComponentStack);
+		int idSupplied = OreDictionary.getOreID(supplyMatrixStack);
+		if(idTarget != -1 && idTarget == idSupplied){
+			return true;
+		}
+		return false;
 	}
 }

@@ -6,6 +6,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.helpers.ItemHelper;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityBase;
 import bau5.mods.craftingsuite.common.tileentity.parthandlers.InventoryHandler;
 
 public class SlotDeep extends Slot {
@@ -16,35 +17,57 @@ public class SlotDeep extends Slot {
 	
 	@Override
 	public boolean isItemValid(ItemStack stack) {
-		if(type == null)
+		if(getStack() == null)
 			return super.isItemValid(stack);
 		else{
-			return ItemHelper.checkItemMatch(type, stack);
+			return ItemHelper.checkItemMatch(stack, getStack());
 		}
+//		if(type == null)
+//			return super.isItemValid(stack);
+//		else{
+//			return ItemHelper.checkItemMatch(type, stack);
+//		}
 	}
 	
 	@Override
 	public int getSlotStackLimit() {
-		if(type != null)
-			return type.stackSize * 9;
+		if(getStack() != null)
+			return getStack().getMaxStackSize() * 6;
 		else
 			return super.getSlotStackLimit();
+		
+//		if(type != null)
+//			return type.stackSize * 9;
+//		else
+//			return super.getSlotStackLimit();
 	}
 	
 	@Override
 	public void putStack(ItemStack par1ItemStack) {
-		if(((IModifiedTileEntityProvider)((InventoryHandler)inventory).getTileProvider()).getContainerHandler().isContainerWorking())
-			return;
-		if(type != null && par1ItemStack != null && getStack() != null){
+		if(inventory instanceof InventoryHandler){
+			if(((IModifiedTileEntityProvider)((InventoryHandler)inventory).getTileProvider()).getContainerHandler().isContainerWorking())
+				return;
+		}else
+			if(((TileEntityBase)inventory).getContainerHandler().isContainerWorking())
+				return;
+		if(/*type != null && */par1ItemStack != null && getStack() != null){
 			ItemStack stackInside = getStack();
+			if(stackInside.stackSize + par1ItemStack.stackSize > getSlotStackLimit()){
+				int canPut = (getSlotStackLimit() - stackInside.stackSize);
+				if(canPut <= par1ItemStack.stackSize){
+					stackInside.stackSize += canPut;
+					par1ItemStack.stackSize -= canPut;
+				}
+				return;
+			}
 			stackInside.stackSize += par1ItemStack.stackSize;
 			par1ItemStack.stackSize = 0;
 		}
 		else{
-			if(par1ItemStack != null){
-				type = par1ItemStack.copy();
-				type.stackSize = 1;
-			}
+//			if(par1ItemStack != null){
+//				type = par1ItemStack.copy();
+//				type.stackSize = 1;
+//			}
 			if(par1ItemStack != null && par1ItemStack.stackSize > 64)
 				putLargeStack(par1ItemStack);
 			else 

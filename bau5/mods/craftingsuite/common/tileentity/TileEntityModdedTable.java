@@ -8,7 +8,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
-import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.ModificationNBTHelper;
 import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
@@ -19,7 +18,7 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 
-public class TileEntityModdedTable extends TileEntity implements IModifiedTileEntityProvider{
+public class TileEntityModdedTable extends TileEntityBase implements IModifiedTileEntityProvider{
 	
 	private byte[] upgrades = null;
 	private final InventoryHandler inventoryHandler;
@@ -275,6 +274,11 @@ public class TileEntityModdedTable extends TileEntity implements IModifiedTileEn
 	@Override
 	public InventoryHandler getInventoryHandler() {
 		return inventoryHandler;
+	}
+
+	@Override
+	public int getPlanIndexInInventory() {
+		return inventoryHandler.planIndex;
 	}
 	
 }

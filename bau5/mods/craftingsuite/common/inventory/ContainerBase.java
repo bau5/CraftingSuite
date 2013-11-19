@@ -14,6 +14,9 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 	public boolean containerIsWorking = false;
 	public IModifiedTileEntityProvider modifiedTile;
 	public IModifierHandler 		   handler;
+	
+	public int craftingSlotIndex = -1;
+	
 	public ContainerBase(IModifiedTileEntityProvider til){
 		modifiedTile = til;
 	}
@@ -35,6 +38,23 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 			EntityPlayer player) {
 		if(clickMeta == 6 && slot == 0)
 			clickMeta = 0;
+		if(clickMeta == 1 && slot == craftingSlotIndex){
+			Slot theSlot = (Slot) inventorySlots.get(slot);
+			if(theSlot.getHasStack()){
+				int tries = theSlot.getStack().getMaxStackSize() / theSlot.getStack().stackSize;
+				for(int i = 0; i < tries -1; i++){
+					if(handler != null && handler.handlesSlotClicks()){
+						handler.handleSlotClick(slot, clickType, clickMeta, player);
+					}else{
+						slotClick_plain(slot, clickType, clickMeta, player);
+					}
+					modifiedTile.getInventoryHandler().findRecipe(true);
+				}
+				if(handler != null && handler.handlesSlotClicks())
+					return handler.handleSlotClick(slot, clickType, clickMeta, player);
+				return slotClick_plain(slot, clickType, clickMeta, player);
+			}
+		}
 		if(handler != null && handler.handlesSlotClicks())
 			return handler.handleSlotClick(slot, clickType, clickMeta, player);
  		return slotClick_plain(slot, clickType, clickMeta, player);
@@ -95,6 +115,7 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 	protected void buildBasicCraftingInventory(InventoryPlayer invPlayer, 
 					IInventory craftingMatrix, IInventory resultMatrix){
 		this.addSlotToContainer(new SlotMTCrafting(invPlayer.player, (TileEntityModdedTable)modifiedTile, craftingMatrix, resultMatrix, 0, 124, 35, handler));
+		craftingSlotIndex = inventorySlots.size() -1;
 		int i;
 		int j;
 		
@@ -134,7 +155,7 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 
                 slot.onSlotChange(itemstack1, itemstack);
             }
-            else if (par2 >= 10 && par2 < 37)
+            else if (par2 > 10 && par2 < 37)
             {
                 if (!this.mergeItemStack(itemstack1, 37, 46, false))
                 {
@@ -171,6 +192,11 @@ public abstract class ContainerBase extends Container implements IModifiedContai
         }
 
         return itemstack;
+	}
+	
+	@Override
+	public IModifierHandler getModifierHandler() {
+		return handler;
 	}
 	
 	public boolean invokeMerge(ItemStack par1ItemStack, int par2,

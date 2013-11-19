@@ -44,6 +44,7 @@ public class CraftingSuite {
 	public static Block craftingTableBlock;
 	public static Item  craftingFrame;
 	public static Item  modItems;
+	public static Item  planItem;
 	
 	public static boolean VERBOSE;
 	public static boolean VERSION_CHECK;
@@ -55,13 +56,14 @@ public class CraftingSuite {
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent ev){
 		Configuration config = new Configuration(ev.getSuggestedConfigurationFile());
-		itemIDs = new int[5];
+		itemIDs = new int[2];
 		blockIDs = new int[2];
 		try{
 			config.load();
 			blockIDs[0] = config.getBlock("Modification Block", 700).getInt(700);
 			blockIDs[1] = config.getBlock("Crafting Block", 701).getInt(701);
 			itemIDs[0] = config.getItem("Modifications",  18976).getInt(18976) -256;
+			itemIDs[1] = config.getItem("Plan",  18977).getInt(18977) -256;
 			VERBOSE = config.get(Configuration.CATEGORY_GENERAL, "Verbose Logging", false).getBoolean(false);
 			VERSION_CHECK = config.get(Configuration.CATEGORY_GENERAL, "Version Check", true).getBoolean(true);
 		}catch(Exception ex){
@@ -84,6 +86,7 @@ public class CraftingSuite {
 //		GameRegistry.registerTileEntity(TileEntityCraftingTable.class, "bau5csCT");
 		GameRegistry.registerTileEntity(TileEntityProjectBench.class,  "bau5csPB");
 		modItems = new ItemModifications(itemIDs[0]);
+		planItem = new ItemPlan(itemIDs[1]);
 		entityID = EntityRegistry.findGlobalUniqueEntityId();
 		EntityRegistry.registerModEntity(EntityCraftingFrame.class, "craftingframe", entityID++, this, 15, Integer.MAX_VALUE, false);
 		NetworkRegistry.instance().registerGuiHandler(this, proxy);

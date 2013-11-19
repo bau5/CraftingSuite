@@ -4,12 +4,16 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import bau5.mods.craftingsuite.common.handlers.DeepSlotHandler;
+import bau5.mods.craftingsuite.common.handlers.PlanHandler;
+import bau5.mods.craftingsuite.common.handlers.ToolsHandler;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 
 public class ContainerProjectBench extends ContainerBase{
 	
 	public TileEntityProjectBench tileEntity;
+	private SlotPBCrafting craftingSlot;
 	
 	private int index = 0;
 	
@@ -18,15 +22,22 @@ public class ContainerProjectBench extends ContainerBase{
 		tileEntity = tpb;
 		layoutContainer(invPlayer, tileEntity);
 		handleInventoryModifiers();
-		tileEntity.findRecipe(false);
+		craftingSlot.handler = handler;
+		tileEntity.getInventoryHandler().findRecipe(false);
 	}
 
 	private void layoutContainer(InventoryPlayer invPlayer, TileEntityProjectBench tile) {
-		addSlotToContainer(new SlotPBCrafting(invPlayer.player, tileEntity, tileEntity.craftingResult, 0, 124, 35));
-//		addSlotToContainer(new SlotPBPlan(tileEntity, 27, 9, 35));
+		craftingSlot = new SlotPBCrafting(invPlayer.player, tileEntity, handler, tileEntity.inventoryHandler.resultMatrix(), 0, 124, 35);
+		addSlotToContainer(craftingSlot);
+		craftingSlotIndex = craftingSlot.slotNumber;
 		int row;
 		int col;
 		Slot slot = null;
+		
+		int xShift = 0;
+		if(handler instanceof DeepSlotHandler){
+			xShift = 1;
+		}
 
 		for(row = 0; row < 3; row++)
 		{
@@ -53,7 +64,7 @@ public class ContainerProjectBench extends ContainerBase{
 					addSlotToContainer(slot);
 				}
 			}
-		}
+		}		
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
@@ -71,22 +82,22 @@ public class ContainerProjectBench extends ContainerBase{
 	@Override
 	public ItemStack slotClick(int slot, int clickType, int clickMeta,
 			EntityPlayer player) {
-		if(slot == 0 && clickMeta == 6)
-			clickMeta = 0;
-		if(getInventoryModifier() == EnumInventoryModifier.TOOLS && slot >= 64 && slot <= 66){
-			int index = slot - 64;
-			
-			if(clickType == 0 && clickMeta == 0 && tileEntity.tools[index] != null){
-				tileEntity.setSelectedToolIndex(index);
-				tileEntity.findRecipe(false);
-				return null;
-			}
-			tileEntity.setSelectedToolIndex(-1);
-			tileEntity.findRecipe(false);
-		}
+//		if(slot == 0 && clickMeta == 6)
+//			clickMeta = 0;
+//		if(getInventoryModifier() == EnumInventoryModifier.TOOLS && slot >= 64 && slot <= 66){
+//			int index = slot - 64;
+//			
+//			if(clickType == 0 && clickMeta == 0 && tileEntity.tools[index] != null){
+//				tileEntity.setSelectedToolIndex(index);
+//				tileEntity.getInventoryHandler().findRecipe(false);
+//				return null;
+//			}
+//			tileEntity.setSelectedToolIndex(-1);
+//			tileEntity.getInventoryHandler().findRecipe(false);
+//		}
 		ItemStack stack = super.slotClick(slot, clickType, clickMeta, player);
 		if(slot == 0){
-			tileEntity.findRecipe(false);
+			tileEntity.getInventoryHandler().findRecipe(false);
 		}
 		return stack;
 	}
@@ -106,7 +117,8 @@ public class ContainerProjectBench extends ContainerBase{
 	
 	@Override
 	public void putStackInSlot(int slot, ItemStack itemStack) {
-		tileEntity.containerInit = true;
+		if(!tileEntity.worldObj.isRemote)
+			tileEntity.containerInit = true;
 		super.putStackInSlot(slot, itemStack);
 		tileEntity.containerInit = false;
 	}
@@ -116,15 +128,17 @@ public class ContainerProjectBench extends ContainerBase{
     {
         ItemStack stack = null;
         Slot slot = (Slot)this.inventorySlots.get(numSlot);
-
+        if(handler.handlesTransfers()){
+        	ItemStack stack2 = handler.handleTransferClick(player, numSlot);
+        	System.out.println(stack2);
+        }
+        
         if (slot != null && slot.getHasStack())
         {
         	boolean flag = false;
             ItemStack stack2 = slot.getStack();
             stack = stack2.copy();
             //TODO PLANS
-//            if(stack2.getItem().equals(CraftingSuite.instance.pbPlan))
-//            	flag = this.mergeItemStack(stack2, 28, 29, false);
             if(!flag){
             	if(tileEntity.getInventoryModifier() == EnumInventoryModifier.TOOLS 
             			&& stack.isItemStackDamageable() && numSlot != 0){
@@ -208,9 +222,23 @@ public class ContainerProjectBench extends ContainerBase{
 		switch(getInventoryModifier()){
 		case NONE: break;
 		case TOOLS: 
+			SlotTool[] toolSlots = new SlotTool[3];
 			for(int i = 0; i < 3; i++){
-				this.addSlotToContainer(new SlotTool(tileEntity, tileEntity.getToolModifierInvIndex() +i, -17, 17 + (16*i +(i*2))));
+				toolSlots[i] = new SlotTool(tileEntity, tileEntity.getToolModifierInvIndex() +i, -17, 17 + (16*i +(i*2)));
+				this.addSlotToContainer(toolSlots[i]);
 			}
+			handler = new ToolsHandler(this, toolSlots);
+			break;
+		case PLAN: 
+			SlotPlan planSlot = new SlotPlan(tileEntity, 27, 8, 34);
+			this.addSlotToContainer(planSlot);
+			handler = new PlanHandler(this, planSlot);
+			break;
+		case DEEP:
+			SlotDeep slot = new SlotDeep(tileEntity, 27, -17, 34);
+			this.addSlotToContainer(slot);
+			handler = new DeepSlotHandler(this, slot);
+			break;
 		}
 	}
 	

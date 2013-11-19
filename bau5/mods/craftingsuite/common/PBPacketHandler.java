@@ -6,6 +6,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Slot;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet250CustomPayload;
+import bau5.mods.craftingsuite.common.handlers.PlanHandler;
+import bau5.mods.craftingsuite.common.inventory.ContainerBase;
 import bau5.mods.craftingsuite.common.inventory.ContainerModificationTable;
 import bau5.mods.craftingsuite.common.inventory.ContainerProjectBench;
 import cpw.mods.fml.common.network.IPacketHandler;
@@ -29,10 +31,14 @@ public class PBPacketHandler implements IPacketHandler {
 			break;
 		case 1: ((ContainerModificationTable)((EntityPlayerMP)player).openContainer).tileEntity.craftRecipe();
 			break;
+		case 2: ((PlanHandler)((ContainerBase)((EntityPlayerMP)player).openContainer).handler).writePlanToStack();
+			break;
 		}
 	}
 	
 	public static void completeEmptyOfMatrix(EntityPlayerMP thePlayer){
+		if(!(thePlayer.openContainer instanceof ContainerProjectBench))
+			return;
 		ArrayList itemListToSend = new ArrayList();
         ((ContainerProjectBench)thePlayer.openContainer).tileEntity.containerInit = true;
         for(int i = 0; i < 9; i++){
@@ -44,6 +50,6 @@ public class PBPacketHandler implements IPacketHandler {
         }
 
         thePlayer.sendContainerAndContentsToPlayer(thePlayer.openContainer, itemListToSend);
-        ((ContainerProjectBench)thePlayer.openContainer).tileEntity.findRecipe(false);
+        ((ContainerBase)thePlayer.openContainer).getTileEntity().getInventoryHandler().findRecipe(false);
 	}
 }

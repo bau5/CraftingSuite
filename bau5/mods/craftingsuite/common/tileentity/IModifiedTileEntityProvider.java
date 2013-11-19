@@ -14,6 +14,7 @@ public interface IModifiedTileEntityProvider {
 	public int getToolModifierInvIndex();
 	public int getSelectedToolIndex();
 	public ItemStack getSelectedTool();
+	public int getPlanIndexInInventory();
 	public void initializeFromNBT(NBTTagCompound modifierTag);
 	public void handleModifiers();
 	

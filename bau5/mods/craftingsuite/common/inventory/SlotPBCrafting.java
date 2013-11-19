@@ -7,7 +7,10 @@ import net.minecraft.inventory.SlotCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
+import net.minecraftforge.oredict.OreDictionary;
 import bau5.mods.craftingsuite.common.CSLogger;
+import bau5.mods.craftingsuite.common.handlers.IModifierHandler;
+import bau5.mods.craftingsuite.common.helpers.ItemHelper;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -17,12 +20,14 @@ public class SlotPBCrafting extends SlotCrafting {
 	
 	private final IInventory craftingMatrix;
 	private EntityPlayer thePlayer;
+	public IModifierHandler handler;
 	
 	public SlotPBCrafting(EntityPlayer player, 
-			IInventory craftMatrix, IInventory slotInventory, int slotID,
+			IInventory craftMatrix, IModifierHandler hndlr, IInventory slotInventory, int slotID,
 			int xDisplay, int yDisplay) {
 		super(player, craftMatrix, slotInventory, slotID, xDisplay, yDisplay);
 		tileEntity = (TileEntityProjectBench)craftMatrix;
+		handler = hndlr;
 		craftingMatrix = craftMatrix;
 		thePlayer = player;
 	}
@@ -30,10 +35,11 @@ public class SlotPBCrafting extends SlotCrafting {
 	@Override
 	public void onPickupFromSlot(EntityPlayer player,
 			ItemStack stack) {
+		LocalInventoryCrafting craftingMatrix = tileEntity.inventoryHandler.getCraftingMatrix();
 		tileEntity.containerWorking = true;
 		boolean found = false;
 		boolean metaSens = false;
-		GameRegistry.onItemCrafted(thePlayer, stack, tileEntity.craftingMatrix);	
+		GameRegistry.onItemCrafted(thePlayer, stack, craftingMatrix);	
         this.onCrafting(stack);
 
         //Looping through crafting matrix finding required items
@@ -42,10 +48,12 @@ public class SlotPBCrafting extends SlotCrafting {
         	metaSens = false;
         	found = false;
         	//Grabs the item for comparison
-        	ItemStack craftComponentStack = tileEntity.craftingMatrix.getStackInSlot(invIndex);
+//        	ItemStack craftComponentStack = tileEntity.craftingMatrix.getStackInSlot(invIndex);
+        	ItemStack craftComponentStack = craftingMatrix.getStackInSlot(invIndex);
         	if(craftComponentStack != null)
         	{
-        		if(!craftComponentStack.isItemStackDamageable() && craftComponentStack.getMaxDamage() == 0
+        		if(craftComponentStack.getItemDamage() != OreDictionary.WILDCARD_VALUE
+        				&& !craftComponentStack.isItemStackDamageable() && craftComponentStack.getMaxDamage() == 0
         				&& craftComponentStack.itemID != Block.planks.blockID
         				&& craftComponentStack.itemID != Block.cloth.blockID
         				&& craftComponentStack.itemID != Block.leaves.blockID)
@@ -54,7 +62,8 @@ public class SlotPBCrafting extends SlotCrafting {
 				}
         		//Consume extras in crafting matrix
         		for(int craftInv = 0; craftInv < 9; craftInv++){
-        			ItemStack craftStack = tileEntity.craftingMatrix.getStackInSlot(craftInv);
+//        			ItemStack craftStack = tileEntity.craftingMatrix.getStackInSlot(craftInv);
+        			ItemStack craftStack = craftingMatrix.getStackInSlot(craftInv);
         			if(craftStack != null && craftStack.stackSize > 1){
         				if(craftStack.getItem().equals(craftComponentStack.getItem()) && craftComponentStack.stackSize <= craftStack.stackSize){
 	        				if(metaSens)
@@ -64,13 +73,15 @@ public class SlotPBCrafting extends SlotCrafting {
 	    							continue;
 	    						} else 
 	    						{
-	    							tileEntity.craftingMatrix.decrStackSize(craftInv, 1);
+//	    							tileEntity.craftingMatrix.decrStackSize(craftInv, 1);
+	    							craftingMatrix.decrStackSize(craftInv, 1);
 	            					found = true;
 	    						}
 	    					}
 	    					else
 	    					{
-	    						tileEntity.craftingMatrix.decrStackSize(craftInv, 1);
+	    						craftingMatrix.decrStackSize(craftInv, 1);
+//	    						tileEntity.craftingMatrix.decrStackSize(craftInv, 1);
 	        					found = true;
 	    					}
 	        				
@@ -86,9 +97,10 @@ public class SlotPBCrafting extends SlotCrafting {
 
 	                            if (conStack != null && (!craftComponentStack.getItem().doesContainerItemLeaveCraftingGrid(craftComponentStack) || !this.thePlayer.inventory.addItemStackToInventory(conStack)))
 	                            {
-	                            	if (tileEntity.craftingMatrix.getStackInSlot(invIndex) == null)
+//	                            	if (tileEntity.craftingMatrix.getStackInSlot(invIndex) == null)
+	                            	if (craftingMatrix.getStackInSlot(invIndex) == null)
 	                                {
-	                            		tileEntity.craftingMatrix.setInventorySlotContents(invIndex, conStack);
+	                            		craftingMatrix.setInventorySlotContents(invIndex, conStack);
 	                                }
 	                                else
 	                                {
@@ -101,10 +113,9 @@ public class SlotPBCrafting extends SlotCrafting {
         				}
         			}
         		}
+	            if(!found && handler.handlesCrafting())
+	            	found = handler.handleCraftingPiece(craftComponentStack, metaSens);
         		//Checking the supply inventory for matching item
-        		if(!found){
-        			
-        		}
         		if(!found){
 	    			for(int supplyInv = 9; supplyInv < 27; supplyInv++)
 					{
@@ -112,7 +123,9 @@ public class SlotPBCrafting extends SlotCrafting {
 		    			ItemStack supplyMatrixStack = tileEntity.getStackInSlot(supplyInv);
 		    			if(supplyMatrixStack != null)
 		    			{
-		    				if(supplyMatrixStack.getItem().equals(craftComponentStack.getItem()))
+		    				if(supplyMatrixStack.getItem().equals(craftComponentStack.getItem()) || 
+		    						(craftComponentStack.getItemDamage() == OreDictionary.WILDCARD_VALUE &&
+		    						 ItemHelper.checkOreDictMatch(craftComponentStack, supplyMatrixStack)))
 		    				{
 		    					if(metaSens)
 		    					{
@@ -161,7 +174,7 @@ public class SlotPBCrafting extends SlotCrafting {
         		//Didn't find it in the supply inventory, remove from crafting matrix
     			if(!found)
         		{
-        			tileEntity.craftingMatrix.decrStackSize(invIndex, 1);
+        			craftingMatrix.decrStackSize(invIndex, 1);
         			if (craftComponentStack.getItem().hasContainerItem())
                     {
                         ItemStack conStack = craftComponentStack.getItem().getContainerItemStack(craftComponentStack);
@@ -174,9 +187,9 @@ public class SlotPBCrafting extends SlotCrafting {
 
                         if (conStack != null && (!craftComponentStack.getItem().doesContainerItemLeaveCraftingGrid(craftComponentStack) || !this.thePlayer.inventory.addItemStackToInventory(conStack)))
                         {
-                            if (tileEntity.craftingMatrix.getStackInSlot(invIndex) == null)
+                            if (craftingMatrix.getStackInSlot(invIndex) == null)
                             {
-                            	tileEntity.craftingMatrix.setInventorySlotContents(invIndex, conStack);
+                            	craftingMatrix.setInventorySlotContents(invIndex, conStack);
                             }
                             else
                             {
@@ -187,42 +200,50 @@ public class SlotPBCrafting extends SlotCrafting {
         		}
         	}
         }
-//        for(int i = 0; i < 9; i++){
-//        	CSLogger.log("Copy: " +crafting.getStackInSlot(i));
-//        	CSLogger.log("TileM: " +tileEntity.craftingMatrix.getStackInSlot(i));
-//        	CSLogger.log("TileI: " +tileEntity.getStackInSlot(i));
-//        }
-//        if(tileEntity.selectedToolIndex != -1){
-//        	ItemStack toolCopy = null;
-//        	if(toolStack != null){
-//        		toolCopy = toolStack.copy();
-//	        	tileEntity.setInventorySlotContents(toolSlot, null);
-//	        	tileEntity.setInventorySlotContents(tileEntity.getToolModifierInvIndex() + tileEntity.selectedToolIndex, toolCopy);
-//        	}else{
-//        		toolCopy = crafting.getStackInSlot(tileEntity.toolIndexInCrafting);
-//        		CSLogger.log(toolCopy);
-//        		if(toolCopy != null){
-//        			CSLogger.log("Got tool from slot" + tileEntity.toolIndexInCrafting);
-//        			toolCopy = toolCopy.copy();
-//        			tileEntity.setInventorySlotContents(tileEntity.selectedToolIndex, toolCopy);
-//        			tileEntity.setInventorySlotContents(tileEntity.toolIndexInCrafting, null);
-//        			tileEntity.toolIndexInCrafting = -1;
-//        		}
-//        	}
-//        }
         if(tileEntity.getSelectedToolIndex() != -1 && tileEntity.getInventoryModifier() == EnumInventoryModifier.TOOLS){
-        	ItemStack toolCopy = tileEntity.craftingMatrix.getStackInSlot(tileEntity.toolIndexInCrafting);
-        	CSLogger.log("Copying " +toolCopy +" from crafting slot " +tileEntity.toolIndexInCrafting +" to tool slot " +tileEntity.getSelectedToolIndex());
-        	tileEntity.tools[tileEntity.selectedToolIndex] = toolCopy;
+        	ItemStack toolCopy = craftingMatrix.getStackInSlot(tileEntity.inventoryHandler.toolIndexInCrafting);
+        	CSLogger.log("Copying " +toolCopy +" from crafting slot " +tileEntity.inventoryHandler.toolIndexInCrafting +" to tool slot " +tileEntity.getSelectedToolIndex());
+        	tileEntity.tools[tileEntity.inventoryHandler.selectedToolIndex] = toolCopy;
         	tileEntity.setInventorySlotContents(tileEntity.getSelectedToolIndex() + tileEntity.getToolModifierInvIndex(), toolCopy);
-        	tileEntity.craftingMatrix.setInventorySlotContents(tileEntity.toolIndexInCrafting, null);
-			tileEntity.toolIndexInCrafting = -1;
+        	craftingMatrix.setInventorySlotContents(tileEntity.inventoryHandler.toolIndexInCrafting, null);
+			tileEntity.inventoryHandler.toolIndexInCrafting = -1;
         	if(toolCopy == null)
-        		tileEntity.selectedToolIndex = -1;
+        		tileEntity.inventoryHandler.selectedToolIndex = -1;
         }
-        for(int i = 0; i < tileEntity.craftingMatrix.getSizeInventory(); i++){
-        	tileEntity.setInventorySlotContents(i, tileEntity.craftingMatrix.getStackInSlot(i));
+        for(int i = 0; i < craftingMatrix.getSizeInventory(); i++){
+        	tileEntity.setInventorySlotContents(i, craftingMatrix.getStackInSlot(i));
         }
+//        if(tileEntity.getSelectedToolIndex() != -1 && tileEntity.getInventoryModifier() == EnumInventoryModifier.TOOLS){
+//        	ItemStack toolCopy = tileEntity.craftingMatrix.getStackInSlot(tileEntity.toolIndexInCrafting);
+//        	CSLogger.log("Copying " +toolCopy +" from crafting slot " +tileEntity.toolIndexInCrafting +" to tool slot " +tileEntity.getSelectedToolIndex());
+//        	tileEntity.tools[tileEntity.selectedToolIndex] = toolCopy;
+//        	tileEntity.setInventorySlotContents(tileEntity.getSelectedToolIndex() + tileEntity.getToolModifierInvIndex(), toolCopy);
+//        	craftingMatrix.setInventorySlotContents(tileEntity.toolIndexInCrafting, null);
+//			tileEntity.toolIndexInCrafting = -1;
+//        	if(toolCopy == null)
+//        		tileEntity.selectedToolIndex = -1;
+//        }
+//        for(int i = 0; i < craftingMatrix.getSizeInventory(); i++){
+//        	tileEntity.setInventorySlotContents(i, craftingMatrix.getStackInSlot(i));
+//        }
+//        if(tileEntity.getSelectedToolIndex() != -1 && tileEntity.getInventoryModifier() == EnumInventoryModifier.TOOLS){
+//        	ItemStack toolCopy = tileEntity.craftingMatrix.getStackInSlot(tileEntity.toolIndexInCrafting);
+//        	CSLogger.log("Copying " +toolCopy +" from crafting slot " +tileEntity.toolIndexInCrafting +" to tool slot " +tileEntity.getSelectedToolIndex());
+//        	tileEntity.tools[tileEntity.selectedToolIndex] = toolCopy;
+//        	tileEntity.setInventorySlotContents(tileEntity.getSelectedToolIndex() + tileEntity.getToolModifierInvIndex(), toolCopy);
+//        	tileEntity.craftingMatrix.setInventorySlotContents(tileEntity.toolIndexInCrafting, null);
+//			tileEntity.toolIndexInCrafting = -1;
+//        	if(toolCopy == null)
+//        		tileEntity.selectedToolIndex = -1;
+//        }
+//        for(int i = 0; i < tileEntity.craftingMatrix.getSizeInventory(); i++){
+//        	tileEntity.setInventorySlotContents(i, tileEntity.craftingMatrix.getStackInSlot(i));
+//        }
 		tileEntity.containerWorking = false;
+	}
+	
+	@Override
+	public boolean canTakeStack(EntityPlayer par1EntityPlayer) {
+		return super.canTakeStack(par1EntityPlayer);
 	}
 }

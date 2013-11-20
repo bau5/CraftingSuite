@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties version="1.0">
+        <!--Blocks-->
+    <entry key="tile.bau5_moddingblock.name">Стол модификаций</entry>
+        <!--Benches-->
+    <entry key="tile.bau5_craftingblock.pb.name">Проектный верстак</entry>
+    <entry key="tile.bau5_craftingblock.ct.name">Крафт верстак</entry>
+    <!--Items-->
+    <entry key="item.modification.crafter.name">Модификатор для крафта</entry>
+    <entry key="item.modification.holding.name">Модификатор для хранения</entry>
+    <entry key="item.modification.storing.name">Модификатор для усиления</entry>
+    <entry key="item.modification.tools.name">Модификатор для инструментов</entry>
+    <entry key="item.modification.deep.name">Модификатор углубленного отсека</entry>
+    <entry key="item.modification.plan.name">Модификатор для планов</entry>
+    
+    <entry key="item.plan.blank">Чистый план</entry>
+    <entry key="item.plan.used">План</entry>
+    <entry key="item.plan.broken">Испорченный план</entry>
+    <!--Guis-->
+    <entry key="gui.modificationtable.name">Стол модификаций</entry>
+    <entry key="gui.projectbench.name">Проектный верстак</entry>
+    <entry key="gui.modificationtable.modifiers">Модификатор</entry>
+    <entry key="gui.modificationtable.aesthetics">Эстетичность</entry>
+    <!--Descriptions-->
+    <entry key="item.modifications.tools.description">Позволяет хранить инструменты для крафта в специальном отсеке.</entry>
+</properties>

@@ -35,35 +35,8 @@ import codechicken.nei.recipe.IRecipeHandler;
  * @author chicken_bones
  * @editor _bau5
  */
-public class DefaultOverlayHandler implements IOverlayHandler
-{
-    public static class DistributedIngred
-    {
-        public DistributedIngred(ItemStack item)
-        {
-            stack = InventoryUtils.copyStack(item, 1);
-        }
-        
-        public ItemStack stack;
-        public int invAmount;
-        public int distributed;
-        public int numSlots;
-        public int recipeAmount;
-    }
-    
-    public static class IngredientDistribution
-    {
-        public IngredientDistribution(DistributedIngred distrib, ItemStack permutation)
-        {
-            this.distrib = distrib;
-            this.permutation = permutation;
-        }
-        
-        public DistributedIngred distrib;
-        public ItemStack permutation;
-        public Slot[] slots;
-    }
-    
+public class DefaultOverlayHandler extends codechicken.nei.recipe.DefaultOverlayHandler implements IOverlayHandler
+{    
     public DefaultOverlayHandler(int x, int y)
     {
         offsetx = x;
@@ -377,12 +350,9 @@ public class DefaultOverlayHandler implements IOverlayHandler
 
     public void clickSlot(GuiContainer window, int slotIndex, int button, int modifier)
     {
-        Container container = window.inventorySlots;
-        Slot slot = null;
-        if(slotIndex >= 0 && slotIndex < container.inventorySlots.size())
-            slot = container.getSlot(slotIndex);
-
-        window.sendMouseClick(slot, slotIndex, button, modifier);
+    	//Edit
+        super.clickSlot(window, slotIndex, button, modifier);
+        //End Edit
     }
 
     public DistributedIngred findIngred(List<DistributedIngred> ingredStacks, ItemStack pstack)

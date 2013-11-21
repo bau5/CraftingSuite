@@ -5,6 +5,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.handlers.DeepSlotHandler;
+import bau5.mods.craftingsuite.common.handlers.DefaultHandler;
 import bau5.mods.craftingsuite.common.handlers.PlanHandler;
 import bau5.mods.craftingsuite.common.handlers.ToolsHandler;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
@@ -122,7 +123,7 @@ public class ContainerProjectBench extends ContainerBase{
     {
         ItemStack stack = null;
         Slot slot = (Slot)this.inventorySlots.get(numSlot);
-        if(handler.handlesThisTransfer(numSlot, slot.getStack())){
+        if(handler != null && handler.handlesThisTransfer(numSlot, slot.getStack())){
         	ItemStack stack2 = handler.handleTransferClick(player, numSlot);
         	return stack2;
         }
@@ -214,7 +215,9 @@ public class ContainerProjectBench extends ContainerBase{
 	public void handleInventoryModifiers() {
 		//TODO this!@!!!
 		switch(getInventoryModifier()){
-		case NONE: break;
+		case NONE: 
+			handler = new DefaultHandler();
+			break;
 		case TOOLS: 
 			SlotTool[] toolSlots = new SlotTool[3];
 			for(int i = 0; i < 3; i++){

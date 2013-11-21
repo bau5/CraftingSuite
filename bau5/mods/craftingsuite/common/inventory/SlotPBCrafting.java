@@ -113,7 +113,7 @@ public class SlotPBCrafting extends SlotCrafting {
         				}
         			}
         		}
-	            if(!found && handler.handlesCrafting())
+	            if(!found && handler != null && handler.handlesCrafting())
 	            	found = handler.handleCraftingPiece(craftComponentStack, metaSens);
         		//Checking the supply inventory for matching item
         		if(!found){

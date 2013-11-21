@@ -5,12 +5,14 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.helpers.ItemHelper;
 import bau5.mods.craftingsuite.common.inventory.ContainerBase;
-import bau5.mods.craftingsuite.common.inventory.ContainerProjectBench;
 import bau5.mods.craftingsuite.common.inventory.SlotDeep;
 
 public class DeepSlotHandler implements IModifierHandler{
 	public ContainerBase container;
 	public SlotDeep	deepSlot;
+	
+	private boolean shiftClickedCrafting = false;
+	
 	public DeepSlotHandler(ContainerBase cont, SlotDeep slot){
 		container = cont;
 		deepSlot = slot;
@@ -29,18 +31,23 @@ public class DeepSlotHandler implements IModifierHandler{
 						copy = playerStack.copy();
 						copy.stackSize = 1;
 					}
-					theSlot.putStack(copy);
+					theSlot.addStack(copy);
 					if(!playerStack.equals(copy) && copy.stackSize == 0){
 						playerStack.stackSize -= 1;
 					}
 					if(playerStack.stackSize == 0)
 						player.inventory.setItemStack(null);
+					theSlot.onSlotChanged();
 					return null;
 				}
 			}
+			if(clickType == 1){
+				clickType = 0;
+			}
 		}
 		ItemStack stack = container.slotClick_plain(slot, clickType, clickMeta, player);
-		container.modifiedTile.getInventoryHandler().findRecipe(true);
+		if(container.getTileEntity().getInventoryHandler().affectsCrafting(slot))
+			container.modifiedTile.getInventoryHandler().findRecipe(false);
 		return stack;
 	}
 
@@ -54,9 +61,9 @@ public class DeepSlotHandler implements IModifierHandler{
         {
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
-            if(deepSlot.isItemValid(itemstack1)){
+            if(deepSlot.isItemValid(itemstack1) && !shiftClickedCrafting){
             	boolean flag = deepSlot.getHasStack();
-            	deepSlot.putStack(itemstack1);
+            	deepSlot.addStack(itemstack1);
             	
                 if (itemstack1.stackSize == 0 || !flag)
                 {
@@ -77,9 +84,9 @@ public class DeepSlotHandler implements IModifierHandler{
                 return itemstack;
             }
         }
-		if(!(container instanceof ContainerProjectBench))
+//		if(!(container instanceof ContainerProjectBench))
 			return container.transferStackInSlot_plain(par1EntityPlayer, par2);
-		return null;
+//		return null;
 	}
 
 	@Override
@@ -101,13 +108,34 @@ public class DeepSlotHandler implements IModifierHandler{
 	public boolean handleCraftingPiece(ItemStack neededStack, boolean metaSens) {
 		if(deepSlot.getHasStack()){
 			ItemStack slotStack = deepSlot.getStack();
-			if(ItemHelper.checkItemMatch(neededStack, slotStack)){
+			boolean flag = false;
+			if(metaSens){
+				flag = ItemHelper.checkItemMatch(neededStack, slotStack);
+
+			}else{
+				flag = ItemHelper.checkOreDictMatch(neededStack, slotStack);
+			}
+			if(flag){
 				slotStack.stackSize -= 1;
 				if(slotStack.stackSize <= 0)
 					deepSlot.putStack(null);
 				return true;
 			}
 		}
+		return false;
+	}
+
+	@Override
+	public void shiftClickedCraftingSlot() {
+		shiftClickedCrafting = !shiftClickedCrafting;
+	}
+
+	@Override
+	public boolean handlesThisTransfer(int numSlot, ItemStack stack) {
+		if(numSlot == deepSlot.slotNumber)
+			return false;
+		if(deepSlot.isItemValid(stack))
+			return true;
 		return false;
 	}
 

@@ -14,11 +14,18 @@ public class SlotPlan extends Slot {
 
 	@Override
 	public boolean isItemValid(ItemStack par1ItemStack) {
+		if(par1ItemStack == null)
+			return false;
 		return par1ItemStack.itemID == CraftingSuite.planItem.itemID;
 	}
 	
 	@Override
 	public boolean canTakeStack(EntityPlayer par1EntityPlayer) {
 		return super.canTakeStack(par1EntityPlayer);
+	}
+	
+	@Override
+	public int getSlotStackLimit() {
+		return 1;
 	}
 }

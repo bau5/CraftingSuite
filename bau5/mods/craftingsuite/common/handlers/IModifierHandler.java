@@ -12,4 +12,6 @@ public interface IModifierHandler {
 	public boolean handlesSlotClicks();
 	public boolean handlesTransfers();
 	public boolean handlesCrafting();
+	public void shiftClickedCraftingSlot();
+	public boolean handlesThisTransfer(int numSlot, ItemStack stack);
 }

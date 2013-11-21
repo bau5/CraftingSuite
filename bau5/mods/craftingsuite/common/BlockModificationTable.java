@@ -39,7 +39,7 @@ public class BlockModificationTable extends BlockContainer {
 			return false;
 		int meta = world.getBlockMetadata(x, y, z);
 		switch(meta){
-		case 0: if(!player.isSneaking()) player.openGui(CraftingSuite.instance, 0, world, x, y, z);
+		case 0: if(!player.isSneaking()) if(!world.isRemote) player.openGui(CraftingSuite.instance, 0, world, x, y, z);
 			break;
 		}
 		return true;

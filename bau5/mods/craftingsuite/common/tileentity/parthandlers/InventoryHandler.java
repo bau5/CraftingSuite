@@ -31,7 +31,7 @@ public class InventoryHandler implements IInventory{
 	private LocalInventoryCrafting lastCraftMatrix= new LocalInventoryCrafting();
 	private int[] craftingInventoryRange = new int[2];
 	
-	public HashMap<EnumInventoryModifier, Integer> inventoryMap = new HashMap<EnumInventoryModifier, Integer>();
+	public HashMap<String, int[]> inventoryMap = new HashMap<String, int[]>();
 	
 	public ItemStack result = null;
 	public ItemStack lastResult = null;
@@ -44,13 +44,42 @@ public class InventoryHandler implements IInventory{
 	
 	public void initInventory() {
 		inv = new ItemStack[tileEntity.getModifiedInventorySize()];
+		if(tileEntity.getModifierBytes() != null && tileEntity.getModifierBytes().length > 0){
+			int typ = tileEntity.getModifierBytes()[0];
+			switch(typ){
+			case 1: 
+				inventoryMap.put("Crafting", new int[]{0,8});
+				break;
+			case 2: 
+				inventoryMap.put("Crafting", new int[]{0,8});
+				inventoryMap.put("Supply", new int[]{9,26});
+				break;
+			}
+			int[] indicies = new int[2];
+			switch(tileEntity.getInventoryModifier()){
+			case DEEP: 
+				if(typ == 1)
+					indicies = new int[]{9,9};
+				else
+					indicies = new int[]{27,27};
+				inventoryMap.put("Deep", indicies);
+				break;
+			case TOOLS:
+				inventoryMap.put("Tools", new int[]{27,29});
+				break;
+			case PLAN: 
+				inventoryMap.put("Plan", new int[]{27,27});
+				break;
+			case NONE: break;
+			}
+		}
 	}
 
 	public ItemStack findRecipe(boolean fromPacket){
 		if(tileEntity.worldObj == null)
 			return null;
 		long start = System.currentTimeMillis();
-		lastResult = result;
+		lastResult = result != null ? result.copy() : null;
 		boolean toolIn = false;
 		ItemStack stack = null;
 		if(getStackInSlot(4) == null && selectedToolIndex != -1 && !toolIn && stack == null){
@@ -170,8 +199,12 @@ public class InventoryHandler implements IInventory{
 	@Override
 	public void setInventorySlotContents(int slot, ItemStack stack) {
 		inv[slot] = stack;
-		if(stack != null && stack.stackSize > getInventoryStackLimit()){
-			stack.stackSize = getInventoryStackLimit();
+		if((stack != null && stack.stackSize >= getInventoryStackLimit() && tileEntity.getInventoryModifier() == EnumInventoryModifier.DEEP)){
+			int[] i = inventoryMap.get("Deep");
+			if(i == null)
+				return;
+			if(i[0] != slot && stack != null && stack.stackSize > getInventoryStackLimit())
+				stack.stackSize = getInventoryStackLimit();
 		}
 	}
 
@@ -272,5 +305,29 @@ public class InventoryHandler implements IInventory{
 
 	public boolean checkValidity() {
 		return inv != null && inv.length > 0;
+	}
+
+	public boolean affectsCrafting(int slot) {
+		if(slot == -1)
+			return false;
+		for(String str : inventoryMap.keySet()){
+			if(str.equals("Crafting")){
+				int[] indicies = inventoryMap.get(str);
+				if(slot <= indicies[1] && slot >= indicies[0]){
+					return true;
+				}
+			}else if(str.equals("Plan")){
+				int[] indicies = inventoryMap.get(str);
+				if(slot <= indicies[1] && slot >= indicies[0]){
+					return true;
+				}
+			}else if(str.equals("Tools")){
+				int[] indicies = inventoryMap.get(str);
+				if(slot <= indicies[1] && slot >= indicies[0]){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

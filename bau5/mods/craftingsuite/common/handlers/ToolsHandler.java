@@ -34,7 +34,11 @@ public class ToolsHandler implements IModifierHandler{
 			te.setSelectedToolIndex(-1);
 			te.getInventoryHandler().findRecipe(true);
 		}
-		return container.slotClick_plain(slot, clickType, clickMeta, player);
+		ItemStack handledStack = container.slotClick_plain(slot, clickType, clickMeta, player);
+		if(container.getTileEntity().getInventoryHandler().affectsCrafting(slot)){
+			container.getTileEntity().getInventoryHandler().findRecipe(true);
+		}
+		return handledStack;
 	}
 
 	@Override
@@ -62,6 +66,17 @@ public class ToolsHandler implements IModifierHandler{
 
 	@Override
 	public boolean handleCraftingPiece(ItemStack neededStack, boolean metaSens) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void shiftClickedCraftingSlot() {
+		
+	}
+
+	@Override
+	public boolean handlesThisTransfer(int numSlot, ItemStack stack) {
 		// TODO Auto-generated method stub
 		return false;
 	}

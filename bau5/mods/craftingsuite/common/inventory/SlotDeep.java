@@ -22,11 +22,6 @@ public class SlotDeep extends Slot {
 		else{
 			return ItemHelper.checkItemMatch(stack, getStack());
 		}
-//		if(type == null)
-//			return super.isItemValid(stack);
-//		else{
-//			return ItemHelper.checkItemMatch(type, stack);
-//		}
 	}
 	
 	@Override
@@ -35,45 +30,43 @@ public class SlotDeep extends Slot {
 			return getStack().getMaxStackSize() * 6;
 		else
 			return super.getSlotStackLimit();
-		
-//		if(type != null)
-//			return type.stackSize * 9;
-//		else
-//			return super.getSlotStackLimit();
 	}
 	
 	@Override
 	public void putStack(ItemStack par1ItemStack) {
+		super.putStack(par1ItemStack);
+	}
+	
+	public void addStack(ItemStack stack){
 		if(inventory instanceof InventoryHandler){
 			if(((IModifiedTileEntityProvider)((InventoryHandler)inventory).getTileProvider()).getContainerHandler().isContainerWorking())
 				return;
-		}else
-			if(((TileEntityBase)inventory).getContainerHandler().isContainerWorking())
-				return;
-		if(/*type != null && */par1ItemStack != null && getStack() != null){
-			ItemStack stackInside = getStack();
-			if(stackInside.stackSize + par1ItemStack.stackSize > getSlotStackLimit()){
-				int canPut = (getSlotStackLimit() - stackInside.stackSize);
-				if(canPut <= par1ItemStack.stackSize){
-					stackInside.stackSize += canPut;
-					par1ItemStack.stackSize -= canPut;
-				}
+		}else{
+			if(((TileEntityBase)inventory).getContainerHandler().isContainerInit()){
 				return;
 			}
-			stackInside.stackSize += par1ItemStack.stackSize;
-			par1ItemStack.stackSize = 0;
+		}
+		if(stack != null && getStack() != null){
+			ItemStack stackInside = getStack();
+			if(stackInside.stackSize + stack.stackSize > getSlotStackLimit()){
+				int canPut = (getSlotStackLimit() - stackInside.stackSize);
+				if(canPut <= stack.stackSize){
+					stackInside.stackSize += canPut;
+					stack.stackSize -= canPut;
+				}
+			}else{
+				stackInside.stackSize += stack.stackSize;
+				stack.stackSize = 0;
+			}
 		}
 		else{
-//			if(par1ItemStack != null){
-//				type = par1ItemStack.copy();
-//				type.stackSize = 1;
-//			}
-			if(par1ItemStack != null && par1ItemStack.stackSize > 64)
-				putLargeStack(par1ItemStack);
+			if(stack != null && stack.stackSize > 64)
+				putLargeStack(stack);
 			else 
-				super.putStack(par1ItemStack);
+				super.putStack(stack);
 			
 		}
+		onSlotChanged();
 	}
 	
 	public void putLargeStack(ItemStack par1ItemStack){

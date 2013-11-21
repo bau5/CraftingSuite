@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.inventory.InventoryCrafting;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -34,69 +35,89 @@ public class PlanHandler implements IModifierHandler {
 	@Override
 	public ItemStack handleSlotClick(int slot, int clickType, int clickMeta,
 			EntityPlayer player) {
+		if(clickMeta == 6){
+			clickMeta = 0;
+		}
 		if(slot == 0 && planSlot.getHasStack() && planSlot.getStack().stackTagCompound != null){
-			LocalInventoryCrafting fromPlan = container.getTileEntity().getInventoryHandler().getCraftingMatrix();
-			LocalInventoryCrafting copy     = fromPlan.copyInventory();
-			NBTTagList list = planSlot.getStack().stackTagCompound.getTagList("Components");
-			if(list != null){
-				for(int i = 0; i < fromPlan.getSizeInventory(); i++){
-					ItemStack stack = ItemStack.loadItemStackFromNBT((NBTTagCompound)list.tagAt(i));
-					fromPlan.setInventorySlotContents(i, stack);
-				}
-			}
-			InventoryBasic basic = new InventoryBasic("asdf", true, 18);
-			for(int i = 0; i < basic.getSizeInventory(); i++){
-				ItemStack stack = container.getTileEntity().getInventoryHandler().getStackInSlot(i + 9);
-				if(stack != null)
-					stack = stack.copy();
-				basic.setInventorySlotContents(i, stack);
-			}
-			boolean flag = false;
-			for(int matrixIndex = 0; matrixIndex < 9; matrixIndex++){
-				flag = false;
-				ItemStack component = fromPlan.getStackInSlot(matrixIndex);
-				if(component == null)
-					continue;
-				for(int supplyIndex = 0; supplyIndex < 18; supplyIndex++){
-					ItemStack supplyStack = basic.getStackInSlot(supplyIndex);
-					if(supplyStack == null)
-						continue;
-					if(OreDictionary.itemMatches(component, supplyStack, false) || ItemHelper.checkOreDictMatch(component, supplyStack)/*ItemHelper.checkItemMatch(supplyStack, component)*/){
-						supplyStack.stackSize -= 1;
-						if(supplyStack.stackSize == 0)
-							basic.setInventorySlotContents(supplyIndex, null);
-						flag = true;
-						break;
+			ItemStack planResult = ItemStack.loadItemStackFromNBT((NBTTagCompound)planSlot.getStack().stackTagCompound.getTag("Result"));
+			if(ItemStack.areItemStacksEqual(planResult, container.getTileEntity().getInventoryHandler().result)){
+				LocalInventoryCrafting fromPlan = new LocalInventoryCrafting();
+				LocalInventoryCrafting copy     = container.getTileEntity().getInventoryHandler().getCraftingMatrix().copyInventory();
+				NBTTagList list = planSlot.getStack().stackTagCompound.getTagList("Components");
+				if(list != null){
+					for(int i = 0; i < fromPlan.getSizeInventory(); i++){
+						ItemStack stack = ItemStack.loadItemStackFromNBT((NBTTagCompound)list.tagAt(i));
+						fromPlan.setInventorySlotContents(i, stack);
 					}
 				}
-				if(!flag){
-					System.out.println("failed");
-					return null;
+				InventoryBasic basic = new InventoryBasic("asdf", true, 18);
+				for(int i = 0; i < basic.getSizeInventory(); i++){
+					ItemStack stack = container.getTileEntity().getInventoryHandler().getStackInSlot(i + 9);
+					if(stack != null)
+						stack = stack.copy();
+					basic.setInventorySlotContents(i, stack);
 				}
+				boolean flag = false;
+				for(int matrixIndex = 0; matrixIndex < 9; matrixIndex++){
+					flag = false;
+					ItemStack component = fromPlan.getStackInSlot(matrixIndex);
+					if(component == null)
+						continue;
+					for(int supplyIndex = 0; supplyIndex < 18; supplyIndex++){
+						ItemStack supplyStack = basic.getStackInSlot(supplyIndex);
+						if(supplyStack == null)
+							continue;
+						if(OreDictionary.itemMatches(component, supplyStack, false) || 
+								(component.getItemDamage() == OreDictionary.WILDCARD_VALUE && ItemHelper.checkOreDictMatch(component, supplyStack))/*ItemHelper.checkItemMatch(supplyStack, component)*/){
+							supplyStack.stackSize -= 1;
+							if(supplyStack.stackSize == 0)
+								basic.setInventorySlotContents(supplyIndex, null);
+							flag = true;
+							break;
+						}
+					}
+					if(!flag){
+						return null;
+					}
+				}
+				container.getTileEntity().getInventoryHandler().setCraftingMatrix(fromPlan);
+				ItemStack handledStack = container.slotClick_plain(slot, clickType, clickMeta, player);
+				container.getTileEntity().getInventoryHandler().setCraftingMatrix(copy);
+				for(int i = 0; i < copy.getSizeInventory(); i++){
+		        	container.getTileEntity().getInventoryHandler().setInventorySlotContents(i, copy.getStackInSlot(i));
+		        }
+				return handledStack;
 			}
-			ItemStack handledStack = container.slotClick_plain(slot, clickType, clickMeta, player);
-			container.getTileEntity().getInventoryHandler().setCraftingMatrix(copy);
-			for(int i = 0; i < copy.getSizeInventory(); i++){
-	        	container.getTileEntity().getInventoryHandler().setInventorySlotContents(i, copy.getStackInSlot(i));
-	        }
-			return handledStack;
 		}		
 		ItemStack handledStack = container.slotClick_plain(slot, clickType, clickMeta, player);
-		if(slot == planSlot.slotNumber){
-			container.modifiedTile.getInventoryHandler().findRecipe(true);
-		}
+		if(slot > -1 && slot <= container.inventorySlots.size()) 
+			if((container.getTileEntity().getInventoryHandler().affectsCrafting(slot) 
+						|| container.getSlot(slot).slotNumber == planSlot.slotNumber))
+					container.getTileEntity().getInventoryHandler().markForUpdate();
 		return handledStack;
 	}
 
 	@Override
 	public ItemStack handleTransferClick(EntityPlayer par1EntityPlayer, int par2) {
-		// TODO Auto-generated method stub
-		return null;
+		Slot slot = container.getSlot(par2);
+		if(slot.getHasStack() && slot.slotNumber != planSlot.slotNumber){
+			ItemStack stack = slot.getStack();
+			if(planSlot.isItemValid(stack)){
+				ItemStack planStack = stack.copy();
+				if(!container.invokeMerge(planStack, planSlot.slotNumber, planSlot.slotNumber+1, false))
+					return null;
+				if(!ItemStack.areItemStacksEqual(stack, planStack)){
+					slot.putStack(null);
+				}
+				container.getTileEntity().getInventoryHandler().markForUpdate();
+				return stack;
+			}
+		}
+		return container.transferStackInSlot_plain(par1EntityPlayer, par2);
 	}
 
 	@Override
 	public boolean handleCraftingPiece(ItemStack neededStack, boolean metaSens) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	
@@ -113,7 +134,6 @@ public class PlanHandler implements IModifierHandler {
 			if(recipe != null && result != null && recipe instanceof ShapedOreRecipe || recipe instanceof ShapelessOreRecipe){
 				oreRecFlag = true;
 			}
-			
 			for(int i = 0; i < matrix.getSizeInventory(); i++){
 				NBTTagCompound tag = new NBTTagCompound();
 				ItemStack stack = matrix.getStackInSlot(i);
@@ -147,13 +167,11 @@ public class PlanHandler implements IModifierHandler {
 
 	@Override
 	public boolean handlesTransfers() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
 	@Override
 	public boolean handlesCrafting() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -237,4 +255,21 @@ public class PlanHandler implements IModifierHandler {
             return null;
         }
     }
+
+	@Override
+	public void shiftClickedCraftingSlot() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean handlesThisTransfer(int numSlot, ItemStack stack) {
+		if(numSlot == planSlot.slotNumber){
+			return true;
+		}
+		if(planSlot.isItemValid(stack) && !planSlot.getHasStack()){
+			return true;
+		}
+		return false;
+	}
 }

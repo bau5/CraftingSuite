@@ -153,9 +153,12 @@ public class BlockCrafting extends BlockContainer {
 	@Override
 	public void getSubBlocks(int par1, CreativeTabs par2CreativeTabs,
 			List list) {
-		//TODO Crafter Mk I 
-		list.add(ModificationStackHelper.makeBasicMkICrafter());
-		list.add(ModificationStackHelper.makeBasicProjectBench());
+		list.add(ModificationStackHelper.makeModdedTableType(2, 5, 14, 1));
+		list.add(ModificationStackHelper.makeModdedTableType(2, 4, 13, 0));
+		list.add(ModificationStackHelper.makeModdedTableType(2, 3, 0, 2));
+		list.add(ModificationStackHelper.makeModdedTableType(2, -1, 12, 0));
+		list.add(ModificationStackHelper.makeModdedTableType(1, -1, 0, 2));
+		list.add(ModificationStackHelper.makeModdedTableType(1, 4, 0, 0));
 	}
 	
 	@Override
@@ -183,40 +186,43 @@ public class BlockCrafting extends BlockContainer {
 			int par5, int par6) {
 		Random rand = new Random();	
 		TileEntity te = world.getBlockTileEntity(x, y, z);
+		boolean skip = false;
 		
 		if(te instanceof IModifiedTileEntityProvider){
 			IModifiedTileEntityProvider moddedTile = (IModifiedTileEntityProvider)te;			
 			if(!ModificationNBTHelper.ensureIntegrity(moddedTile.getModifiers()) || !ModificationNBTHelper.ensureIntegrity(moddedTile.getModifierBytes()))
-				return;
+				skip = true;
 		}
 
 		if(te instanceof TileEntityProjectBench)
 			cache.add(new CachedUpgrade((TileEntityProjectBench)te, x, y, z));
 		
-		if(!(te instanceof IInventory || te instanceof TileEntityModdedTable))
-			return;
-		IInventory inv = te instanceof IInventory ? (IInventory)te : ((TileEntityModdedTable)te).getInventoryHandler();
-		int i = 0; 
-		int size = inv.getSizeInventory();
-		for(; i < size; i++)
-		{
-			ItemStack item = inv.getStackInSlot(i);
-			if(item != null && item.stackSize > 0)
+		if(!(te instanceof IInventory) && !(te instanceof TileEntityModdedTable))
+			skip = true;
+		if(!skip){
+			IInventory inv = te instanceof IInventory ? (IInventory)te : ((TileEntityModdedTable)te).getInventoryHandler();
+			int i = 0; 
+			int size = inv.getSizeInventory();
+			for(; i < size; i++)
 			{
-				float rx = rand.nextFloat() * 0.8F + 0.1F;
-				float ry = rand.nextFloat() * 0.8F + 0.1F;
-				float rz = rand.nextFloat() * 0.8F + 0.1F;
-				EntityItem ei = new EntityItem(world, x + rx, y + ry, z + rz,
-						new ItemStack(item.itemID, item.stackSize, item.getItemDamage()));
-				if(item.hasTagCompound())
-					ei.getEntityItem().setTagCompound((NBTTagCompound) item.getTagCompound().copy());
-				float factor = 0.05f;
-				ei.motionX = rand.nextGaussian() * factor;
-				ei.motionY = rand.nextGaussian() * factor + 0.2F;
-				ei.motionZ = rand.nextGaussian() * factor;
-				if(!world.isRemote)
-					world.spawnEntityInWorld(ei);
-				item.stackSize = 0;
+				ItemStack item = inv.getStackInSlot(i);
+				if(item != null && item.stackSize > 0)
+				{
+					float rx = rand.nextFloat() * 0.8F + 0.1F;
+					float ry = rand.nextFloat() * 0.8F + 0.1F;
+					float rz = rand.nextFloat() * 0.8F + 0.1F;
+					EntityItem ei = new EntityItem(world, x + rx, y + ry, z + rz,
+							new ItemStack(item.itemID, item.stackSize, item.getItemDamage()));
+					if(item.hasTagCompound())
+						ei.getEntityItem().setTagCompound((NBTTagCompound) item.getTagCompound().copy());
+					float factor = 0.05f;
+					ei.motionX = rand.nextGaussian() * factor;
+					ei.motionY = rand.nextGaussian() * factor + 0.2F;
+					ei.motionZ = rand.nextGaussian() * factor;
+					if(!world.isRemote)
+						world.spawnEntityInWorld(ei);
+					item.stackSize = 0;
+				}
 			}
 		}
 		super.breakBlock(world, x, y, z, par5, par6);

@@ -3,6 +3,7 @@ package bau5.mods.craftingsuite.common.inventory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.handlers.DeepSlotHandler;
+import bau5.mods.craftingsuite.common.handlers.DefaultHandler;
 import bau5.mods.craftingsuite.common.handlers.PlanHandler;
 import bau5.mods.craftingsuite.common.handlers.ToolsHandler;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
@@ -23,10 +24,6 @@ public class ContainerModdedCraftingTable extends ContainerBase {
 	private void buildContainerFromTile(EntityPlayer player) {
 		if(tileEntity.getUpgrades()[0] == 1){
 			buildBasicCraftingInventory(player.inventory, tileEntity.getInventoryHandler(), tileEntity.getInventoryHandler().resultMatrix());
-		}else{
-//			for(Slot slot : tileEntity.containerHandler().getSlots()){
-//				this.addSlotToContainer(slot);
-//			}
 		}
 	}
 	
@@ -62,7 +59,8 @@ public class ContainerModdedCraftingTable extends ContainerBase {
 	@Override
 	protected void handleInventoryModifiers() {
 		switch(getInventoryModifier()){
-		case NONE: break;
+		case NONE: handler = new DefaultHandler(); 
+			break;
 		case TOOLS: 
 			SlotTool[] toolSlots = new SlotTool[3];
 			for(int i = 0; i < 3; i++){

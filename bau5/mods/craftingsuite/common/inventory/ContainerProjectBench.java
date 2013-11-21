@@ -20,9 +20,11 @@ public class ContainerProjectBench extends ContainerBase{
 	public ContainerProjectBench(InventoryPlayer invPlayer, TileEntityProjectBench tpb){
 		super(tpb);
 		tileEntity = tpb;
+		tileEntity.getContainerHandler().containerInit = true;
 		layoutContainer(invPlayer, tileEntity);
 		handleInventoryModifiers();
 		craftingSlot.handler = handler;
+		tileEntity.getContainerHandler().containerInit = false;
 		tileEntity.getInventoryHandler().findRecipe(false);
 	}
 
@@ -82,22 +84,12 @@ public class ContainerProjectBench extends ContainerBase{
 	@Override
 	public ItemStack slotClick(int slot, int clickType, int clickMeta,
 			EntityPlayer player) {
-//		if(slot == 0 && clickMeta == 6)
-//			clickMeta = 0;
-//		if(getInventoryModifier() == EnumInventoryModifier.TOOLS && slot >= 64 && slot <= 66){
-//			int index = slot - 64;
-//			
-//			if(clickType == 0 && clickMeta == 0 && tileEntity.tools[index] != null){
-//				tileEntity.setSelectedToolIndex(index);
-//				tileEntity.getInventoryHandler().findRecipe(false);
-//				return null;
-//			}
-//			tileEntity.setSelectedToolIndex(-1);
-//			tileEntity.getInventoryHandler().findRecipe(false);
-//		}
+		ItemStack lastCraftResult = tileEntity.getInventoryHandler().resultMatrix().getStackInSlot(0);
+		lastCraftResult = lastCraftResult != null ? lastCraftResult.copy() : null;
 		ItemStack stack = super.slotClick(slot, clickType, clickMeta, player);
 		if(slot == 0){
-			tileEntity.getInventoryHandler().findRecipe(false);
+			if(!ItemStack.areItemStacksEqual(lastCraftResult, tileEntity.getInventoryHandler().resultMatrix().getStackInSlot(0)))
+				tileEntity.getInventoryHandler().findRecipe(false);
 		}
 		return stack;
 	}
@@ -110,17 +102,19 @@ public class ContainerProjectBench extends ContainerBase{
 	@Override
 	public void putStacksInSlots(ItemStack[] par1ArrayOfItemStack) {
 		tileEntity.containerInit = true;
+		tileEntity.containerHandler.containerInit = true;
 		super.putStacksInSlots(par1ArrayOfItemStack);
 		tileEntity.containerInit = false;
+		tileEntity.containerHandler.containerInit = false;
 		tileEntity.onInventoryChanged();
 	}
 	
 	@Override
 	public void putStackInSlot(int slot, ItemStack itemStack) {
-		if(!tileEntity.worldObj.isRemote)
-			tileEntity.containerInit = true;
+//		if(!tileEntity.worldObj.isRemote)
+			tileEntity.containerHandler.containerInit = true;
 		super.putStackInSlot(slot, itemStack);
-		tileEntity.containerInit = false;
+		tileEntity.containerHandler.containerInit = false;
 	}
 	
 	@Override
@@ -128,9 +122,9 @@ public class ContainerProjectBench extends ContainerBase{
     {
         ItemStack stack = null;
         Slot slot = (Slot)this.inventorySlots.get(numSlot);
-        if(handler.handlesTransfers()){
+        if(handler.handlesThisTransfer(numSlot, slot.getStack())){
         	ItemStack stack2 = handler.handleTransferClick(player, numSlot);
-        	System.out.println(stack2);
+        	return stack2;
         }
         
         if (slot != null && slot.getHasStack())
@@ -155,7 +149,7 @@ public class ContainerProjectBench extends ContainerBase{
             		}
             	}else if (numSlot == 0)
 	            {
-	                if (!this.mergeItemStack(stack2, 10, 55, true))
+	                if (!this.mergeItemStack(stack2, 10, 55, false))
 	                {
 	                    return null;
 	                }

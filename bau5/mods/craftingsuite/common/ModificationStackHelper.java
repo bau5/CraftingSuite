@@ -15,7 +15,7 @@ public class ModificationStackHelper {
 		byte[] bytes = ModificationNBTHelper.getUpgradeByteArray(baseTag);
 		bytes[0] = 1;
 //		bytes[1] = 3;
-		bytes[3] = 14;
+//		bytes[3] = 14;
 		bytes[4] = 1;
 		theStack = makeStackFromInfo(theStack, bytes, new ItemStack(Block.planks.blockID, 1, 0));
 		return theStack;
@@ -25,10 +25,29 @@ public class ModificationStackHelper {
 		ItemStack stack = new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, 2);
 		byte[] bytes = ModificationNBTHelper.newBytes();
 		bytes[0] = 2;
-		bytes[1] = 3;
+		bytes[1] = 5;
 		bytes[3] = 14;
 		bytes[4] = 1;
 		stack = makeStackFromInfo(stack, bytes, new ItemStack(Block.planks.blockID, 1, 1));
+		return stack;
+	}
+	
+	/**
+	 * Helper method for making Benches based on passed types.
+	 * 
+	 * @param type 2 for Project Bench, 1 for Modded Table
+	 * @param upgrade 5 for Plan, 4 for Deep Slot, 3 for Tools
+	 * @param color
+	 * @return
+	 */
+	public static ItemStack makeModdedTableType(int type, int upgrade, int color, int woodDamage){
+		ItemStack stack = new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, type);
+		byte[] bytes = ModificationNBTHelper.newBytes();
+		bytes[0] = (byte)type;
+		bytes[1] = (byte)upgrade;
+		if(type == 2) bytes[3] = (byte)color;
+		bytes[4] = 1;
+		stack = makeStackFromInfo(stack, bytes, new ItemStack(Block.planks.blockID, 1, woodDamage));
 		return stack;
 	}
 	

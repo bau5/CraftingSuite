@@ -1,0 +1,19 @@
+[
+{
+  "modid": "CraftingSuite",
+  "name": "Crafting Suite",
+  "description": "A collection of additional crafting opportunities.",
+  "version": "0.2.1.0",
+  "mcversion": "1.6.4",
+  "url": "https://github.com/bau5/CraftingSuite",
+  "updateUrl": "http://www.minecraftforum.net/topic/2076108-164smpcrafting-suite-project-bench-successor-forge/",
+  "authors": [
+    "bau5"
+  ],
+  "credits": "code_chicken",
+  "logoFile": "",
+  "screenshots": [ "" ],
+  "parent":"",
+  "dependencies": [ "MinecraftForge" ]
+}
+]

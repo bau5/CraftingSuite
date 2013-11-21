@@ -36,23 +36,46 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 	@Override
 	public ItemStack slotClick(int slot, int clickType, int clickMeta,
 			EntityPlayer player) {
-		if(clickMeta == 6 && slot == 0)
+		boolean updateRecipe = false;
+		if(slot == craftingSlotIndex && (clickType == 1 || clickMeta == 1))
+			updateRecipe = true;
+		if(clickMeta == 6 && slot == craftingSlotIndex)
 			clickMeta = 0;
 		if(clickMeta == 1 && slot == craftingSlotIndex){
 			Slot theSlot = (Slot) inventorySlots.get(slot);
 			if(theSlot.getHasStack()){
 				int tries = theSlot.getStack().getMaxStackSize() / theSlot.getStack().stackSize;
+				if(handler != null) handler.shiftClickedCraftingSlot();
+				ItemStack desiredResult = theSlot.getStack().copy();
 				for(int i = 0; i < tries -1; i++){
+					ItemStack stack = null;
+					if(!ItemStack.areItemStacksEqual(desiredResult, theSlot.getStack()))
+						break;
 					if(handler != null && handler.handlesSlotClicks()){
-						handler.handleSlotClick(slot, clickType, clickMeta, player);
+						stack = handler.handleSlotClick(slot, clickType, clickMeta, player);
+						if(updateRecipe)
+							getTileEntity().getInventoryHandler().findRecipe(true);
 					}else{
-						slotClick_plain(slot, clickType, clickMeta, player);
+						stack = slotClick_plain(slot, clickType, clickMeta, player);
+						if(getTileEntity().getInventoryHandler() != null)
+							getTileEntity().getInventoryHandler().findRecipe(true);
 					}
-					modifiedTile.getInventoryHandler().findRecipe(true);
+					
+					if(stack == null)
+						break;
 				}
-				if(handler != null && handler.handlesSlotClicks())
-					return handler.handleSlotClick(slot, clickType, clickMeta, player);
-				return slotClick_plain(slot, clickType, clickMeta, player);
+				ItemStack handledStack = null;
+				if(handler != null && handler.handlesSlotClicks()){
+					handledStack = handler.handleSlotClick(slot, clickType, clickMeta, player);
+					if(updateRecipe)
+						getTileEntity().getInventoryHandler().findRecipe(false);
+				}else{
+					handledStack = slotClick_plain(slot, clickType, clickMeta, player);
+					if(getTileEntity().getInventoryHandler() != null)
+						getTileEntity().getInventoryHandler().findRecipe(false);
+				}
+				if(handler != null) handler.shiftClickedCraftingSlot();
+				return handledStack;
 			}
 		}
 		if(handler != null && handler.handlesSlotClicks())

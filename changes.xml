@@ -3,4 +3,5 @@
 <properties version="1.0">  
   <entry key = "0.1.8">Added version checking.</entry>
   <entry key = "0.1.8.2">Fixed possible NPE</entry>
+  <entry key = "0.2.1.0">Plans, Deep Slot, NEI Shift click, etc...</entry>
 </properties>

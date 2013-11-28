@@ -63,7 +63,9 @@ public class GuiHandler {
 				ItemStack stack = tile.getSelectedTool();
 				if(stack == null)
 					return;
-				
+				int craftindex = tile.getInventoryHandler().toolIndexInCrafting;
+				int yShift = craftindex > 5 ? 36 : craftindex > 2 ? 18 : 0;
+				int xShift = craftindex % 3 * 18;
 				GL11.glTranslatef(0.0F, 0.0F, 32.0F);        
 				GL11.glEnable(GL11.GL_BLEND);
 		        GL11.glBlendFunc(768, 1);
@@ -75,7 +77,7 @@ public class GuiHandler {
 		        if (stack != null) font = stack.getItem().getFontRenderer(stack);
 		        if (font == null) font = guiBridge.getFontRenderer();
 		        GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.5F);
-		        itemRenderer.renderItemAndEffectIntoGUI(font, guiBridge.getMinecraft().getTextureManager(), stack, x+48, y+35);
+		        itemRenderer.renderItemAndEffectIntoGUI(font, guiBridge.getMinecraft().getTextureManager(), stack, x +xShift +30, y +yShift +17);
 //		        itemRenderer.renderItemOverlayIntoGUI(font, guiBridge.getMinecraft().getTextureManager(), stack, x+48, y+35, null);
 		        guiBridge.setZLevel(0.0F);
 		        itemRenderer.zLevel = 0.0F;

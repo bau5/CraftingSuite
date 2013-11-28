@@ -2,6 +2,7 @@ package bau5.mods.craftingsuite.common;
 
 import java.util.EnumSet;
 
+import net.minecraft.client.resources.I18n;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.ITickHandler;
 import cpw.mods.fml.common.TickType;
@@ -21,8 +22,8 @@ public class VersionCheckTicker implements ITickHandler {
 					if(FMLClientHandler.instance().getClient().currentScreen == null){
 						init = false;
 						if(!Reference.UP_TO_DATE){
-							FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage("A new version of Crafting Suite is available.\n    Version: " +Reference.LATEST_VERSION +": " +Reference.LATEST_CHANGES);
-							FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage("This update is " +VersionChecker.remoteVersionImportance +" - " +Reference.UPDATE_URL);
+							FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(String.format("%s\n    %s", I18n.getString("cs.versioncheck.new"), I18n.getString("cs.versioncheck.version") + ": " +Reference.LATEST_VERSION +": " +Reference.LATEST_CHANGES));
+							FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(I18n.getString("cs.versioncheck.importance") +" " +VersionChecker.remoteVersionImportance +" - " +Reference.UPDATE_URL);
 						}
 						
 					}
@@ -38,7 +39,7 @@ public class VersionCheckTicker implements ITickHandler {
 
 	@Override
 	public String getLabel() {
-		return "Craftin Suite: " +this.getClass().getSimpleName();
+		return "Crafting Suite: " +this.getClass().getSimpleName();
 	}
 
 }

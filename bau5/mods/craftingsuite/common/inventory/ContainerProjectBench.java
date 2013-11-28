@@ -215,7 +215,7 @@ public class ContainerProjectBench extends ContainerBase{
 	public void handleInventoryModifiers() {
 		//TODO this!@!!!
 		switch(getInventoryModifier()){
-		case NONE: 
+		case NONE:
 			handler = new DefaultHandler();
 			break;
 		case TOOLS: 

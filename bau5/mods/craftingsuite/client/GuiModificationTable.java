@@ -10,7 +10,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.util.ResourceLocation;
 
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import bau5.mods.craftingsuite.common.Reference;
@@ -21,6 +20,7 @@ import cpw.mods.fml.common.network.PacketDispatcher;
 public class GuiModificationTable extends GuiContainer{
 	
 	private ResourceLocation guiTexture;
+	private ResourceLocation partsTexture = new ResourceLocation("craftingsuite", "textures/gui/modtable.png");
 	private TileEntityModificationTable tileEntity;
 	private boolean once;
 
@@ -84,6 +84,7 @@ public class GuiModificationTable extends GuiContainer{
 			if(fire){
 				PacketDispatcher.sendPacketToServer(new Packet250CustomPayload(Reference.CHANNEL, new byte[]{ 1 }));
 				tileEntity.craftRecipe();
+				((ContainerModificationTable)inventorySlots).clearDummySlots();
 			}
 			return fire;
 		}
@@ -111,13 +112,15 @@ public class GuiModificationTable extends GuiContainer{
 			super.drawButton(par1Minecraft, par2, par3);
 			if(enabled){
 				if(getHoverState(field_82253_i) == 2){
-					if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
+//					if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 						int x = par2 -guiLeft +4;
 						int y = par3 -guiTop +6;
+//						drawTexturedModalRect(par2 +5, par3 +6, 25, 0, 4, 20);
+//						drawTexturedModalRect(par2 +9, par3 +6, 25, 0, par2 + (16 * (tileEntity.inputForResult.length + 1)) - 8, 3+par3 + 23);
 						drawGradientRect(par2 +5, par3 +6, par2 + (16 * (tileEntity.inputForResult.length + 1)) - 8, 3+par3 + 23, -99999999, -99999999);
 						((ContainerModificationTable)inventorySlots).addItemsForRender(x+2, y);
-					}else
-						((ContainerModificationTable)inventorySlots).clearDummySlots();
+//					}else
+//						((ContainerModificationTable)inventorySlots).clearDummySlots();
 				}else{
 					((ContainerModificationTable)inventorySlots).clearDummySlots();
 				}

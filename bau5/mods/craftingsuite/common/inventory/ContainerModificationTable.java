@@ -82,7 +82,9 @@ public class ContainerModificationTable extends ContainerBase {
             	if(itemstack1.itemID == CraftingSuite.modItems.itemID ||
             	   itemstack1.itemID == CraftingSuite.craftingTableBlock.blockID){
             		if(!this.mergeItemStack(itemstack1, 0, 1, false)){
-            			return null;
+            			if(!this.mergeItemStack(itemstack1, 1, 2, false)){
+                			return null;
+                		}
             		}
             	}else if(OreDictionary.getOreID(itemstack1) == 1){
         			if(!this.mergeItemStack(itemstack1, 1, 2, false)){

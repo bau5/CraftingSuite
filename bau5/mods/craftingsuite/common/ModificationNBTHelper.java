@@ -20,7 +20,7 @@ public class ModificationNBTHelper {
 	 *  The byte array stores the relevant upgrades as bytes for low cost
 	 *  saving. 
 	 *  byte[0] is the meta of the table
-	 *  byte[1] is unused atm, intended for functional upgrades
+	 *  byte[1] for Tools (3), Deep (4), Plans (5) modifiers
 	 *  byte[2] unused
 	 *  byte[3] stores the meta of the carpet used
 	 *  byte[4] stores if the block has clay upgrade (render)

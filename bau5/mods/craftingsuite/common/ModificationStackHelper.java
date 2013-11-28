@@ -1,5 +1,7 @@
 package bau5.mods.craftingsuite.common;
 
+import java.util.ArrayList;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -123,5 +125,37 @@ public class ModificationStackHelper {
 		}
 		stack.stackTagCompound = baseTag;
 		return stack;
+	}
+
+	public static ArrayList<ItemStack> getPartsForBench(ItemStack result) {
+		ArrayList<ItemStack> parts = new ArrayList<ItemStack>();
+		if(result.itemID != CraftingSuite.craftingTableBlock.blockID || result.stackTagCompound == null)
+			return parts;
+		byte[] bytes = ModificationNBTHelper.getUpgradeByteArray(result.stackTagCompound);
+		if(bytes[0] != -1){
+			ItemStack planks = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(result.stackTagCompound));
+			if(bytes[1] != -1){
+				parts.add(makeModdedTableType(bytes[0], -1, bytes[3], planks.getItemDamage()));
+				parts.add(new ItemStack(CraftingSuite.modItems.itemID, 1, bytes[1]));
+				return parts;
+			}
+			if(bytes[0] == 1){
+				parts.add(new ItemStack(CraftingSuite.modItems.itemID, 1, 1));
+				planks.stackSize = 2;
+				parts.add(planks);
+			}else if(bytes[0] == 2){
+				parts.add(new ItemStack(CraftingSuite.modItems.itemID, 1, 2));
+				planks.stackSize = 4;
+				parts.add(planks);
+			}
+			if(bytes[3] != -1){
+				parts.add(new ItemStack(Block.carpet.blockID, 1, bytes[3]));
+			}
+			if(bytes[4] != -1){
+				parts.add(new ItemStack(Block.blockClay));
+			}
+		}
+		
+		return parts;
 	}
 }

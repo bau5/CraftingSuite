@@ -24,4 +24,10 @@
     <entry key="gui.modificationtable.aesthetics">Aesthetics</entry>
     <!--Descriptions-->
     <entry key="item.modifications.tools.description">Allows for the holding of tools in the crafting block.</entry>
+    <entry key="cs.versioncheck.up">Crafting Suite up to date.</entry>
+    <entry key="cs.versioncheck.start">Starting version check.</entry>
+    <entry key="cs.versioncheck.fail">Failed fetching version.</entry>
+    <entry key="cs.versioncheck.new">A new version of Crafting Suite is available.</entry>
+    <entry key="cs.versioncheck.version">Version</entry>
+    <entry key="cs.versioncheck.importance">This update is</entry>
 </properties>

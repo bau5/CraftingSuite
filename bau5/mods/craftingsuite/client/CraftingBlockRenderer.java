@@ -31,6 +31,8 @@ import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
 public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements IItemRenderer, ISimpleBlockRenderingHandler{
 	
+	//TODO - Optifine messes with rendering, check for optifine loaded and change render?
+	
 	private RenderBlocks renderBlocks;
 	private RenderItem  renderItems;
 	

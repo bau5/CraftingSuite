@@ -13,9 +13,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-
-import org.lwjgl.input.Keyboard;
-
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 
 public class ItemBlockCrafting extends ItemBlock {
@@ -64,7 +61,8 @@ public class ItemBlockCrafting extends ItemBlock {
 	public void addInformation(ItemStack itemstack,
 			EntityPlayer player, List list, boolean par4) {
 		super.addInformation(itemstack, player, list, par4);
-		if(itemstack.stackTagCompound != null && Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
+//		String str = player.openContainer.getClass().toString();
+		if(itemstack.stackTagCompound != null/*	 && Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || str.contains("codechicken")*/){
 			byte[] bytes = ModificationNBTHelper.getUpgradeByteArray(itemstack.stackTagCompound);
 			if(bytes[0] == 2)
 				list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(new ItemStack(CraftingSuite.modItems, 1, 2).getUnlocalizedName() +".name"));
@@ -73,7 +71,6 @@ public class ItemBlockCrafting extends ItemBlock {
 			if(bytes[1] != -1){
 				if(bytes[1] >= 3)
 					list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(new ItemStack(CraftingSuite.modItems, 1, bytes[1]).getUnlocalizedName() +".name"));
-				
 			}
 			if(bytes[3] != -1)
 				list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(Item.itemsList[Block.cloth.blockID].getUnlocalizedName(new ItemStack(Block.cloth.blockID, 1, bytes[3])) +".name"));

@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
+import net.minecraft.client.resources.I18n;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
@@ -50,7 +51,7 @@ public class VersionChecker implements Runnable {
 			}else
 				result = FAILED;
 		}catch(Exception ex){
-			CSLogger.log("Failed fetching version.", ex);
+			CSLogger.log(I18n.getString("cs.versioncheck.fail"), ex);
 		}finally{
 			if(result == NOT_DONE)
 				result = FAILED;
@@ -85,7 +86,7 @@ public class VersionChecker implements Runnable {
 	@Override
 	public void run() {
 		int tries = 0;
-		CSLogger.log("Starting version check.");
+		CSLogger.log(I18n.getString("cs.versioncheck.start"));
 		
 		try{
 			while(tries < 3 && (result != OUT_OF_DATE && result != UP_TO_DATE)){
@@ -97,7 +98,7 @@ public class VersionChecker implements Runnable {
 					TickRegistry.registerTickHandler(new VersionCheckTicker(), Side.CLIENT);
 				}
 				if(result == UP_TO_DATE)
-					CSLogger.log("Crafting Suite up to date.");
+					CSLogger.log(I18n.getString("cs.versioncheck.up"));
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();

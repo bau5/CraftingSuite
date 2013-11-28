@@ -81,6 +81,7 @@ public class InventoryHandler implements IInventory{
 		long start = System.currentTimeMillis();
 		lastResult = result != null ? result.copy() : null;
 		boolean toolIn = false;
+		toolIndexInCrafting = -1;
 		ItemStack stack = null;
 		if(getStackInSlot(4) == null && selectedToolIndex != -1 && !toolIn && stack == null){
 			craftingMatrix.setInventorySlotContents(4, tileEntity.getSelectedTool());

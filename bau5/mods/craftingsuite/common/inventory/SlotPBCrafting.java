@@ -200,7 +200,7 @@ public class SlotPBCrafting extends SlotCrafting {
         		}
         	}
         }
-        if(tileEntity.getSelectedToolIndex() != -1 && tileEntity.getInventoryModifier() == EnumInventoryModifier.TOOLS){
+        if(tileEntity.getSelectedToolIndex() != -1 && tileEntity.getInventoryHandler().toolIndexInCrafting != -1 && tileEntity.getInventoryModifier() == EnumInventoryModifier.TOOLS){
         	ItemStack toolCopy = craftingMatrix.getStackInSlot(tileEntity.inventoryHandler.toolIndexInCrafting);
         	CSLogger.log("Copying " +toolCopy +" from crafting slot " +tileEntity.inventoryHandler.toolIndexInCrafting +" to tool slot " +tileEntity.getSelectedToolIndex());
         	tileEntity.tools[tileEntity.inventoryHandler.selectedToolIndex] = toolCopy;

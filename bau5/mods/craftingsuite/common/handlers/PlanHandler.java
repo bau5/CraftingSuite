@@ -1,5 +1,6 @@
 package bau5.mods.craftingsuite.common.handlers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -131,8 +132,22 @@ public class PlanHandler implements IModifierHandler {
 			boolean oreRecFlag = false;
 			ItemStack result = CraftingManager.getInstance().findMatchingRecipe(matrix, ((TileEntity)tile).worldObj);
 			IRecipe recipe = findMatchingRecipe(matrix, ((TileEntity)tile).worldObj);
+			ArrayList<Integer> exclusions = new ArrayList<Integer>();
 			if(recipe != null && result != null && recipe instanceof ShapedOreRecipe || recipe instanceof ShapelessOreRecipe){
 				oreRecFlag = true;
+				for(int i = 0; i < matrix.getSizeInventory(); i++){
+					int id = OreDictionary.getOreID(matrix.getStackInSlot(i));
+					if(id == -1)
+						continue;
+					LocalInventoryCrafting copy = matrix.copyInventory();
+					ItemStack oreCopy = OreDictionary.getOres(id).get(0).copy();
+					oreCopy.setItemDamage(OreDictionary.WILDCARD_VALUE);
+					copy.setInventorySlotContents(i, oreCopy);
+					if(!ItemStack.areItemStacksEqual(result, CraftingManager.getInstance().findMatchingRecipe(copy, ((TileEntity)tile).worldObj))){
+//						oreRecFlag = false;
+						exclusions.add(id);
+					}
+				}
 			}
 			for(int i = 0; i < matrix.getSizeInventory(); i++){
 				NBTTagCompound tag = new NBTTagCompound();
@@ -141,7 +156,7 @@ public class PlanHandler implements IModifierHandler {
 					stack = stack.copy();
 					if(oreRecFlag){
 						int id = OreDictionary.getOreID(stack);
-						if(id != -1){
+						if(id != -1 && !exclusions.contains(id)){
 							stack = OreDictionary.getOres(id).get(0).copy();
 							stack.setItemDamage(OreDictionary.WILDCARD_VALUE);
 						}
@@ -158,6 +173,7 @@ public class PlanHandler implements IModifierHandler {
 			planSlot.getStack().setItemDamage(1);
 		}
 	}
+	
 
 	@Override
 	public boolean handlesSlotClicks() {

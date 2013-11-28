@@ -14,6 +14,8 @@ public class NEIProjectBenchConfig implements IConfigureNEI {
         API.registerGuiOverlayHandler(GuiModdedCraftingTable.class, new codechicken.nei.recipe.DefaultOverlayHandler(5,11), "crafting");
         API.registerGuiOverlay(GuiProjectBench.class, "crafting",5,11);
         API.registerGuiOverlayHandler(GuiProjectBench.class, new DefaultOverlayHandler(5,11), "crafting");
+        API.registerRecipeHandler(new ModificationCraftingHandler());
+        API.registerUsageHandler(new ModificationCraftingHandler());
 	}
 
 	public boolean isNEIActive(){

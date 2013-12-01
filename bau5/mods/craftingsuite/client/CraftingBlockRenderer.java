@@ -4,6 +4,7 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.ModelSnowMan;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
@@ -11,9 +12,11 @@ import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.monster.EntitySnowman;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.client.IItemRenderer;
 
@@ -36,10 +39,15 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 	private RenderBlocks renderBlocks;
 	private RenderItem  renderItems;
 	
+	private Random random;
+	
 	private ModelModificationTable modelModificationTable;
 	private ModelCraftingTable	   modelCraftingTable;
 	
 	public static boolean renderInDisplay = false;
+	public static boolean cmas = false;
+	
+	private ResourceLocation sm = new ResourceLocation("textures/entity/snowman.png");
 	
 	public CraftingBlockRenderer(){
 		modelModificationTable = new ModelModificationTable();
@@ -55,6 +63,8 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 			public boolean shouldSpreadItems() { return false; }
 		};
 		renderItems.setRenderManager(RenderManager.instance);	
+		cmas = CraftingSuite.cmas;
+		random = new Random();
 	}
 
 	@Override
@@ -218,6 +228,34 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         		GL11.glPopMatrix();
     		}
     		GL11.glPopMatrix();
+        }
+        if(cmas){
+        	byte rotation = tile.getDirectionFacing();
+        	GL11.glPushMatrix();
+        	GL11.glRotatef(180, 1.0F, 0.0F, 0.0F);
+        	GL11.glTranslatef(0.5F, -1.25F, -0.5F);
+        	GL11.glScalef(0.01F, 0.01F, 0.01F);
+        	switch(rotation){
+        	case 2: GL11.glRotatef(180, 0.0F, 1.0F, 0.0F);
+        			GL11.glTranslatef(25.0F, 0.0F, 25.0F);
+        			GL11.glRotatef(45, 0.0F, 1.0F, 0.0F);
+    			break;
+        	case 3: GL11.glTranslatef(25.0F, 0.0F, 25.0F);
+    				GL11.glRotatef(45, 0.0F, 1.0F, 0.0F);
+				break;
+        	case 4: GL11.glRotatef(90, 0.0F, 1.0F, 0.0F);
+        			GL11.glTranslatef(25.0F, 0.0F, 25.0F);
+        			GL11.glRotatef(45, 0.0F, 1.0F, 0.0F);
+				break;
+        	case 5: GL11.glRotatef(-90, 0.0F, 1.0F, 0.0F);
+					GL11.glTranslatef(25.0F, 0.0F, 25.0F);
+					GL11.glRotatef(45, 0.0F, 1.0F, 0.0F);
+        	}
+        	renderBlocks.minecraftRB.renderEngine.bindTexture(sm);
+        	ModelSnowMan sm = new ModelSnowMan();
+        	sm.render(new EntitySnowman(tile.worldObj), 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F);
+        	renderBlocks.minecraftRB.renderEngine.bindTexture(renderBlocks.minecraftRB.getTextureManager().getResourceLocation(new ItemStack(Block.stone).getItemSpriteNumber()));
+        	GL11.glPopMatrix();
         }
         GL11.glPopMatrix();
 	}

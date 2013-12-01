@@ -96,12 +96,12 @@ public class BlockCrafting extends BlockContainer {
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int par6, float par7, float par8, float par9){
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		if(te == null)
-			return false;
+			return true;
 		int meta = world.getBlockMetadata(x, y, z);
 		if(te instanceof IModifiedTileEntityProvider){
 			IModifiedTileEntityProvider moddedTile = (IModifiedTileEntityProvider)te;
 			if(!ModificationNBTHelper.ensureIntegrity(moddedTile.getModifiers()) || !ModificationNBTHelper.ensureIntegrity(moddedTile.getModifierBytes()))
-				return false;
+				return true;
 		}
 		switch(meta){
 		case 1: if(!player.isSneaking()) if(!world.isRemote) player.openGui(CraftingSuite.instance, 1, world, x, y, z);
@@ -109,7 +109,7 @@ public class BlockCrafting extends BlockContainer {
 		case 2: if(!player.isSneaking()) if(!world.isRemote) player.openGui(CraftingSuite.instance, 2, world, x, y, z);
 			return true;
 		}
-		return false;
+		return true;
 		
 	}
 	

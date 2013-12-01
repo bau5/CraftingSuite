@@ -1,5 +1,6 @@
 package bau5.mods.craftingsuite.common;
 
+import java.util.Calendar;
 import java.util.logging.Level;
 
 import net.minecraft.block.Block;
@@ -48,6 +49,8 @@ public class CraftingSuite {
 	
 	public static boolean VERBOSE;
 	public static boolean VERSION_CHECK;
+	public static boolean EE_ENABLED;
+	public static boolean cmas;
 	
 	private int[] blockIDs;
 	private int[] itemIDs;
@@ -66,6 +69,7 @@ public class CraftingSuite {
 			itemIDs[1] = config.getItem("Plan",  18977).getInt(18977) -256;
 			VERBOSE = config.get(Configuration.CATEGORY_GENERAL, "Verbose Logging", false).getBoolean(false);
 			VERSION_CHECK = config.get(Configuration.CATEGORY_GENERAL, "Version Check", true).getBoolean(true);
+			EE_ENABLED = config.get(Configuration.CATEGORY_GENERAL, "Easter Eggs Enabled", true).getBoolean(true);
 		}catch(Exception ex){
 			FMLLog.log(Level.SEVERE, ex, "Crafting Suite: Failed loading configuration file.");
 		}finally{
@@ -74,6 +78,7 @@ public class CraftingSuite {
 		if(VERSION_CHECK)
 			VersionChecker.go();
 		initParts();
+		dc();
 	}
 
 	private void initParts() {
@@ -108,6 +113,13 @@ public class CraftingSuite {
 		for(String lang : Reference.LANGUAGES){
 			LanguageRegistry.instance().loadLocalization(new ResourceLocation("/bau5/mods/craftingsuite/langs/" +lang +".xml").getResourcePath(), lang, true);
 		}
+	}
+
+	private void dc(){
+		int d = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+		boolean m = Calendar.getInstance().get(Calendar.MONTH) == Calendar.DECEMBER;
+		if(EE_ENABLED && m && d > 20)
+			cmas = true;
 	}
 
 	public void registerRecipes(){

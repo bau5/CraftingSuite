@@ -1,8 +1,11 @@
 package bau5.mods.craftingsuite.common.tileentity;
 
 import java.util.HashMap;
+import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.EnumOptions;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
@@ -18,7 +21,9 @@ import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import bau5.mods.craftingsuite.common.CSLogger;
+import bau5.mods.craftingsuite.common.CraftingSuite;
 import bau5.mods.craftingsuite.common.ModificationNBTHelper;
+import bau5.mods.craftingsuite.common.SFFX;
 import bau5.mods.craftingsuite.common.helpers.ItemHelper;
 import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
 import bau5.mods.craftingsuite.common.tileentity.parthandlers.ContainerHandler;
@@ -33,6 +38,10 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	public TileNetHandler netHandler;
 	public InventoryHandler inventoryHandler;
 	public ContainerHandler containerHandler;
+	
+	public Random random = new Random();
+	
+	public boolean cmas = CraftingSuite.cmas;
 	
 	public class LocalInventoryCrafting extends InventoryCrafting{
 		private TileEntity theTile;
@@ -63,6 +72,7 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	public boolean initialized = false;
 	private boolean shouldUpdateOutput;
 	private int update = 0;
+	private long ticker = 0;
 	private byte directionFacing = 0;
 	public float randomShift = 0.0F;
 	
@@ -210,6 +220,7 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	
 	@Override
 	public void updateEntity() {
+		ticker++;
 		if(modifiers.hasNoTags() && worldObj != null && !worldObj.isRemote){
 			destroyBench();
 			return;
@@ -236,6 +247,15 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 			if(getInventoryModifier() == null)
 				CSLogger.logError("Tile entity has null inventory modifier.");
 		}
+		if(cmas){
+			if(worldObj.isRemote && ticker % 3 > 0){
+				if(Minecraft.getMinecraft().gameSettings.particleSetting == 0){
+					FMLClientHandler.instance().getClient().effectRenderer.addEffect(new SFFX(worldObj, xCoord +random.nextDouble(), yCoord+2, zCoord +random.nextDouble()));
+				}
+			}
+		}
+		if(ticker > 20000)
+			ticker = 0;
 		super.updateEntity();
 	}
 	

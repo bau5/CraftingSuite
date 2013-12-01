@@ -36,7 +36,7 @@ public class BlockModificationTable extends BlockContainer {
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int par6, float par7, float par8, float par9){
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		if(te == null)
-			return false;
+			return true;
 		int meta = world.getBlockMetadata(x, y, z);
 		switch(meta){
 		case 0: if(!player.isSneaking()) if(!world.isRemote) player.openGui(CraftingSuite.instance, 0, world, x, y, z);

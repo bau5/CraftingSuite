@@ -5,4 +5,5 @@
   <entry key = "0.1.8.2">Fixed possible NPE</entry>
   <entry key = "0.2.1.0">Plans, Deep Slot, NEI Shift click, etc...</entry>
   <entry key = "0.2.1.1">NEI Usage and Recipe support, bug fixes.</entry>
+  <entry key = "0.2.1.2">Fix for benches changing to chests.</entry>
 </properties>

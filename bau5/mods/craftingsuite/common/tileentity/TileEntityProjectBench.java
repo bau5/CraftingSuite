@@ -140,6 +140,7 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 		case DEEP: 
 			indicies[0] = indicies[1] = 27;
 			inventoryMap.put(EnumInventoryModifier.DEEP, indicies);
+			break;
 		case PLAN:
 			indicies[0] = 27; indicies[1] = 27;
 			inventoryMap.put(EnumInventoryModifier.PLAN, indicies);
@@ -221,10 +222,6 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	@Override
 	public void updateEntity() {
 		ticker++;
-		if(modifiers.hasNoTags() && worldObj != null && !worldObj.isRemote){
-			destroyBench();
-			return;
-		}
 		if((shouldUpdateOutput || inventoryHandler.shouldUpdate) && !containerInit && !containerWorking){
 			inventoryHandler.findRecipe(false);
 			shouldUpdateOutput = false;
@@ -259,22 +256,6 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 		super.updateEntity();
 	}
 	
-	private void destroyBench() {
-		if(inv == null || inv.length == 0)
-			return;
-		ItemStack[] inventory = new ItemStack[inv.length];
-		for(int i = 0; i < inventory.length; i++){
-			inventory[i] = inv[i] != null ? inv[i].copy() : null;
-		}
-		TileEntityChest chest = new TileEntityChest();
-		for(int i = 0; i < inventory.length; i++){
-			chest.setInventorySlotContents(i, inventory[i]);
-		}
-		worldObj.setBlock(xCoord, yCoord, zCoord, 0);
-		worldObj.setBlock(xCoord, yCoord, zCoord, Block.chest.blockID);
-		worldObj.setBlockTileEntity(xCoord, yCoord, zCoord, chest);
-	}
-
 	private void makeNewMatrix() {
 		for(int i = 0; i < 9; i++){
 			lastCraftMatrix.setInventorySlotContents(i, inv[i]);

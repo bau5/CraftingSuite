@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties version="1.0">
-        <!--Author: MyEternity -->
         <!--Blocks-->
     <entry key="tile.bau5_moddingblock.name">Стол модификаций</entry>
         <!--Benches-->
@@ -25,10 +24,4 @@
     <entry key="gui.modificationtable.aesthetics">Эстетичность</entry>
     <!--Descriptions-->
     <entry key="item.modifications.tools.description">Позволяет хранить инструменты для крафта в специальном отсеке.</entry>
-    <entry key="cs.versioncheck.up">Мод Crafting Suite не требует обновлений.</entry>
-    <entry key="cs.versioncheck.start">Проверка новой версии.</entry>
-    <entry key="cs.versioncheck.fail">Ошибка проверки версии.</entry>
-    <entry key="cs.versioncheck.new">Новая версия мода Crafting Suite доступна.</entry>
-    <entry key="cs.versioncheck.version">Версия</entry>
-    <entry key="cs.versioncheck.importance">Это обновление</entry>    
 </properties>

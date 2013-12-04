@@ -3,9 +3,6 @@ package bau5.mods.craftingsuite.common.tileentity;
 import java.util.HashMap;
 import java.util.Random;
 
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.EnumOptions;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
@@ -19,11 +16,10 @@ import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
+import bau5.mods.craftingsuite.client.ParticleRenderer;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.CraftingSuite;
 import bau5.mods.craftingsuite.common.ModificationNBTHelper;
-import bau5.mods.craftingsuite.common.SFFX;
 import bau5.mods.craftingsuite.common.helpers.ItemHelper;
 import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
 import bau5.mods.craftingsuite.common.tileentity.parthandlers.ContainerHandler;
@@ -246,9 +242,7 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 		}
 		if(cmas){
 			if(worldObj.isRemote && ticker % 3 > 0){
-				if(Minecraft.getMinecraft().gameSettings.particleSetting == 0){
-					FMLClientHandler.instance().getClient().effectRenderer.addEffect(new SFFX(worldObj, xCoord +random.nextDouble(), yCoord+2, zCoord +random.nextDouble()));
-				}
+				ParticleRenderer.doParticle(0, worldObj, xCoord +random.nextDouble(), yCoord+2, zCoord +random.nextDouble());
 			}
 		}
 		if(ticker > 20000)

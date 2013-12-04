@@ -505,13 +505,17 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         tessellator.draw();
         tessellator.startDrawingQuads();
         tessellator.setNormal(0.0F, 1.0F, 0.0F);
-        Icon icOveraly = null;
+        Icon icOverlay = null;
         Icon icPlanks  = null;
         if(overlay)
-        	icOveraly = Block.cloth.getIcon(0, bytes[3]);
+        	icOverlay = Block.cloth.getIcon(0, bytes[3]);
     	if(plankUsed != null)
     		icPlanks = Block.blocksList[plankUsed.itemID].getIcon(0, plankUsed.getItemDamage());
-    	renderBlocks.renderFaceYPos(theBlock, 0.0D, 0.0D, 0.0D, overlay ? icOveraly : icPlanks);
+    	if(icOverlay == null)
+    		icOverlay = Block.cloth.getIcon(0, 0);
+    	if(icPlanks == null)
+    		icPlanks = Block.planks.getIcon(0, 0);
+    	renderBlocks.renderFaceYPos(theBlock, 0.0D, 0.0D, 0.0D, overlay ? icOverlay : icPlanks);
     	renderBlocks.setOverrideBlockTexture(icons[4]);
         renderBlocks.renderFaceYPos(theBlock, 0.0D, 0.0D, 0.0D, renderBlocks.getBlockIconFromSideAndMetadata(theBlock, 1, i));
         renderBlocks.clearOverrideBlockTexture();
@@ -544,12 +548,12 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
             GL11.glPushMatrix();
             renderBlocks.renderMaxY = 0.24997111D;
             renderBlocks.renderMaxX = 0.755D;
-            renderBlocks.renderFaceZNeg(theBlock, 0.121D, 0.7502999D, 0.001D, icOveraly/*Block.cloth.getIcon(0, bytes[3])*/);
-            renderBlocks.renderFaceZPos(theBlock, 0.121D, 0.7502999D, -0.001D, icOveraly/*Block.cloth.getIcon(0, bytes[3])*/);
+            renderBlocks.renderFaceZNeg(theBlock, 0.121D, 0.7502999D, 0.001D, icOverlay/*Block.cloth.getIcon(0, bytes[3])*/);
+            renderBlocks.renderFaceZPos(theBlock, 0.121D, 0.7502999D, -0.001D, icOverlay/*Block.cloth.getIcon(0, bytes[3])*/);
             renderBlocks.renderMaxX = 1.0D;
             renderBlocks.renderMaxZ = 0.755D;
-            renderBlocks.renderFaceXNeg(theBlock, 0.001D, 0.750D, 0.121D, icOveraly/*Block.cloth.getIcon(0, bytes[3])*/);
-            renderBlocks.renderFaceXPos(theBlock, -0.001D, 0.750D, 0.121D, icOveraly/*Block.cloth.getIcon(0, bytes[3])*/);
+            renderBlocks.renderFaceXNeg(theBlock, 0.001D, 0.750D, 0.121D, icOverlay/*Block.cloth.getIcon(0, bytes[3])*/);
+            renderBlocks.renderFaceXPos(theBlock, -0.001D, 0.750D, 0.121D, icOverlay/*Block.cloth.getIcon(0, bytes[3])*/);
             renderBlocks.renderMaxY = 1.0D;
             renderBlocks.renderMaxZ = 1.0D;
             renderBlocks.clearOverrideBlockTexture();

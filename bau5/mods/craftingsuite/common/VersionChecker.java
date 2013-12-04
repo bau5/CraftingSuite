@@ -86,7 +86,7 @@ public class VersionChecker implements Runnable {
 	@Override
 	public void run() {
 		int tries = 0;
-		CSLogger.log(I18n.getString("cs.versioncheck.start"));
+		CSLogger.log("Starting Version check.");
 		
 		try{
 			while(tries < 3 && (result != OUT_OF_DATE && result != UP_TO_DATE)){
@@ -98,7 +98,7 @@ public class VersionChecker implements Runnable {
 					TickRegistry.registerTickHandler(new VersionCheckTicker(), Side.CLIENT);
 				}
 				if(result == UP_TO_DATE)
-					CSLogger.log(I18n.getString("cs.versioncheck.up"));
+					CSLogger.log("Up to date.");
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();

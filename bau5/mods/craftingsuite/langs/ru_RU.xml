@@ -23,5 +23,12 @@
     <entry key="gui.modificationtable.modifiers">Модификатор</entry>
     <entry key="gui.modificationtable.aesthetics">Эстетичность</entry>
     <!--Descriptions-->
+    <!--Updated 10/12/2013-->
     <entry key="item.modifications.tools.description">Позволяет хранить инструменты для крафта в специальном отсеке.</entry>
+    <entry key="cs.versioncheck.up">Версия Crafting Suite актуальна.</entry>
+    <entry key="cs.versioncheck.start">Проверка обновлений.</entry>
+    <entry key="cs.versioncheck.fail">Ошибка проверки обновлениц.</entry>
+    <entry key="cs.versioncheck.new">Новая версия Crafting Suite доступна.</entry>
+    <entry key="cs.versioncheck.version">Версия</entry>
+    <entry key="cs.versioncheck.importance">Обновление</entry>    
 </properties>

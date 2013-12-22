@@ -5,9 +5,9 @@
     <entry key="tile.bau5_moddingblock.name">Стол модификаций</entry>
         <!--Benches-->
     <entry key="tile.bau5_craftingblock.pb.name">Проектный верстак</entry>
-    <entry key="tile.bau5_craftingblock.ct.name">Крафт верстак</entry>
+    <entry key="tile.bau5_craftingblock.ct.name">Верстак создания</entry>
     <!--Items-->
-    <entry key="item.modification.crafter.name">Модификатор для крафта</entry>
+    <entry key="item.modification.crafter.name">Модификатор для создания</entry>
     <entry key="item.modification.holding.name">Модификатор для хранения</entry>
     <entry key="item.modification.storing.name">Модификатор для усиления</entry>
     <entry key="item.modification.tools.name">Модификатор для инструментов</entry>
@@ -23,5 +23,11 @@
     <entry key="gui.modificationtable.modifiers">Модификатор</entry>
     <entry key="gui.modificationtable.aesthetics">Эстетичность</entry>
     <!--Descriptions-->
-    <entry key="item.modifications.tools.description">Позволяет хранить инструменты для крафта в специальном отсеке.</entry>
+    <entry key="item.modifications.tools.description">Позволяет хранить инструменты в блоке для создания.</entry>
+    <entry key="cs.versioncheck.up">Crafting Suite актуален.</entry>
+    <entry key="cs.versioncheck.start">Начата проверка версии.</entry>
+    <entry key="cs.versioncheck.fail">Ошибка проверки версии.</entry>
+    <entry key="cs.versioncheck.new">Новая версия Crafting Suite доступна.</entry>
+    <entry key="cs.versioncheck.version">Версия</entry>
+    <entry key="cs.versioncheck.importance">Это обновление</entry>
 </properties>

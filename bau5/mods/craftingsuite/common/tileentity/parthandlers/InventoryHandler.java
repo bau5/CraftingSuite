@@ -44,34 +44,32 @@ public class InventoryHandler implements IInventory{
 	
 	public void initInventory() {
 		inv = new ItemStack[tileEntity.getModifiedInventorySize()];
-		if(tileEntity.getModifierBytes() != null && tileEntity.getModifierBytes().length > 0){
-			int typ = tileEntity.getModifierBytes()[0];
-			switch(typ){
-			case 1: 
-				inventoryMap.put("Crafting", new int[]{0,8});
-				break;
-			case 2: 
-				inventoryMap.put("Crafting", new int[]{0,8});
-				inventoryMap.put("Supply", new int[]{9,26});
-				break;
-			}
-			int[] indicies = new int[2];
-			switch(tileEntity.getInventoryModifier()){
-			case DEEP: 
-				if(typ == 1)
-					indicies = new int[]{9,9};
-				else
-					indicies = new int[]{27,27};
-				inventoryMap.put("Deep", indicies);
-				break;
-			case TOOLS:
-				inventoryMap.put("Tools", new int[]{27,29});
-				break;
-			case PLAN: 
-				inventoryMap.put("Plan", new int[]{27,27});
-				break;
-			case NONE: break;
-			}
+		int typ = tileEntity.getModifications().type();
+		switch(typ){
+		case 1: 
+			inventoryMap.put("Crafting", new int[]{0,8});
+			break;
+		case 2: 
+			inventoryMap.put("Crafting", new int[]{0,8});
+			inventoryMap.put("Supply", new int[]{9,26});
+			break;
+		}
+		int[] indicies = new int[2];
+		switch(tileEntity.getInventoryModifier()){
+		case DEEP: 
+			if(typ == 1)
+				indicies = new int[]{9,9};
+			else
+				indicies = new int[]{27,27};
+			inventoryMap.put("Deep", indicies);
+			break;
+		case TOOLS:
+			inventoryMap.put("Tools", new int[]{27,29});
+			break;
+		case PLAN: 
+			inventoryMap.put("Plan", new int[]{27,27});
+			break;
+		case NONE: break;
 		}
 	}
 

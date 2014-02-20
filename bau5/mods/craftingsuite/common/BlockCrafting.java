@@ -20,7 +20,9 @@ import net.minecraft.util.Icon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
+import bau5.mods.craftingsuite.common.helpers.ModificationStackHelper;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
+import bau5.mods.craftingsuite.common.tileentity.Modifications;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
 import cpw.mods.fml.relauncher.Side;
@@ -32,9 +34,9 @@ public class BlockCrafting extends BlockContainer {
 	public static ArrayList<CachedUpgrade> cache = new ArrayList<CachedUpgrade>();
 	public class CachedUpgrade{
 		public final int x, y, z;
-		public final NBTTagCompound modList;
+		public final Modifications modList;
 		public CachedUpgrade(TileEntityProjectBench tile, int x1, int y1, int z1){
-			modList = tile.getModifiers();
+			modList = tile.getModifications();
 			x = x1;
 			y = y1;
 			z = z1;
@@ -53,11 +55,6 @@ public class BlockCrafting extends BlockContainer {
 	public ItemStack getPickBlock(MovingObjectPosition target, World world,
 			int x, int y, int z) {
 		TileEntity te = world.getBlockTileEntity(x, y, z);
-		if(te != null && te instanceof IModifiedTileEntityProvider){
-			IModifiedTileEntityProvider moddedTile = (IModifiedTileEntityProvider)te;
-			if(!ModificationNBTHelper.ensureIntegrity(moddedTile.getModifiers()) || !ModificationNBTHelper.ensureIntegrity(moddedTile.getModifierBytes()))
-				return ModificationStackHelper.makeBasicMkICrafter();
-		}
 		ItemStack vanillaStack = super.getPickBlock(target, world, x, y, z);
 		vanillaStack = ModificationStackHelper.makeStackFromInfo(vanillaStack, world.getBlockTileEntity(x, y, z));
 		return vanillaStack;
@@ -98,11 +95,7 @@ public class BlockCrafting extends BlockContainer {
 		if(te == null)
 			return true;
 		int meta = world.getBlockMetadata(x, y, z);
-		if(te instanceof IModifiedTileEntityProvider){
-			IModifiedTileEntityProvider moddedTile = (IModifiedTileEntityProvider)te;
-			if(!ModificationNBTHelper.ensureIntegrity(moddedTile.getModifiers()) || !ModificationNBTHelper.ensureIntegrity(moddedTile.getModifierBytes()))
-				return true;
-		}
+		
 		switch(meta){
 		case 1: if(!player.isSneaking()) if(!world.isRemote) player.openGui(CraftingSuite.instance, 1, world, x, y, z);
 			return true;
@@ -186,43 +179,32 @@ public class BlockCrafting extends BlockContainer {
 			int par5, int par6) {
 		Random rand = new Random();	
 		TileEntity te = world.getBlockTileEntity(x, y, z);
-		boolean skip = false;
 		
-		if(te instanceof IModifiedTileEntityProvider){
-			IModifiedTileEntityProvider moddedTile = (IModifiedTileEntityProvider)te;			
-			if(!ModificationNBTHelper.ensureIntegrity(moddedTile.getModifiers()) || !ModificationNBTHelper.ensureIntegrity(moddedTile.getModifierBytes()))
-				skip = true;
-		}
-
 		if(te instanceof TileEntityProjectBench)
 			cache.add(new CachedUpgrade((TileEntityProjectBench)te, x, y, z));
 		
-		if(!(te instanceof IInventory) && !(te instanceof TileEntityModdedTable))
-			skip = true;
-		if(!skip){
-			IInventory inv = te instanceof IInventory ? (IInventory)te : ((TileEntityModdedTable)te).getInventoryHandler();
-			int i = 0; 
-			int size = inv.getSizeInventory();
-			for(; i < size; i++)
+		IInventory inv = te instanceof IInventory ? (IInventory)te : ((TileEntityModdedTable)te).getInventoryHandler();
+		int i = 0; 
+		int size = inv.getSizeInventory();
+		for(; i < size; i++)
+		{
+			ItemStack item = inv.getStackInSlot(i);
+			if(item != null && item.stackSize > 0)
 			{
-				ItemStack item = inv.getStackInSlot(i);
-				if(item != null && item.stackSize > 0)
-				{
-					float rx = rand.nextFloat() * 0.8F + 0.1F;
-					float ry = rand.nextFloat() * 0.8F + 0.1F;
-					float rz = rand.nextFloat() * 0.8F + 0.1F;
-					EntityItem ei = new EntityItem(world, x + rx, y + ry, z + rz,
-							new ItemStack(item.itemID, item.stackSize, item.getItemDamage()));
-					if(item.hasTagCompound())
-						ei.getEntityItem().setTagCompound((NBTTagCompound) item.getTagCompound().copy());
-					float factor = 0.05f;
-					ei.motionX = rand.nextGaussian() * factor;
-					ei.motionY = rand.nextGaussian() * factor + 0.2F;
-					ei.motionZ = rand.nextGaussian() * factor;
-					if(!world.isRemote)
-						world.spawnEntityInWorld(ei);
-					item.stackSize = 0;
-				}
+				float rx = rand.nextFloat() * 0.8F + 0.1F;
+				float ry = rand.nextFloat() * 0.8F + 0.1F;
+				float rz = rand.nextFloat() * 0.8F + 0.1F;
+				EntityItem ei = new EntityItem(world, x + rx, y + ry, z + rz,
+						new ItemStack(item.itemID, item.stackSize, item.getItemDamage()));
+				if(item.hasTagCompound())
+					ei.getEntityItem().setTagCompound((NBTTagCompound) item.getTagCompound().copy());
+				float factor = 0.05f;
+				ei.motionX = rand.nextGaussian() * factor;
+				ei.motionY = rand.nextGaussian() * factor + 0.2F;
+				ei.motionZ = rand.nextGaussian() * factor;
+				if(!world.isRemote)
+					world.spawnEntityInWorld(ei);
+				item.stackSize = 0;
 			}
 		}
 		super.breakBlock(world, x, y, z, par5, par6);

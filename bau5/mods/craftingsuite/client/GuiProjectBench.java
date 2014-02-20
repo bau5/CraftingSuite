@@ -24,6 +24,7 @@ public class GuiProjectBench extends GuiContainer implements IGuiBridge{
 	private ResourceLocation parts;
 	private GuiHandler		 guiHandler;
 	private boolean once = true;
+	private int guiLeftActual;
 	public GuiProjectBench(InventoryPlayer inventory, TileEntity te) {
 		super(new ContainerProjectBench(inventory, (TileEntityProjectBench)te));
 		ySize += 48;
@@ -44,6 +45,7 @@ public class GuiProjectBench extends GuiContainer implements IGuiBridge{
 		if(once){
 			guiHandler.makeButtons();
 			once = false;
+			guiLeftActual = guiLeft -20;
 		}
 		if(buttonList.size() != guiHandler.buttons.size()){
 			if(!buttonList.containsAll(guiHandler.buttons)){
@@ -55,6 +57,15 @@ public class GuiProjectBench extends GuiContainer implements IGuiBridge{
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		this.drawTexturedModalRect(x, y, 0, 0, xSize, ySize);
 		guiHandler.drawAdditionalParts(i, j, xSize, ySize);
+	}
+	
+	@Override
+	protected void mouseClicked(int par1, int par2, int par3) {
+//		int prev = guiLeft;
+//		if(par2 < guiTop + 58 && par2 > guiTop && par1 < guiLeft)
+//			guiLeft = guiLeftActual;
+		super.mouseClicked(par1, par2, par3);
+//		guiLeft = prev;
 	}
 	
 	@Override

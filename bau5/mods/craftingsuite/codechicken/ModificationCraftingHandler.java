@@ -15,8 +15,8 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.opengl.GL11;
 
 import bau5.mods.craftingsuite.common.CraftingSuite;
-import bau5.mods.craftingsuite.common.ModificationNBTHelper;
-import bau5.mods.craftingsuite.common.ModificationStackHelper;
+import bau5.mods.craftingsuite.common.helpers.ModificationNBTHelper;
+import bau5.mods.craftingsuite.common.helpers.ModificationStackHelper;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.TemplateRecipeHandler;
 

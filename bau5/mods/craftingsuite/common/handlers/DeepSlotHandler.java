@@ -45,6 +45,8 @@ public class DeepSlotHandler implements IModifierHandler{
 				clickType = 0;
 			}
 		}
+		if(slot >= 0 && clickMeta == 4)
+			clickMeta = 0;
 		ItemStack stack = container.slotClick_plain(slot, clickType, clickMeta, player);
 		if(container.getTileEntity().getInventoryHandler().affectsCrafting(slot))
 			container.modifiedTile.getInventoryHandler().findRecipe(false);

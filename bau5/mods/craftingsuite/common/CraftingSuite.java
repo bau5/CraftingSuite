@@ -77,8 +77,8 @@ public class CraftingSuite {
 		}
 		if(VERSION_CHECK)
 			VersionChecker.go();
-		initParts();
 		dc();
+		initParts();
 	}
 
 	private void initParts() {
@@ -93,7 +93,7 @@ public class CraftingSuite {
 		modItems = new ItemModifications(itemIDs[0]);
 		planItem = new ItemPlan(itemIDs[1]);
 		entityID = EntityRegistry.findGlobalUniqueEntityId();
-		EntityRegistry.registerModEntity(EntityCraftingFrame.class, "craftingframe", entityID++, this, 15, Integer.MAX_VALUE, false);
+//		EntityRegistry.registerModEntity(EntityCraftingFrame.class, "craftingframe", entityID++, this, 15, Integer.MAX_VALUE, false);
 		NetworkRegistry.instance().registerGuiHandler(this, proxy);
 		proxy.registerRenderingInformation();
 	}
@@ -124,17 +124,23 @@ public class CraftingSuite {
 
 	public void registerRecipes(){
 		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 1, 0), new Object[]{
-			"SSS", "SCS", "SSS", 
+			" S ", "SCS", " S ", 		//Crafting Modifier
 			'C', new ItemStack(Block.workbench.blockID, 1, OreDictionary.WILDCARD_VALUE), 
 			'S', new ItemStack(Item.stick.itemID, 1, OreDictionary.WILDCARD_VALUE) 
 		}));
 		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 1, 1), new Object[]{
-			"ICI",
+			"ICI",						//Holding Modifier
 			'C', new ItemStack(modItems.itemID, 1, 0), 
 			'I', new ItemStack(Item.ingotIron, 1, OreDictionary.WILDCARD_VALUE)
 		}));
-		GameRegistry.addRecipe(new ShapelessOreRecipe(new ItemStack(modItems, 1, 2), new Object[]{
+		GameRegistry.addRecipe(new ShapelessOreRecipe(new ItemStack(modItems, 2, 2), new Object[]{
+										//Storing Modifier
 			new ItemStack(modItems.itemID, 1, 1), 
+			new ItemStack(Block.chest, 1, OreDictionary.WILDCARD_VALUE)
+		}));
+		GameRegistry.addRecipe(new ShapelessOreRecipe(new ItemStack(modItems, 2, 2), new Object[]{
+			new ItemStack(modItems.itemID, 1, 0), 
+			new ItemStack(Item.ingotIron, 1, 0),
 			new ItemStack(Block.chest, 1, OreDictionary.WILDCARD_VALUE)
 		}));
 		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modificationTableBlock.blockID, 1, 0), new Object[]{
@@ -144,19 +150,19 @@ public class CraftingSuite {
 			'R', new ItemStack(Item.redstone, 1, 0),
 			'S', new ItemStack(Block.stone.blockID, 1, 0)
 		}));
-		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 1, 3), new Object[]{
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 2, 3), new Object[]{
 			" I ", "IBI", "III",
 			'I', new ItemStack(Item.ingotIron, 1, 0),
 			'B', new ItemStack(Item.bucketEmpty, 1, 0)
 		}));
-		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 1, 4), new Object[]{
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 2, 4), new Object[]{
 			"P P", "PIP", " P ", 'P', Block.planks, 'I', new ItemStack(Item.ingotIron, 1, 0)
 		}));
-		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(planItem, 4, 0), new Object[]{
-			" PS", "PNP", "SP ", 'P', Item.paper, 'S', Item.stick, 'N', Item.goldNugget
-		}));
-		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 1, 5), new Object[]{
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 2, 5), new Object[]{
 			"SIS", "IPI", "SIS", 'S', Block.stone, 'I', Item.ingotIron, 'P', planItem
+		}));
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(planItem, 8, 0), new Object[]{
+			" PS", "PNP", "SP ", 'P', Item.paper, 'S', Item.stick, 'N', Item.goldNugget
 		}));
 	}
 }

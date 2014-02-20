@@ -22,7 +22,7 @@ public class ContainerModdedCraftingTable extends ContainerBase {
 	}
 
 	private void buildContainerFromTile(EntityPlayer player) {
-		if(tileEntity.getUpgrades()[0] == 1){
+		if(tileEntity.getModifications().type() == 1){
 			buildBasicCraftingInventory(player.inventory, tileEntity.getInventoryHandler(), tileEntity.getInventoryHandler().resultMatrix());
 		}
 	}

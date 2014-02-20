@@ -19,11 +19,11 @@ public class ToolsHandler implements IModifierHandler{
 	@Override
 	public ItemStack handleSlotClick(int slot, int clickType, int clickMeta,
 			EntityPlayer player) {
-		if(container.getInventoryModifier() == EnumInventoryModifier.TOOLS && slot >= toolSlots[0].slotNumber && slot <= toolSlots[2].slotNumber){
+		if(player.inventory.getItemStack() == null && container.getInventoryModifier() == EnumInventoryModifier.TOOLS && slot >= toolSlots[0].slotNumber && slot <= toolSlots[2].slotNumber){
 			IModifiedTileEntityProvider te = container.modifiedTile;
  			int index = slot - 64;
 			
-			if(clickType == 0 && clickMeta == 0 && te.getInventoryHandler().tools[index] != null){
+			if(clickType == 0 && (clickMeta == 0 || clickMeta == 4) && te.getInventoryHandler().tools[index] != null){
 				if(te.getSelectedToolIndex() == index)
 					te.setSelectedToolIndex(-1);
 				else
@@ -34,6 +34,8 @@ public class ToolsHandler implements IModifierHandler{
 			te.setSelectedToolIndex(-1);
 			te.getInventoryHandler().findRecipe(true);
 		}
+		if(slot >= 0 && clickMeta == 4)
+			clickMeta = 0;
 		ItemStack handledStack = container.slotClick_plain(slot, clickType, clickMeta, player);
 		if(container.getTileEntity().getInventoryHandler().affectsCrafting(slot)){
 			container.getTileEntity().getInventoryHandler().findRecipe(true);

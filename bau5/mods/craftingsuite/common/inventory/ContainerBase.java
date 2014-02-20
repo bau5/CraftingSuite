@@ -37,6 +37,7 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 	public ItemStack slotClick(int slot, int clickType, int clickMeta,
 			EntityPlayer player) {
 		boolean updateRecipe = false;
+		System.out.printf("%d %d\n", clickType, clickMeta);
 		if(slot == craftingSlotIndex && (clickType == 1 || clickMeta == 1))
 			updateRecipe = true;
 		if(clickMeta == 6 && slot == craftingSlotIndex)

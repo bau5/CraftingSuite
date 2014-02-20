@@ -25,7 +25,7 @@ import org.lwjgl.opengl.GL11;
 import bau5.mods.craftingsuite.common.BlockCrafting;
 import bau5.mods.craftingsuite.common.BlockModificationTable;
 import bau5.mods.craftingsuite.common.CraftingSuite;
-import bau5.mods.craftingsuite.common.ModificationNBTHelper;
+import bau5.mods.craftingsuite.common.helpers.ModificationNBTHelper;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
@@ -169,10 +169,8 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 		if(blck == null)
 			return;
 		renderBlocks.renderBlockByRenderType(blck, tile.xCoord, tile.yCoord, tile.zCoord);
-		if(tile.getUpgrades() == null)
-			return;
-        boolean renderResult = (tile.getUpgrades().length == 5) ? (tile.getUpgrades()[4] == 1 ? true : false) : false;
-        boolean renderTools  = (tile.getUpgrades().length == 5) ? (tile.getUpgrades()[1] == 3 ? true : false) : false;
+        boolean renderResult = tile.getModifications().visual() == 1 ? true : false;
+        boolean renderTools  = tile.getModifications().upgrades() == 3;
         GL11.glPushMatrix();
         GL11.glTranslatef((float) x0, (float) y0, (float) z0);
         GL11.glEnable(32826 /* rescale */);
@@ -350,7 +348,7 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 	}
 	
 	public void renderModdedTable(TileEntityModdedTable tile, double d0, double d1, double d2, float f) {
-		if(tile.getUpgrades() != null && tile.getUpgrades()[0] == 1)
+		if(tile.getModifications().type() == 1)
 			renderCraftingTable(tile, d0, d1, d2, f);
 	}
 	
@@ -366,15 +364,13 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         GL11.glTranslatef((float)x +0.5F, (float)y +1.5F, (float)z +0.5F);
         GL11.glRotatef(180, 1f, 0, 0);
         modelCraftingTable.renderDefaultParts();
-        if(tile.getUpgrades() != null && tile.getUpgrades().length > 0){
-        	if(tile.getUpgrades()[4] == 1){
-        		if(tile.getInventoryHandler().result != null){
-        			GL11.glRotatef(180, 1.0F, 0.0F, 0.0F);
-        			GL11.glTranslatef(-0.5F, -1.5F, -0.5F);
-        			renderTileEntityResult(tile, tile.getInventoryHandler().result);
-        		}
-        	}
-        }
+    	if(tile.getModifications().visual() == 1){
+    		if(tile.getInventoryHandler().result != null){
+    			GL11.glRotatef(180, 1.0F, 0.0F, 0.0F);
+    			GL11.glTranslatef(-0.5F, -1.5F, -0.5F);
+    			renderTileEntityResult(tile, tile.getInventoryHandler().result);
+    		}
+    	}
         
         GL11.glDisable(32826 /* scale */);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -391,7 +387,7 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         if(bytes == null || bytes.length != 5)
         	return;
 
-        ItemStack plankUsed = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed_Base(theStack.stackTagCompound));
+        ItemStack plankUsed = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(theStack.stackTagCompound));
         Block block = Block.blocksList[theStack.itemID];
         if(plankUsed == null)
         	return;
@@ -481,10 +477,10 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         byte[] bytes = ModificationNBTHelper.getUpgradeByteArray(theStack.stackTagCompound);
         if(bytes == null || bytes.length != 5)
         	return;
-        ItemStack plankUsed = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed_Base(theStack.stackTagCompound));
+        ItemStack plankUsed = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(theStack.stackTagCompound)/*ModificationNBTHelper.getPlanksUsed_Base(theStack.stackTagCompound)*/);
         Block theBlock = Block.blocksList[theStack.itemID];
         Icon[] icons = null;
-        boolean overlay = bytes[3] != -1;
+        boolean overlay = (bytes[3] -1 ) != -1;
         if(theBlock instanceof BlockCrafting)
         	icons = ((BlockCrafting)theBlock).icons;
 		theBlock.setBlockBoundsForItemRender();
@@ -508,7 +504,7 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         Icon icOverlay = null;
         Icon icPlanks  = null;
         if(overlay)
-        	icOverlay = Block.cloth.getIcon(0, bytes[3]);
+        	icOverlay = Block.cloth.getIcon(0, bytes[3] -1);
     	if(plankUsed != null)
     		icPlanks = Block.blocksList[plankUsed.itemID].getIcon(0, plankUsed.getItemDamage());
     	if(icOverlay == null)
@@ -607,13 +603,13 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 	@Override
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z,
 			Block block, int modelId, RenderBlocks renderer) {
-		
 		if(world == null || renderer.blockAccess == null)
 			return false;
 		if(block instanceof BlockModificationTable)
 			return false;
 		if(world.getBlockTileEntity(x, y, z) == null)
 			return false;
+		int meta = world.getBlockMetadata(x, y, z);
 		switch(world.getBlockMetadata(x, y, z)){
 		case 1: return renderModdedCraftingTableInWorld(world, x, y, z, block, renderer);
 		case 2: return renderProjectBenchInWorld(world, x, y, z, block, renderer);
@@ -626,7 +622,7 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
 		Tessellator tessellator = Tessellator.instance;
 		int l = block.getMixedBrightnessForBlock(world, x, y, z);
 
-		ItemStack planks = ((TileEntityModdedTable)world.getBlockTileEntity(x, y, z)).getPlanksUsed();
+		ItemStack planks = ((TileEntityModdedTable)world.getBlockTileEntity(x, y, z)).getModifications().getPlanks();
         if(planks == null)
         	planks = new ItemStack(Block.planks.blockID, 1, 0);
         Block planksBlock = Block.blocksList[planks.itemID];
@@ -699,15 +695,13 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
         float f16 = f3;
         float f17 = f5;
         float f18 = f6;
-        byte[] bytes = ((TileEntityProjectBench)world.getBlockTileEntity(x, y, z)).getUpgrades();
-        if(bytes == null || bytes.length == 0)
-        	return false;
-        boolean overlay = bytes[3] != -1;
+      	TileEntityProjectBench tpb = (TileEntityProjectBench)world.getBlockTileEntity(x, y, z);
+        boolean overlay = tpb.getModifications().color() > 0;
         
         Icon[] icons = null;
         if(block instanceof BlockCrafting)
         	icons = ((BlockCrafting)block).icons;
-        ItemStack planks = ((TileEntityProjectBench)world.getBlockTileEntity(x, y, z)).getPlanksUsed();
+        ItemStack planks = ((TileEntityProjectBench)world.getBlockTileEntity(x, y, z)).getModifications().getPlanks();
         if(planks == null)
         	planks = new ItemStack(Block.planks.blockID, 1, 0);
         Block planksBlock = Block.blocksList[planks.itemID];
@@ -737,7 +731,7 @@ public class CraftingBlockRenderer extends TileEntitySpecialRenderer implements 
     	if(overlay) renderBlocks.renderFaceZNeg(block, (double)x, (double)y, (double)z +0.0001, icons[3]);
     	
         if(icons != null && overlay){
-        	Icon wool = Block.cloth.getIcon(0, bytes[3]);
+        	Icon wool = Block.cloth.getIcon(0, tpb.getModifications().color() -1);
         	tessellator.setBrightness(renderBlocks.renderMaxY < 1.0D ? l : block.getMixedBrightnessForBlock(world, x, y + 1, z));
             tessellator.setColorOpaque_F(f7, f8, f9);
             renderBlocks.renderFaceYPos(block, (double)x, (double)y -0.001D, (double)z, wool);

@@ -13,7 +13,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
+import bau5.mods.craftingsuite.common.helpers.ModificationNBTHelper;
+import bau5.mods.craftingsuite.common.helpers.ModificationStackHelper;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
+import bau5.mods.craftingsuite.common.tileentity.Modifications;
 
 public class ItemBlockCrafting extends ItemBlock {
 
@@ -29,24 +32,12 @@ public class ItemBlockCrafting extends ItemBlock {
 			World world, int x, int y, int z, int side, float hitX, float hitY,
 			float hitZ, int metadata) {
 		ItemStack stack2 = stack.copy();
+		Modifications mods = ModificationStackHelper.convertToModInfo(stack2);
 		boolean bool = super.placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, metadata);
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		if(te instanceof IModifiedTileEntityProvider){
 			IModifiedTileEntityProvider tile = (IModifiedTileEntityProvider)te;
-			NBTTagCompound tagToUse = null; 
-			if(stack2.stackTagCompound == null || !ModificationNBTHelper.ensureIntegrity(stack2.stackTagCompound)){
-				switch(stack.getItemDamage()){
-				case 1: tagToUse = ModificationStackHelper.makeBasicMkICrafter().stackTagCompound;
-					break;
-				case 2: tagToUse = ModificationStackHelper.makeBasicProjectBench().stackTagCompound;
-					break;
-				}
-				if(player.worldObj.isRemote){
-					player.addChatMessage("[CraftingSuite]: You are using a broken stack, please destroy.");
-				}
-			}else
-				tagToUse = stack2.stackTagCompound;
-			tile.initializeFromNBT(ModificationNBTHelper.getModifierTag(tagToUse));
+			tile.initializeFromMods(mods);
 			tile.handleModifiers();
 		}
 		return bool;
@@ -72,8 +63,8 @@ public class ItemBlockCrafting extends ItemBlock {
 				if(bytes[1] >= 3)
 					list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(new ItemStack(CraftingSuite.modItems, 1, bytes[1]).getUnlocalizedName() +".name"));
 			}
-			if(bytes[3] != -1)
-				list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(Item.itemsList[Block.cloth.blockID].getUnlocalizedName(new ItemStack(Block.cloth.blockID, 1, bytes[3])) +".name"));
+			if(bytes[3] != 0)
+				list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(Item.itemsList[Block.cloth.blockID].getUnlocalizedName(new ItemStack(Block.cloth.blockID, 1, bytes[3] -1)) +".name"));
 			if(bytes[4] != -1)
 				list.add("-" +EnumChatFormatting.DARK_GRAY +StatCollector.translateToLocal(Block.blockClay.getUnlocalizedName() +".name"));
 		}

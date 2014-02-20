@@ -2,7 +2,7 @@ package bau5.mods.craftingsuite.common.recipe;
 
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
-import bau5.mods.craftingsuite.common.ModificationStackHelper;
+import bau5.mods.craftingsuite.common.helpers.ModificationStackHelper;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 
 public class ModificationRecipeBasic implements IModRecipe{

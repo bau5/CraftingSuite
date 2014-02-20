@@ -6,8 +6,8 @@ import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 import bau5.mods.craftingsuite.common.CraftingSuite;
-import bau5.mods.craftingsuite.common.ModificationNBTHelper;
 import bau5.mods.craftingsuite.common.helpers.ItemHelper;
+import bau5.mods.craftingsuite.common.helpers.ModificationNBTHelper;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModificationTable;
 
 public class ModificationRecipeUpgrade implements IModRecipe{

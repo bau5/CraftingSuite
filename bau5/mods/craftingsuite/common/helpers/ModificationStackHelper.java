@@ -1,4 +1,4 @@
-package bau5.mods.craftingsuite.common;
+package bau5.mods.craftingsuite.common.helpers;
 
 import java.util.ArrayList;
 
@@ -7,7 +7,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.oredict.OreDictionary;
+import bau5.mods.craftingsuite.common.CraftingSuite;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
+import bau5.mods.craftingsuite.common.tileentity.Modifications;
 
 public class ModificationStackHelper {
 	
@@ -16,8 +18,6 @@ public class ModificationStackHelper {
 		NBTTagCompound baseTag = ModificationNBTHelper.makeBaseTag();
 		byte[] bytes = ModificationNBTHelper.getUpgradeByteArray(baseTag);
 		bytes[0] = 1;
-//		bytes[1] = 3;
-//		bytes[3] = 14;
 		bytes[4] = 1;
 		theStack = makeStackFromInfo(theStack, bytes, new ItemStack(Block.planks.blockID, 1, 0));
 		return theStack;
@@ -47,7 +47,7 @@ public class ModificationStackHelper {
 		byte[] bytes = ModificationNBTHelper.newBytes();
 		bytes[0] = (byte)type;
 		bytes[1] = (byte)upgrade;
-		if(type == 2) bytes[3] = (byte)color;
+		if(type == 2) bytes[3] = (byte)(color +1);
 		bytes[4] = 1;
 		stack = makeStackFromInfo(stack, bytes, new ItemStack(Block.planks.blockID, 1, woodDamage));
 		return stack;
@@ -57,13 +57,9 @@ public class ModificationStackHelper {
 		byte[] bytes = null;
 		ItemStack stack = null;
 		if(tile instanceof IModifiedTileEntityProvider){
-			if(((IModifiedTileEntityProvider) tile).getModifiers() == null){
-				CSLogger.logError("Tile entity has null modifiers. Invalidating.");
-				tile.invalidate();
-				return new ItemStack(Block.stone);
-			}
-			bytes = ModificationNBTHelper.getUpgradeByteArray(((IModifiedTileEntityProvider) tile).getModifiers());
-			stack = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(((IModifiedTileEntityProvider) tile).getModifiers()));
+			bytes = ModificationNBTHelper.newBytes();
+			Modifications mod = ((IModifiedTileEntityProvider) tile).getModifications();
+			return makeStackFromInfo(vanillaStack, mod);
 		}else{
 			bytes = ModificationNBTHelper.newBytes();
 		}
@@ -75,7 +71,19 @@ public class ModificationStackHelper {
 		NBTTagCompound newTag = null;
 		byte[] upgrades = null;
 		ItemStack planks = null;
-		if(data[0] instanceof byte[]){
+		if(data[0] instanceof Modifications){
+			upgrades = ModificationNBTHelper.newBytes();
+			Modifications mod = (Modifications)data[0];
+			upgrades[0] = (byte) mod.type();
+			upgrades[1] = (byte) mod.upgrades();
+			upgrades[3] = (byte) mod.color();
+			upgrades[4] = (byte) mod.visual();
+			newTag = ModificationNBTHelper.makeBaseTag();
+			planks = mod.getPlanks();
+			ModificationNBTHelper.setTagUpgradeBytes(newTag, upgrades);
+			ModificationNBTHelper.setTagPlanksUsed(newTag, planks);
+			
+		}else if(data[0] instanceof byte[]){
 				upgrades = (byte[]) data[0];
 			if(data[1] instanceof ItemStack)
 				planks = (ItemStack) data[1];
@@ -157,5 +165,10 @@ public class ModificationStackHelper {
 		}
 		
 		return parts;
+	}
+
+	public static Modifications convertToModInfo(ItemStack stack2) {
+		Modifications mods = new Modifications();
+		return mods.convert(stack2);
 	}
 }

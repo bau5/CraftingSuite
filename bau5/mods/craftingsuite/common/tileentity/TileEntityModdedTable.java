@@ -9,31 +9,27 @@ import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import bau5.mods.craftingsuite.common.CSLogger;
-import bau5.mods.craftingsuite.common.ModificationNBTHelper;
+import bau5.mods.craftingsuite.common.helpers.ModificationNBTHelper;
 import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
 import bau5.mods.craftingsuite.common.tileentity.parthandlers.ContainerHandler;
 import bau5.mods.craftingsuite.common.tileentity.parthandlers.InventoryHandler;
-import bau5.mods.craftingsuite.common.tileentity.parthandlers.ModdedTableInfo;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 
 public class TileEntityModdedTable extends TileEntityBase implements IModifiedTileEntityProvider{
 	
-	private byte[] upgrades = null;
 	private final InventoryHandler inventoryHandler;
 	private final ContainerHandler containerHandler;
 	private final TileNetHandler 	   netHandler;
 	
-	private ModdedTableInfo modifications;
-	
-	private NBTTagCompound modifiers;
-	
 	private boolean initialized = false;
 	public boolean sendRenderPacket = false;
-	private byte direcitonFacing = 0;
+	private byte directionFacing = 0;
 	private int update = 0;
 	public float randomShift = 0.0F;
+	
+	private ItemStack planksUsed = null;
 	
 	public TileEntityModdedTable(){
 		inventoryHandler = new InventoryHandler(this);
@@ -64,7 +60,7 @@ public class TileEntityModdedTable extends TileEntityBase implements IModifiedTi
 
 	@Override
 	public Packet getDescriptionPacket() {
-		if(inventoryHandler.inv == null && modifiers != null){
+		if(inventoryHandler.inv == null && !modifications.isInitialized()){
 			init();
 		}
 		NBTTagCompound tag = new NBTTagCompound();
@@ -76,7 +72,7 @@ public class TileEntityModdedTable extends TileEntityBase implements IModifiedTi
 	@Override
 	public void onDataPacket(INetworkManager net, Packet132TileEntityData pkt) {
 		super.onDataPacket(net, pkt);
-		initializeFromNBT(ModificationNBTHelper.getModifierTag(pkt.data));
+		initializeFromNBT(pkt.data);
 		handleModifiers();
 		netHandler.onDataPacket(pkt);
 		if(!inventoryHandler.checkValidity())
@@ -94,13 +90,9 @@ public class TileEntityModdedTable extends TileEntityBase implements IModifiedTi
 		return containerHandler;
 	}
 	
-	public ModdedTableInfo modifications(){
-		return modifications;
-	}
 	
 	public void init(){
 		if(!initialized){
-			modifications = new ModdedTableInfo(upgrades);
 			inventoryHandler.initInventory();
 			initialized = true;
 		}
@@ -112,12 +104,12 @@ public class TileEntityModdedTable extends TileEntityBase implements IModifiedTi
 		super.readFromNBT(tagCompound);
 		
 		try{
-			initializeFromNBT(ModificationNBTHelper.getModifierTag(tagCompound));
+			directionFacing = tagCompound.getByte("direction");
+			blockMetadata = tagCompound.getInteger("blockMetadata");
+			initializeFromNBT(tagCompound);
 			handleModifiers();
 			init();
 			inventoryHandler.readInventoryFromNBT(tagCompound);
-			if(modifiers != null && !modifiers.getName().equals(""))
-				modifiers.setName("");
 		}catch(Exception ex){
 			CSLogger.logError("Failed loading a crafting table.");
 		}
@@ -128,27 +120,21 @@ public class TileEntityModdedTable extends TileEntityBase implements IModifiedTi
 	{
 		super.writeToNBT(tagCompound);
 		inventoryHandler.writeInventoryToNBT(tagCompound);
-		
-		if(modifiers.hasKey(ModificationNBTHelper.modifierTag))
-			modifiers = (NBTTagCompound) modifiers.getTag(ModificationNBTHelper.modifierTag);
-		if(!modifiers.getName().equals(""))
-			modifiers.setName(null);
-		tagCompound.setTag(ModificationNBTHelper.modifierTag, modifiers);
+		tagCompound.setByte("direction", getDirectionFacing());
+		tagCompound.setByteArray("UpgradeArray", modifications.buildUpgradeArray());
+		if(modifications.getPlanks() != null)
+			tagCompound.setTag("Planks", planksUsed.writeToNBT(new NBTTagCompound()));
+		if(getInventoryModifier() == EnumInventoryModifier.TOOLS)
+			tagCompound.setByte("selectedToolIndex", (byte)inventoryHandler.selectedToolIndex);
 	}
 
-	public byte[] getUpgrades() {
-		return upgrades;
-	}
-	
 	@Override
 	public int getModifiedInventorySize() {
 		return getBaseInventorySize() + getInventoryModifier().getNumSlots();
 	}
 	@Override
 	public EnumInventoryModifier getInventoryModifier() {
-		if(upgrades == null || upgrades.length == 0)
-			return EnumInventoryModifier.NONE;
-		switch(upgrades[1]){
+		switch(modifications.upgrades()){
 		case 3: return EnumInventoryModifier.TOOLS;
 		case 4: return EnumInventoryModifier.DEEP;
 		default:return EnumInventoryModifier.NONE;
@@ -161,9 +147,24 @@ public class TileEntityModdedTable extends TileEntityBase implements IModifiedTi
 	}
 	
 	@Override
-	public void initializeFromNBT(NBTTagCompound theModifierTag) {
-		modifiers = theModifierTag;
-		upgrades  = ModificationNBTHelper.getUpgradeByteArray(modifiers);
+	public void initializeFromNBT(NBTTagCompound nbtTagCompound) {
+		Modifications mods;
+		if(nbtTagCompound.hasKey(ModificationNBTHelper.modifierTag) || nbtTagCompound.getName().equals(ModificationNBTHelper.modifierTag)){
+			NBTTagCompound tag = (NBTTagCompound)nbtTagCompound.getTag(ModificationNBTHelper.modifierTag);
+			byte[] bytes = tag.getByteArray(ModificationNBTHelper.upgradeArrayName);
+			mods = new Modifications(ItemStack.loadItemStackFromNBT(tag.getCompoundTag(ModificationNBTHelper.planksName)), bytes);
+		}else{
+			byte[] bytes = nbtTagCompound.getByteArray("UpgradeArray");
+			mods = new Modifications(ItemStack.loadItemStackFromNBT(nbtTagCompound.getCompoundTag("Planks")), bytes);
+		}
+		initializeFromMods(mods);
+		initialized = true;
+	}
+
+	@Override
+	public void initializeFromMods(Modifications mods) {
+		this.planksUsed = mods.getPlanks().copy();
+		this.modifications = mods;
 	}
 
 	@Override
@@ -178,28 +179,16 @@ public class TileEntityModdedTable extends TileEntityBase implements IModifiedTi
 
 	@Override
 	public byte getDirectionFacing() {
-		return direcitonFacing;
+		return directionFacing;
 	}
 
 	@Override
 	public void setDirectionFacing(byte byt) {
-		direcitonFacing = byt;
+		directionFacing = byt;
 	}
 	
 	public ItemStack getPlanksUsed() {
-		NBTTagCompound tag = ModificationNBTHelper.getPlanksUsed(modifiers);
-		ItemStack stack = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(modifiers));
-		return stack;
-	}
-
-	@Override
-	public NBTTagCompound getModifiers() {
-		return modifiers;
-	}
-
-	@Override
-	public byte[] getModifierBytes() {
-		return upgrades;
+		return modifications.getPlanks();
 	}
 
 	@Override
@@ -263,5 +252,9 @@ public class TileEntityModdedTable extends TileEntityBase implements IModifiedTi
 	public int getPlanIndexInInventory() {
 		return inventoryHandler.planIndex;
 	}
-	
+
+	@Override
+	public Modifications getModifications() {
+		return modifications;
+	}
 }

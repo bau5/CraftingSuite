@@ -8,7 +8,6 @@ import bau5.mods.craftingsuite.common.tileentity.parthandlers.InventoryHandler;
 
 public interface IModifiedTileEntityProvider {
 	public EnumInventoryModifier getInventoryModifier();
-	public NBTTagCompound getModifiers();
 	public int getModifiedInventorySize();
 	public int getBaseInventorySize();
 	public int getToolModifierInvIndex();
@@ -24,15 +23,6 @@ public interface IModifiedTileEntityProvider {
 	public byte getDirectionFacing();
 	public void setDirectionFacing(byte byt);
 	
-	/**
-	 * Get the bytes that contain the information 
-	 * for the modifiers, typically will be the same 
-	 * as the NBTTagCompound.getByteArray("modifiers")
-	 * 
-	 * @return the byte array with the modifiers.
-	 */
-	public byte[] getModifierBytes();
-	
 	public ItemStack[] getInventory();
 	
 	public ItemStack getRenderedResult();
@@ -40,4 +30,6 @@ public interface IModifiedTileEntityProvider {
 	public void setTools(ItemStack[] stacks);
 	public void setSelectedToolIndex(int i);
 	public void setRandomShift(float f);
+	public Modifications getModifications();
+	public void initializeFromMods(Modifications mods);
 }

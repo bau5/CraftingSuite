@@ -19,17 +19,14 @@ import net.minecraft.tileentity.TileEntity;
 import bau5.mods.craftingsuite.client.ParticleRenderer;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.CraftingSuite;
-import bau5.mods.craftingsuite.common.ModificationNBTHelper;
 import bau5.mods.craftingsuite.common.helpers.ItemHelper;
+import bau5.mods.craftingsuite.common.helpers.ModificationNBTHelper;
 import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
 import bau5.mods.craftingsuite.common.tileentity.parthandlers.ContainerHandler;
 import bau5.mods.craftingsuite.common.tileentity.parthandlers.InventoryHandler;
 import cpw.mods.fml.client.FMLClientHandler;
 
 public class TileEntityProjectBench extends TileEntityBase implements IModifiedTileEntityProvider, IInventory, ISidedInventory{
-	
-	private NBTTagCompound modifiers;
-	private byte[]		   upgrades;
 	
 	public TileNetHandler netHandler;
 	public InventoryHandler inventoryHandler;
@@ -58,6 +55,7 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	public ItemStack[] inv = null;
 	public ItemStack result;
 	public ItemStack[] tools = new ItemStack[3];
+	protected ItemStack planksUsed = null;
 	public int selectedToolIndex  = -1;
 	public int toolIndexInCrafting= -1;
 	private ItemStack lastResult = null;
@@ -65,7 +63,6 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	public LocalInventoryCrafting craftingMatrix = new LocalInventoryCrafting(this);
 	public boolean containerInit = false;
 	public boolean containerWorking = false;
-	public boolean initialized = false;
 	private boolean shouldUpdateOutput;
 	private int update = 0;
 	private long ticker = 0;
@@ -79,10 +76,10 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	 * avoid spam of searching the recipe list.
 	 */
 	private LocalInventoryCrafting lastCraftMatrix = new LocalInventoryCrafting();
+	
+	public boolean updateMeta = false;
 
 	public TileEntityProjectBench() {
-		modifiers = ModificationNBTHelper.getModifierTag(null);
-		upgrades = ModificationNBTHelper.newBytes();
 		netHandler = new TileNetHandler(this);
 		containerHandler = new ContainerHandler();
 		inventoryHandler = new InventoryHandler(this);
@@ -90,9 +87,22 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 
 	@Override
 	public void initializeFromNBT(NBTTagCompound nbtTagCompound) {
-		modifiers = ModificationNBTHelper.getModifierTag(nbtTagCompound);
-		upgrades = modifiers.getByteArray(ModificationNBTHelper.upgradeArrayName);
-		initialized = true;
+		Modifications mods;
+		if(nbtTagCompound.hasKey(ModificationNBTHelper.modifierTag) || nbtTagCompound.getName().equals(ModificationNBTHelper.modifierTag)){
+			NBTTagCompound tag = (NBTTagCompound)nbtTagCompound.getTag(ModificationNBTHelper.modifierTag);
+			byte[] bytes = tag.getByteArray(ModificationNBTHelper.upgradeArrayName);
+			mods = new Modifications(ItemStack.loadItemStackFromNBT(tag.getCompoundTag(ModificationNBTHelper.planksName)), bytes);
+		}else{
+			byte[] bytes = nbtTagCompound.getByteArray("UpgradeArray");
+			mods = new Modifications(ItemStack.loadItemStackFromNBT(nbtTagCompound.getCompoundTag("Planks")), bytes);
+		}
+		initializeFromMods(mods);
+	}
+
+	@Override
+	public void initializeFromMods(Modifications mods) {
+		this.planksUsed = mods.getPlanks().copy();
+		this.modifications = mods;
 	}
 
 	private void setResult(ItemStack recipe) {
@@ -112,9 +122,7 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	
 	@Override
 	public EnumInventoryModifier getInventoryModifier() {
-		if(upgrades == null || upgrades.length == 0)
-			return EnumInventoryModifier.NONE;
-		switch(upgrades[1]){
+		switch(modifications.upgrades()){
 		case 3: return EnumInventoryModifier.TOOLS;
 		case 4: return EnumInventoryModifier.DEEP;
 		case 5: return EnumInventoryModifier.PLAN;
@@ -181,18 +189,8 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 		return 27;
 	}
 
-	public NBTTagCompound getModifiers() {
-		return modifiers;
-	}
-	
-	public byte[] getUpgrades(){
-		return upgrades;
-	}
-
 	public ItemStack getPlanksUsed() {
-		NBTTagCompound tag = ModificationNBTHelper.getPlanksUsed(modifiers);
-		ItemStack stack = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(modifiers));
-		return stack;
+		return modifications.getPlanks();
 	}
 	
 	public LocalInventoryCrafting getCopyOfMatrix(LocalInventoryCrafting matrix){
@@ -205,12 +203,6 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	
 	@Override
 	public void onInventoryChanged() {
-//		if(!containerInit && !containerWorking){
-//			if(checkDifferences()){
-//				markForUpdate();
-//				makeNewMatrix();
-//			}
-//		}
 		inventoryHandler.onInventoryChanged();
 		super.onInventoryChanged();
 	}
@@ -233,12 +225,6 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 		if(update >= 5 && worldObj.isRemote){
 			FMLClientHandler.instance().getClient().renderGlobal.markBlockForRenderUpdate(xCoord, yCoord, zCoord);
 			update = -1;
-		}
-		if(initialized && upgrades != null && (upgrades.length == 0 || getModifiers() == null || getInventoryModifier() == null)){
-			if(getModifiers() == null)
-				CSLogger.logError("TIle entity has null upgrades.");
-			if(getInventoryModifier() == null)
-				CSLogger.logError("Tile entity has null inventory modifier.");
 		}
 		if(cmas){
 			if(worldObj.isRemote && ticker % 3 > 0){
@@ -354,11 +340,9 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 		super.readFromNBT(tagCompound);
 		
 		try{
-			initializeFromNBT(ModificationNBTHelper.getModifierTag(tagCompound));
-			handleModifiers();
+			initializeFromNBT(tagCompound);
 			
-			if(!modifiers.getName().equals(""))
-				modifiers.setName("");
+			handleModifiers();
 			
 			if(inv != null){
 				NBTTagList tagList = tagCompound.getTagList("Inventory");
@@ -427,12 +411,9 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 			}
 		}
 		tagCompound.setTag("Inventory", itemList);
-		if(modifiers.hasKey(ModificationNBTHelper.modifierTag))
-			modifiers = (NBTTagCompound) modifiers.getTag(ModificationNBTHelper.modifierTag);
-		if(!modifiers.getName().equals(""))
-			modifiers.setName(null);
-		tagCompound.setTag(ModificationNBTHelper.modifierTag, modifiers);
 		tagCompound.setByte("direction", directionFacing);
+		tagCompound.setTag("Planks", planksUsed.writeToNBT(new NBTTagCompound()));
+		tagCompound.setByteArray("UpgradeArray", modifications.buildUpgradeArray());
 		if(getInventoryModifier() == EnumInventoryModifier.TOOLS)
 			tagCompound.setByte("selectedToolIndex", (byte)selectedToolIndex);
 	}
@@ -510,11 +491,6 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	}
 
 	@Override
-	public byte[] getModifierBytes() {
-		return upgrades;
-	}
-
-	@Override
 	public ItemStack getRenderedResult() {
 		return inventoryHandler.result;
 	}
@@ -562,7 +538,15 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 
 	@Override
 	public int getPlanIndexInInventory() {
-		// TODO Auto-generated method stub
 		return inventoryHandler.planIndex;
+	}
+
+	public void setPlanksUsed(ItemStack planks) {
+		planksUsed = planks.copy();
+	}
+
+	@Override
+	public Modifications getModifications() {
+		return modifications;
 	}
 }

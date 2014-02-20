@@ -25,10 +25,6 @@ public class CommonProxy implements IGuiHandler {
 		case 0: return new ContainerModificationTable((TileEntityModificationTable)te, player);
 		case 1: return new ContainerModdedCraftingTable((TileEntityModdedTable)te, player);
 		case 2: return new ContainerProjectBench(player.inventory, (TileEntityProjectBench)te);
-//		case 0:
-//			return new ContainerCraftingTable((TileEntityCraftingTable)te, player.inventory, world, x, y, z);
-//		case 1:
-//			return new ContainerProjectBench(player.inventory, (TileEntityProjectBench)te);
 		}
 		return null;
 	}
@@ -41,10 +37,6 @@ public class CommonProxy implements IGuiHandler {
 		case 0: return new GuiModificationTable((TileEntityModificationTable)te, player);
 		case 1: return new GuiModdedCraftingTable((TileEntityModdedTable)te, player);
 		case 2: return new GuiProjectBench(player.inventory, (TileEntityProjectBench)te);
-//		case 0: 
-//			return new GuiCraftingSuiteBase(new ContainerCraftingTable((TileEntityCraftingTable)te, player.inventory, world, x, y, z));
-//		case 1:
-//			return new GuiProjectBench(player.inventory, te);
 		}
 		return null;
 	}

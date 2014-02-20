@@ -1,10 +1,13 @@
-package bau5.mods.craftingsuite.common;
+package bau5.mods.craftingsuite.common.helpers;
 
 import java.util.logging.Level;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import bau5.mods.craftingsuite.common.CSLogger;
+import bau5.mods.craftingsuite.common.tileentity.Modifications;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityBase;
 import cpw.mods.fml.common.FMLLog;
 
 public class ModificationNBTHelper {
@@ -28,28 +31,28 @@ public class ModificationNBTHelper {
 	
 	public static NBTTagCompound makeBaseTag(){
 		NBTTagCompound baseTag = new NBTTagCompound("tag");
-		NBTTagCompound modifiers = new NBTTagCompound();
-		modifiers.setByteArray(upgradeArrayName, newBytes());
-		baseTag.setTag(modifierTag, modifiers);
+//		NBTTagCompound modifiers = new NBTTagCompound();
+//		modifiers.setByteArray(upgradeArrayName, newBytes());
+//		baseTag.setTag(modifierTag, modifiers);
 		return baseTag;
 	}
 	
 	public static void setTagUpgradeBytes(NBTTagCompound baseTag, byte[] bytes) {
-		NBTTagCompound modifier = getModifierTag(baseTag);
-		if(bytes == null){
-			CSLogger.logError("Trying to set upgrades tag with null bytes. Expect broken things.");
-			bytes = newBytes();
-		}
-		modifier.setByteArray(upgradeArrayName, bytes);
+//		NBTTagCompound modifier = getModifierTag(baseTag);
+//		if(bytes == null){
+//			CSLogger.logError("Trying to set upgrades tag with null bytes. Expect broken things.");
+//			bytes = newBytes();
+//		}
+		baseTag.setByteArray(upgradeArrayName, bytes);
 	}
 	
 	public static void setTagPlanksUsed(NBTTagCompound newTag, ItemStack planks) {
-		NBTTagCompound tag = getModifierTag(newTag);
-		if(planks == null){
-			CSLogger.logError("Trying to set planks used with null plank ItemStack.");
-			planks = new ItemStack(Block.planks.blockID, 1, 1);
-		}
-		tag.setCompoundTag(planksName, planks.writeToNBT(new NBTTagCompound()));
+//		NBTTagCompound tag = getModifierTag(newTag);
+//		if(planks == null){
+//			CSLogger.logError("Trying to set planks used with null plank ItemStack.");
+//			planks = new ItemStack(Block.planks.blockID, 1, 1);
+//		}
+		newTag.setCompoundTag(planksName, planks.writeToNBT(new NBTTagCompound()));
 	}
 	
 	public static NBTTagCompound getModifierTag(NBTTagCompound baseTag){
@@ -146,7 +149,7 @@ public class ModificationNBTHelper {
 		byte[] bytes = new byte[ARRAY_LENGTH];
 		int i = 0;
 		for(byte b : bytes)
-			bytes[i++] = -1;
+			bytes[i++] = 0;
 		return bytes;
 	}
 	

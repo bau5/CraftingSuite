@@ -13,6 +13,7 @@
     <entry key="item.modification.tools.name">Tools Modifier</entry>
     <entry key="item.modification.deep.name">Deep Slot Modifier</entry>
     <entry key="item.modification.plan.name">Plan Modifier</entry>
+    <entry key="item.modification.fluid.name">Fluid Modifier</entry>
     
     <entry key="item.plan.blank">Blank Plan</entry>
     <entry key="item.plan.used">Plan</entry>

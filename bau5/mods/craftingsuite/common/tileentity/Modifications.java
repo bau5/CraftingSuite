@@ -9,6 +9,7 @@ public class Modifications {
 	private int _upgrade;
 	private int _color;
 	private int _visual;
+	private int _extra;
 	private ItemStack _planks;
 	
 	private boolean init = false;
@@ -43,10 +44,19 @@ public class Modifications {
 	public int visual(){
 		return _visual;
 	}
+
+	public int extraModifier() {
+		return _extra;
+	}
+
+	public boolean hasFluidCapabilities() {
+		return _extra == 1;
+	}
 	
 	private void init(ItemStack planks, byte[] bytes){
 		_type = bytes[0];
 		_upgrade = bytes[1];
+		_extra = bytes[2];
 		_color = bytes[3];
 		_visual = bytes[4];
 		_planks = planks.copy();
@@ -61,6 +71,7 @@ public class Modifications {
 		byte[] bytes = new byte[5];
 		bytes[0] = (byte) _type;
 		bytes[1] = (byte) _upgrade;
+		bytes[2] = (byte) _extra;
 		bytes[3] = (byte) _color;
 		bytes[4] = (byte) _visual;
 		return bytes;
@@ -78,6 +89,7 @@ public class Modifications {
 		}
 		_type = bytes[0];
 		_upgrade = bytes[1];
+		_extra = bytes[2];
 		_color = bytes[3];
 		_visual = bytes[4];
 		_planks = ItemStack.loadItemStackFromNBT(modifiers.getCompoundTag(ModificationNBTHelper.planksName));

@@ -4,6 +4,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.handlers.DeepSlotHandler;
 import bau5.mods.craftingsuite.common.handlers.DefaultHandler;
+import bau5.mods.craftingsuite.common.handlers.ExtraHandler;
+import bau5.mods.craftingsuite.common.handlers.IModifierHandler;
 import bau5.mods.craftingsuite.common.handlers.PlanHandler;
 import bau5.mods.craftingsuite.common.handlers.ToolsHandler;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
@@ -84,5 +86,10 @@ public class ContainerModdedCraftingTable extends ContainerBase {
 	@Override
 	public IModifiedTileEntityProvider getTileEntity() {
 		return (IModifiedTileEntityProvider)tileEntity;
+	}
+
+	@Override
+	public ExtraHandler getExtraModifierHandler() {
+		return extraHandler;
 	}
 }

@@ -2,23 +2,35 @@ package bau5.mods.craftingsuite.client;
 
 import java.util.ArrayList;
 
+import javax.rmi.CORBA.Tie;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.Packet250CustomPayload;
+import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidHandler;
+import net.minecraftforge.liquids.LiquidDictionary;
 
 import org.lwjgl.opengl.GL11;
 
+import codechicken.core.fluid.FluidUtils;
 import bau5.mods.craftingsuite.common.Reference;
 import bau5.mods.craftingsuite.common.handlers.PlanHandler;
 import bau5.mods.craftingsuite.common.inventory.ContainerBase;
 import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench.PositionedFluidStack;
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.PacketDispatcher;
 
 public class GuiHandler {
@@ -117,8 +129,42 @@ public class GuiHandler {
 		}else if(modifier == EnumInventoryModifier.DEEP){
 			gui.drawTexturedModalRect(x-21, y+27, 0, 108, 22, 30);
 		}
+		if(tile instanceof IFluidHandler && ((TileEntityProjectBench)tile).hasFluidCapabilities()){
+			TileEntityProjectBench tpb = (TileEntityProjectBench)tile;
+			gui.drawTexturedModalRect(x-21, y+15, 45, 0, 22, 54);
+			FluidStack fstack = tpb.getFluidInTank(ForgeDirection.UP);
+			if(fstack != null){
+				guiBridge.getMinecraft().getTextureManager().bindTexture(FMLClientHandler.instance().getClient().getTextureManager().getResourceLocation(fstack.getFluid().getSpriteNumber()));
+				((GuiProjectBench)gui).drawTexturedModelRectFromIconInverted(x-18, y+66, fstack.getFluid().getIcon(), 16, 3 * (fstack.amount/1000));
+			}
+			guiBridge.getMinecraft().getTextureManager().bindTexture(partsResource);
+			gui.drawTexturedModalRect(x-18, y+15, 67, 0, 15, 52);
+			if(!tpb.fluidForCrafting.isEmpty()){
+				GL11.glEnable(GL11.GL_BLEND);
+		        GL11.glBlendFunc(768, 1);
+		        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+				for(PositionedFluidStack container : tpb.fluidForCrafting){
+					if(tpb.getStackInSlot(container.slotNumber) == null){
+		        		GL11.glPushMatrix();
+						GL11.glDisable(GL11.GL_LIGHTING);
+		        		int xLoc = (x + 30)+(((container.slotNumber) %3)*18);
+		        		int yLoc = (y + 17)+((container.slotNumber > 5 ? 2 : container.slotNumber > 2 ? 1 : 0)*18);
+		        		ItemStack stack = container.full;
+				        FontRenderer font = null;
+				        if (stack != null) font = stack.getItem().getFontRenderer(stack);
+				        if (font == null) font = guiBridge.getFontRenderer();
+				        itemRenderer.renderItemAndEffectIntoGUI(font, guiBridge.getMinecraft().getTextureManager(), stack, xLoc, yLoc);
+				        itemRenderer.renderItemOverlayIntoGUI(font, guiBridge.getMinecraft().getTextureManager(), stack, xLoc, yLoc, "");
+				        GL11.glPopMatrix();
+					}
+				}
+		        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		        GL11.glDisable(GL11.GL_BLEND);
+		        GL11.glEnable(GL11.GL_LIGHTING);
+			}
+		}
 	}
-
+	
 	public void makeButtons() {
 		int shift = 6;
 		if(tile.getInventoryModifier() == EnumInventoryModifier.PLAN){

@@ -9,12 +9,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.ForgeDirection;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.helpers.ItemHelper;
 import bau5.mods.craftingsuite.common.inventory.EnumInventoryModifier;
 import bau5.mods.craftingsuite.common.inventory.LocalInventoryCrafting;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityBase;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench.PositionedFluidStack;
 
 public class InventoryHandler implements IInventory{
 	public ItemStack[] inv = null;
@@ -99,8 +102,24 @@ public class InventoryHandler implements IInventory{
 			else
 				craftingMatrix.setInventorySlotContents(i, stack);
 		}
-	
+		
+		int neededAmount = 0;
+		boolean fail = false;
+		if(tileEntity instanceof TileEntityProjectBench){
+			for(PositionedFluidStack container : ((TileEntityProjectBench)tileEntity).fluidForCrafting){
+				if(craftingMatrix.getStackInSlot(container.slotNumber) == null){
+					craftingMatrix.setInventorySlotContents(container.slotNumber, container.full);
+					container.setInUse();
+					neededAmount += container.fluid.amount;
+				}
+			}
+			if(((TileEntityProjectBench)tileEntity).getFluidInTank(ForgeDirection.UP) == null || neededAmount > ((TileEntityProjectBench)tileEntity).getFluidInTank(ForgeDirection.UP).amount){
+				fail = true;
+			}
+		}
 		ItemStack recipe = CraftingManager.getInstance().findMatchingRecipe(craftingMatrix, tileEntity.worldObj);
+		if(fail)
+			recipe = null;
 		if(recipe == null && tileEntity.getInventoryModifier() == EnumInventoryModifier.PLAN){
 			ItemStack planStack = inv[planIndex];
 			if(planStack != null && planStack.hasTagCompound()){

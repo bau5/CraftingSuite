@@ -5,13 +5,18 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.SlotCrafting;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
+import net.minecraftforge.fluids.FluidContainerRegistry;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.handlers.IModifierHandler;
 import bau5.mods.craftingsuite.common.helpers.ItemHelper;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench;
+import bau5.mods.craftingsuite.common.tileentity.TileEntityProjectBench.PositionedFluidStack;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 public class SlotPBCrafting extends SlotCrafting {
@@ -39,6 +44,7 @@ public class SlotPBCrafting extends SlotCrafting {
 		tileEntity.containerWorking = true;
 		boolean found = false;
 		boolean metaSens = false;
+		boolean once = true;
 		GameRegistry.onItemCrafted(thePlayer, stack, craftingMatrix);	
         this.onCrafting(stack);
 
@@ -115,6 +121,25 @@ public class SlotPBCrafting extends SlotCrafting {
         		}
 	            if(!found && handler != null && handler.handlesCrafting())
 	            	found = handler.handleCraftingPiece(craftComponentStack, metaSens);
+	            if(!found){
+	                if(tileEntity.hasFluidCapabilities() && !tileEntity.fluidForCrafting.isEmpty()){
+	                	if(!found){
+		                	for(PositionedFluidStack fluid : tileEntity.fluidForCrafting){
+		                		if(fluid.isInUse() && craftComponentStack.getItem().equals(fluid.full.getItem())){
+		                			FluidStack drained = tileEntity.drain(ForgeDirection.UP, fluid.fluid.copy(), true);
+		                			if(drained.amount != fluid.fluid.amount){
+		                				tileEntity.fill(ForgeDirection.UP, drained, true);
+		                			}else{
+		                				found = true;
+		                				craftingMatrix.setInventorySlotContents(invIndex, null);
+		                				fluid.resetInUse();
+		                				break;
+		                			}
+		                		}
+		                	}
+	                	}
+	                }
+	            }
         		//Checking the supply inventory for matching item
         		if(!found){
 	    			for(int supplyInv = 9; supplyInv < 27; supplyInv++)
@@ -210,6 +235,7 @@ public class SlotPBCrafting extends SlotCrafting {
         	if(toolCopy == null)
         		tileEntity.inventoryHandler.selectedToolIndex = -1;
         }
+        
         for(int i = 0; i < craftingMatrix.getSizeInventory(); i++){
         	tileEntity.setInventorySlotContents(i, craftingMatrix.getStackInSlot(i));
         }

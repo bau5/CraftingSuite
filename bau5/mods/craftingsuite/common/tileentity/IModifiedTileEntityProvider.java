@@ -8,6 +8,7 @@ import bau5.mods.craftingsuite.common.tileentity.parthandlers.InventoryHandler;
 
 public interface IModifiedTileEntityProvider {
 	public EnumInventoryModifier getInventoryModifier();
+	public EnumExtraModifier	 getExtraModifier();
 	public int getModifiedInventorySize();
 	public int getBaseInventorySize();
 	public int getToolModifierInvIndex();

@@ -4,9 +4,11 @@ package bau5.mods.craftingsuite.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 
@@ -58,15 +60,17 @@ public class GuiProjectBench extends GuiContainer implements IGuiBridge{
 		this.drawTexturedModalRect(x, y, 0, 0, xSize, ySize);
 		guiHandler.drawAdditionalParts(i, j, xSize, ySize);
 	}
-	
-	@Override
-	protected void mouseClicked(int par1, int par2, int par3) {
-//		int prev = guiLeft;
-//		if(par2 < guiTop + 58 && par2 > guiTop && par1 < guiLeft)
-//			guiLeft = guiLeftActual;
-		super.mouseClicked(par1, par2, par3);
-//		guiLeft = prev;
-	}
+
+    public void drawTexturedModelRectFromIconInverted(int par1, int par2, Icon par3Icon, int par4, int par5)
+    {
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV((double)(par1 + 0), (double)(par2 + 0), (double)this.zLevel, (double)par3Icon.getMinU(), (double)par3Icon.getMaxV());
+        tessellator.addVertexWithUV((double)(par1 + par4), (double)(par2 + 0), (double)this.zLevel, (double)par3Icon.getMaxU(), (double)par3Icon.getMaxV());
+        tessellator.addVertexWithUV((double)(par1 + par4), (double)(par2 - par5), (double)this.zLevel, (double)par3Icon.getMaxU(), (double)par3Icon.getMinV());
+        tessellator.addVertexWithUV((double)(par1 + 0), (double)(par2 - par5), (double)this.zLevel, (double)par3Icon.getMinU(), (double)par3Icon.getMinV());
+        tessellator.draw();
+    }
 	
 	@Override
 	public void setZLevel(float f) {

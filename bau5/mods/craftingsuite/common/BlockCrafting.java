@@ -20,6 +20,12 @@ import net.minecraft.util.Icon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.fluids.FluidContainerRegistry;
+import net.minecraftforge.fluids.FluidContainerRegistry.FluidContainerData;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidHandler;
 import bau5.mods.craftingsuite.common.helpers.ModificationStackHelper;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.Modifications;
@@ -95,6 +101,61 @@ public class BlockCrafting extends BlockContainer {
 		if(te == null)
 			return true;
 		int meta = world.getBlockMetadata(x, y, z);
+		if(te instanceof IFluidHandler && ((TileEntityProjectBench)te).hasFluidCapabilities()){
+			FluidStack fluid = FluidContainerRegistry.getFluidForFilledItem(player.inventory.getCurrentItem());
+			IFluidHandler fluidHandler = (TileEntityProjectBench)te;
+			ItemStack pstack = player.inventory.getCurrentItem();
+			if(pstack != null && FluidContainerRegistry.isContainer(pstack)){
+				if(fluid != null){ 	//Fill
+					if(fluidHandler.canFill(ForgeDirection.UP, fluid.getFluid())){
+						if(fluidHandler.fill(ForgeDirection.UP, fluid, true) > 0){
+							FluidContainerData data = null;
+							for(FluidContainerData container : FluidContainerRegistry.getRegisteredFluidContainerData()){
+								if(container.filledContainer.getItem() == pstack.getItem() && fluidHandler.getTankInfo(ForgeDirection.UP)[0].fluid.isFluidEqual(container.fluid)){
+									data = container;
+									break;
+								}
+							}
+							if(!player.capabilities.isCreativeMode){
+								pstack.stackSize -= 1;
+								if(pstack.stackSize == 0){
+									player.setCurrentItemOrArmor(0, pstack);
+								}
+								player.inventory.addItemStackToInventory(data.emptyContainer);
+							}
+						}
+					}
+					return true;
+				}else{ 				//Empty
+					FluidStack fstack = fluidHandler.getTankInfo(ForgeDirection.UP)[0].fluid;
+					if(fstack != null){			
+						FluidContainerData data = null;
+						for(FluidContainerData container : FluidContainerRegistry.getRegisteredFluidContainerData()){
+							if(container.emptyContainer.getItem() == pstack.getItem() && fstack.isFluidEqual(container.filledContainer)){
+								data = container;
+							}
+						}
+						if(data == null)
+							return false;
+						FluidStack fstack2 = data.fluid.copy();
+						ItemStack stack = FluidContainerRegistry.fillFluidContainer(fluidHandler.drain(ForgeDirection.UP, fstack2, true), pstack);
+						if(stack != null){
+							if(!player.capabilities.isCreativeMode){
+								pstack.stackSize -= 1;
+								if(pstack.stackSize == 0){
+									pstack = null;
+								}
+							}
+							player.inventory.addItemStackToInventory(stack);
+							
+						}
+						return true;
+					}else{
+						return false;
+					}
+				}
+			}
+		}
 		
 		switch(meta){
 		case 1: if(!player.isSneaking()) if(!world.isRemote) player.openGui(CraftingSuite.instance, 1, world, x, y, z);
@@ -146,12 +207,12 @@ public class BlockCrafting extends BlockContainer {
 	@Override
 	public void getSubBlocks(int par1, CreativeTabs par2CreativeTabs,
 			List list) {
-		list.add(ModificationStackHelper.makeModdedTableType(2, 5, 14, 1));
-		list.add(ModificationStackHelper.makeModdedTableType(2, 4, 13, 0));
-		list.add(ModificationStackHelper.makeModdedTableType(2, 3, 0, 2));
-		list.add(ModificationStackHelper.makeModdedTableType(2, -1, 12, 0));
-		list.add(ModificationStackHelper.makeModdedTableType(1, -1, 0, 2));
-		list.add(ModificationStackHelper.makeModdedTableType(1, 4, 0, 0));
+		list.add(ModificationStackHelper.makeModdedTableType(2, 5, 1, 14, 1));
+		list.add(ModificationStackHelper.makeModdedTableType(2, 4, 0, 13, 0));
+		list.add(ModificationStackHelper.makeModdedTableType(2, 3, 0, 0, 2));
+		list.add(ModificationStackHelper.makeModdedTableType(2, -1, 1, 12, 0));
+		list.add(ModificationStackHelper.makeModdedTableType(1, -1, 0, 0, 2));
+		list.add(ModificationStackHelper.makeModdedTableType(1, 4, 0, 0, 0));
 	}
 	
 	@Override

@@ -257,4 +257,12 @@ public class TileEntityModdedTable extends TileEntityBase implements IModifiedTi
 	public Modifications getModifications() {
 		return modifications;
 	}
+
+	@Override
+	public EnumExtraModifier getExtraModifier() {
+		switch(modifications.extraModifier()){
+		case 1:	return EnumExtraModifier.FLUID;
+		default: return EnumExtraModifier.NONE;
+		}
+	}
 }

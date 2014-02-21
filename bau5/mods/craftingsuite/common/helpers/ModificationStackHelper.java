@@ -28,6 +28,7 @@ public class ModificationStackHelper {
 		byte[] bytes = ModificationNBTHelper.newBytes();
 		bytes[0] = 2;
 		bytes[1] = 5;
+		bytes[2] = 0;
 		bytes[3] = 14;
 		bytes[4] = 1;
 		stack = makeStackFromInfo(stack, bytes, new ItemStack(Block.planks.blockID, 1, 1));
@@ -42,12 +43,15 @@ public class ModificationStackHelper {
 	 * @param color
 	 * @return
 	 */
-	public static ItemStack makeModdedTableType(int type, int upgrade, int color, int woodDamage){
+	public static ItemStack makeModdedTableType(int type, int upgrade, int extra, int color, int woodDamage){
 		ItemStack stack = new ItemStack(CraftingSuite.craftingTableBlock.blockID, 1, type);
 		byte[] bytes = ModificationNBTHelper.newBytes();
 		bytes[0] = (byte)type;
 		bytes[1] = (byte)upgrade;
-		if(type == 2) bytes[3] = (byte)(color +1);
+		if(type == 2){ 
+			bytes[2] = (byte)extra;
+			bytes[3] = (byte)(color +1);
+		}
 		bytes[4] = 1;
 		stack = makeStackFromInfo(stack, bytes, new ItemStack(Block.planks.blockID, 1, woodDamage));
 		return stack;
@@ -143,7 +147,7 @@ public class ModificationStackHelper {
 		if(bytes[0] != -1){
 			ItemStack planks = ItemStack.loadItemStackFromNBT(ModificationNBTHelper.getPlanksUsed(result.stackTagCompound));
 			if(bytes[1] != -1){
-				parts.add(makeModdedTableType(bytes[0], -1, bytes[3], planks.getItemDamage()));
+				parts.add(makeModdedTableType(bytes[0], -1, bytes[2], bytes[3], planks.getItemDamage()));
 				parts.add(new ItemStack(CraftingSuite.modItems.itemID, 1, bytes[1]));
 				return parts;
 			}

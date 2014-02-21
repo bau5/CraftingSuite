@@ -6,14 +6,16 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import bau5.mods.craftingsuite.common.handlers.ExtraHandler;
 import bau5.mods.craftingsuite.common.handlers.IModifierHandler;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
 import bau5.mods.craftingsuite.common.tileentity.TileEntityModdedTable;
 
 public abstract class ContainerBase extends Container implements IModifiedContainerProvider{
 	public boolean containerIsWorking = false;
-	public IModifiedTileEntityProvider modifiedTile;
-	public IModifierHandler 		   handler;
+	public IModifiedTileEntityProvider 	modifiedTile;
+	public IModifierHandler 		   	handler;
+	public ExtraHandler				   	extraHandler;
 	
 	public int craftingSlotIndex = -1;
 	
@@ -37,7 +39,6 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 	public ItemStack slotClick(int slot, int clickType, int clickMeta,
 			EntityPlayer player) {
 		boolean updateRecipe = false;
-		System.out.printf("%d %d\n", clickType, clickMeta);
 		if(slot == craftingSlotIndex && (clickType == 1 || clickMeta == 1))
 			updateRecipe = true;
 		if(clickMeta == 6 && slot == craftingSlotIndex)
@@ -78,6 +79,10 @@ public abstract class ContainerBase extends Container implements IModifiedContai
 				if(handler != null) handler.shiftClickedCraftingSlot();
 				return handledStack;
 			}
+		}
+		ItemStack result = null;
+		if(extraHandler != null && extraHandler.handlesSlotClicks()){
+			extraHandler.handleSlotClick(slot, clickType, clickMeta, player);
 		}
 		if(handler != null && handler.handlesSlotClicks())
 			return handler.handleSlotClick(slot, clickType, clickMeta, player);

@@ -1,5 +1,6 @@
 package bau5.mods.craftingsuite.common.tileentity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -16,6 +17,13 @@ import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidContainerRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fluids.FluidTankInfo;
+import net.minecraftforge.fluids.IFluidHandler;
 import bau5.mods.craftingsuite.client.ParticleRenderer;
 import bau5.mods.craftingsuite.common.CSLogger;
 import bau5.mods.craftingsuite.common.CraftingSuite;
@@ -26,11 +34,13 @@ import bau5.mods.craftingsuite.common.tileentity.parthandlers.ContainerHandler;
 import bau5.mods.craftingsuite.common.tileentity.parthandlers.InventoryHandler;
 import cpw.mods.fml.client.FMLClientHandler;
 
-public class TileEntityProjectBench extends TileEntityBase implements IModifiedTileEntityProvider, IInventory, ISidedInventory{
+public class TileEntityProjectBench extends TileEntityBase implements IFluidHandler, IModifiedTileEntityProvider, IInventory, ISidedInventory{
 	
 	public TileNetHandler netHandler;
 	public InventoryHandler inventoryHandler;
 	public ContainerHandler containerHandler;
+	
+    private FluidTank tank = new FluidTankExt(FluidContainerRegistry.BUCKET_VOLUME, this);
 	
 	public Random random = new Random();
 	
@@ -51,6 +61,30 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 			theTile = tileEntity;
 		}
 	}
+	public class PositionedFluidStack{
+		public final FluidStack fluid;
+		public final ItemStack full;
+		public final ItemStack empty;
+		public final int slotNumber;
+		private boolean inUse;
+		public PositionedFluidStack(int slotNum, FluidStack fl, ItemStack f, ItemStack e){
+			fluid = fl;
+			slotNumber = slotNum;
+			full = f.copy();
+			empty = e.copy();
+			inUse = false;
+		}
+		public boolean isInUse(){
+			return inUse;
+		}
+		public void setInUse(){
+			inUse = true;
+		}
+		public void resetInUse(){
+			inUse = false;
+		}
+	}
+	public ArrayList<PositionedFluidStack> fluidForCrafting = new ArrayList();
 	
 	public ItemStack[] inv = null;
 	public ItemStack result;
@@ -128,6 +162,14 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 		case 5: return EnumInventoryModifier.PLAN;
 		}
 		return EnumInventoryModifier.NONE;
+	}
+
+	@Override
+	public EnumExtraModifier getExtraModifier() {
+		switch(modifications.extraModifier()){
+		case 1: return EnumExtraModifier.FLUID;
+		}
+		return EnumExtraModifier.NONE;
 	}
 	
 	private void buildInventoryMap(){
@@ -344,6 +386,8 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 			
 			handleModifiers();
 			
+	        tank.readFromNBT(tagCompound);
+			
 			if(inv != null){
 				NBTTagList tagList = tagCompound.getTagList("Inventory");
 				for(int i = 0; i < tagList.tagCount(); i++)
@@ -390,6 +434,8 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 		super.writeToNBT(tagCompound);
 		
 		NBTTagList itemList = new NBTTagList();	
+
+        tank.writeToNBT(tagCompound);
 		
 		if(inv != null){
 			for(int i = 0; i < inv.length; i++)
@@ -549,4 +595,60 @@ public class TileEntityProjectBench extends TileEntityBase implements IModifiedT
 	public Modifications getModifications() {
 		return modifications;
 	}
+	
+	/*
+	 * 	Fluid Handler
+	 */
+	
+	public boolean hasFluidCapabilities(){
+		return modifications.hasFluidCapabilities();
+	}
+
+    @Override
+    public int fill(ForgeDirection from, FluidStack resource, boolean doFill)
+    {
+        return tank.fill(resource, doFill);
+    }
+
+    @Override
+    public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain)
+    {
+        if (resource == null || !resource.isFluidEqual(tank.getFluid()))
+        {
+            return null;
+        }
+    	FluidStack fstack = tank.drain(resource.amount, doDrain);
+    	onInventoryChanged();
+        return fstack;
+    }
+
+    @Override
+    public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain)
+    {
+    	FluidStack fstack = tank.drain(maxDrain, doDrain);
+    	onInventoryChanged();
+        return fstack;
+    }
+
+    @Override
+    public boolean canFill(ForgeDirection from, Fluid fluid)
+    {
+        return true;
+    }
+
+    @Override
+    public boolean canDrain(ForgeDirection from, Fluid fluid)
+    {
+        return true;
+    }
+
+    @Override
+    public FluidTankInfo[] getTankInfo(ForgeDirection from)
+    {
+        return new FluidTankInfo[] { tank.getInfo() };
+    }
+    
+    public FluidStack getFluidInTank(ForgeDirection from){
+    	return tank.getFluid() != null ? tank.getFluid().copy() : null;
+    }
 }

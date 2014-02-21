@@ -143,6 +143,13 @@ public class CraftingSuite {
 			new ItemStack(Item.ingotIron, 1, 0),
 			new ItemStack(Block.chest, 1, OreDictionary.WILDCARD_VALUE)
 		}));
+										//Fluid Modifier
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modItems, 2, 6), new Object[]{
+			"SGS", "G G", "SGS",
+			'G', new ItemStack(Block.glass, 1, 0),
+			'S', new ItemStack(Block.stone, 1, 0)
+		}));
+		
 		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(modificationTableBlock.blockID, 1, 0), new Object[]{
 			" C ", "PRP", "SSS",
 			'C', new ItemStack(Block.workbench.blockID, 1, 0),

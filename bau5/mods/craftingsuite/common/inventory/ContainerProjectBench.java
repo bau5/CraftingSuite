@@ -6,6 +6,9 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import bau5.mods.craftingsuite.common.handlers.DeepSlotHandler;
 import bau5.mods.craftingsuite.common.handlers.DefaultHandler;
+import bau5.mods.craftingsuite.common.handlers.ExtraHandler;
+import bau5.mods.craftingsuite.common.handlers.FluidHandler;
+import bau5.mods.craftingsuite.common.handlers.IModifierHandler;
 import bau5.mods.craftingsuite.common.handlers.PlanHandler;
 import bau5.mods.craftingsuite.common.handlers.ToolsHandler;
 import bau5.mods.craftingsuite.common.tileentity.IModifiedTileEntityProvider;
@@ -87,7 +90,9 @@ public class ContainerProjectBench extends ContainerBase{
 			EntityPlayer player) {
 		ItemStack lastCraftResult = tileEntity.getInventoryHandler().resultMatrix().getStackInSlot(0);
 		lastCraftResult = lastCraftResult != null ? lastCraftResult.copy() : null;
+		tileEntity.inventoryHandler.findRecipe(true);
 		ItemStack stack = super.slotClick(slot, clickType, clickMeta, player);
+
 		if(slot == 0){
 			if(!ItemStack.areItemStacksEqual(lastCraftResult, tileEntity.getInventoryHandler().resultMatrix().getStackInSlot(0)))
 				tileEntity.getInventoryHandler().findRecipe(false);
@@ -237,6 +242,12 @@ public class ContainerProjectBench extends ContainerBase{
 			handler = new DeepSlotHandler(this, slot);
 			break;
 		}
+		switch(tileEntity.getExtraModifier()){
+		case FLUID: extraHandler = new FluidHandler(this);
+			break;
+		default:	extraHandler = null;
+			break;
+		}
 	}
 	
 	@Override
@@ -258,5 +269,10 @@ public class ContainerProjectBench extends ContainerBase{
 	@Override
 	public IModifiedTileEntityProvider getTileEntity() {
 		return tileEntity;
+	}
+
+	@Override
+	public ExtraHandler getExtraModifierHandler() {
+		return extraHandler;
 	}
 }

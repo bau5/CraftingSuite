@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties version="1.0">
+        <!--Blocks-->
+    <entry key="tile.bau5_moddingblock.name">改装台</entry>
+        <!--Benches-->
+    <entry key="tile.bau5_craftingblock.pb.name">规划台</entry>
+    <entry key="tile.bau5_craftingblock.ct.name">合成台</entry>
+    <!--Items-->
+    <entry key="item.modification.crafter.name">合成改装</entry>
+    <entry key="item.modification.holding.name">持有物改装</entry>
+    <entry key="item.modification.storing.name">存储改装</entry>
+    <entry key="item.modification.tools.name">工具改装</entry>
+    <entry key="item.modification.deep.name">深槽改装</entry>
+    <entry key="item.modification.plan.name">规划改装</entry>
+    
+    <entry key="item.plan.blank">空白规划</entry>
+    <entry key="item.plan.used">规划</entry>
+    <entry key="item.plan.broken">损坏的规划</entry>
+    <!--Guis-->
+    <entry key="gui.modificationtable.name">改装台</entry>
+    <entry key="gui.projectbench.name">规划台</entry>
+    <entry key="gui.modificationtable.modifiers">改装</entry>
+    <entry key="gui.modificationtable.aesthetics">美学</entry>
+    <!--Descriptions-->
+    <entry key="item.modifications.tools.description">允许所持工具放入合成台.</entry>
+    <entry key="cs.versioncheck.up">合成套件升级.</entry>
+    <entry key="cs.versioncheck.start">开始版本检查.</entry>
+    <entry key="cs.versioncheck.fail">提取版本失败.</entry>
+    <entry key="cs.versioncheck.new">合成套件有新版本可用.</entry>
+    <entry key="cs.versioncheck.version">版本</entry>
+    <entry key="cs.versioncheck.importance">升级版本为</entry>
+</properties>

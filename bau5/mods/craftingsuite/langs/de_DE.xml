@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties version="1.0">
+        <!--Blocks-->
+    <entry key="tile.bau5_moddingblock.name">Modifikationstisch</entry>
+        <!--Benches-->
+    <entry key="tile.bau5_craftingblock.pb.name">Projektwerkbank</entry>
+    <entry key="tile.bau5_craftingblock.ct.name">Werktisch</entry>
+    <!--Items-->
+    <entry key="item.modification.crafter.name">Werk-Modifikator</entry>
+    <entry key="item.modification.holding.name">Bewahrungs-Modifikator</entry>
+    <entry key="item.modification.storing.name">Speicher-Modifikator</entry>
+    <entry key="item.modification.tools.name">Werkzeug-Modifikator</entry>
+    <entry key="item.modification.deep.name">Tiefspeicher-Modifikator</entry>
+    <entry key="item.modification.plan.name">Plan-Modifikator</entry>
+    
+    <entry key="item.plan.blank">Leerer Plan</entry>
+    <entry key="item.plan.used">Plan</entry>
+    <entry key="item.plan.broken">Zerstörter Plan</entry>
+    <!--Guis-->
+    <entry key="gui.modificationtable.name">Modifikationstisch</entry>
+    <entry key="gui.projectbench.name">Projektwerkbank</entry>
+    <entry key="gui.modificationtable.modifiers">Modifikatoren</entry>
+    <entry key="gui.modificationtable.aesthetics">Ästhetik</entry>
+    <!--Descriptions-->
+    <entry key="item.modifications.tools.description">Erlaubt das Halten von Werkzeug im Werkblock.</entry>
+    <entry key="cs.versioncheck.up">Crafting Suite auf dem neuesten Stand.</entry>
+    <entry key="cs.versioncheck.start">Starte Versions-Check.</entry>
+    <entry key="cs.versioncheck.fail">Versions-Check fehlgeschlagen.</entry>
+    <entry key="cs.versioncheck.new">Eine neue Version von Crafting Suite ist verfügbar.</entry>
+    <entry key="cs.versioncheck.version">Version</entry>
+    <entry key="cs.versioncheck.importance">Dieses Update ist</entry>
+</properties>
